@@ -1,12 +1,12 @@
 IDIR=./include
 CC=clang++
-CFLAGS= -g -std=c++0x -pthread -O3  -Wall -Werror -Wextra 
+CFLAGS= -g -std=c++0x -pthread -O0  -Wall -Werror -Wextra 
 
 CURR_DIR=/mnt/c/Users/Sotiris/documents/projects/thesis/avl_cpp
 OBJ=./obj
 
 
-URCU_LIB_DIR=../../urcu/src/
+URCU_LIB_DIR=../../../urcu/src/
 
 INCLUDES = $(wildcard $(IDIR)/*.hpp)
 
@@ -37,6 +37,8 @@ safe_tree_test: safe_tree_test.cpp obj/catch_test_main.o $(DEPS) $(INCLUDES)
 
 test: all
 	./avl_test -r compact && ./safe_tree_test -r compact
+test_safe_tree: safe_tree_test
+	./safe_tree_test -r compact
 
 
 

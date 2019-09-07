@@ -1,0 +1,1885 @@
+desc: (none)
+cmd: ./safe_tree_test
+time_unit: i
+#-----------
+snapshot=0
+#-----------
+time=0
+mem_heap_B=0
+mem_heap_extra_B=0
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=1
+#-----------
+time=7551597
+mem_heap_B=162545
+mem_heap_extra_B=21367
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=2
+#-----------
+time=12785212
+mem_heap_B=245105
+mem_heap_extra_B=41887
+mem_stacks_B=0
+heap_tree=detailed
+n4: 245105 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 159840 0x40C0D1: AVLNode<int>::_insert(int, int) (avl.hpp:191)
+  n1: 159840 0x406DC8: AVLTree<int>::insert(int, int) (avl.hpp:462)
+   n1: 159840 0x405CA5: TreeTraversalTest() (safe_tree_test.cpp:87)
+    n1: 159840 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+     n1: 159840 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+      n1: 159840 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+       n1: 159840 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+        n1: 159840 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+         n1: 159840 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+          n0: 159840 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+ n1: 72704 0x4EC2414: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.25)
+  n1: 72704 0x4010731: _dl_init (dl-init.c:72)
+   n0: 72704 0x40010C8: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+ n0: 9081 in 134 places, all below massif's threshold (1.00%)
+ n1: 3480 0x45BE61: std::vector<Catch::clara::detail::Opt, std::allocator<Catch::clara::detail::Opt> >::vector(std::vector<Catch::clara::detail::Opt, std::allocator<Catch::clara::detail::Opt> > const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+  n2: 3480 0x45BCA4: Catch::clara::detail::Parser::Parser(Catch::clara::detail::Parser const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+   n1: 3480 0x413CA7: Catch::makeCommandLineParser(Catch::ConfigData&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+    n1: 3480 0x42B20D: Catch::Session::Session() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+     n0: 3480 0x442218: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+   n0: 0 in 58 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=3
+#-----------
+time=17597965
+mem_heap_B=319409
+mem_heap_extra_B=60463
+mem_stacks_B=0
+heap_tree=detailed
+n3: 319409 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 234144 0x40C0D1: AVLNode<int>::_insert(int, int) (avl.hpp:191)
+  n1: 234144 0x406DC8: AVLTree<int>::insert(int, int) (avl.hpp:462)
+   n1: 234144 0x405CA5: TreeTraversalTest() (safe_tree_test.cpp:87)
+    n1: 234144 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+     n1: 234144 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+      n1: 234144 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+       n1: 234144 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+        n1: 234144 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+         n1: 234144 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+          n0: 234144 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+ n1: 72704 0x4EC2414: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.25)
+  n1: 72704 0x4010731: _dl_init (dl-init.c:72)
+   n0: 72704 0x40010C8: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+ n0: 12561 in 135 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=4
+#-----------
+time=23523575
+mem_heap_B=409457
+mem_heap_extra_B=82975
+mem_stacks_B=0
+heap_tree=detailed
+n3: 409457 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 324192 0x40C0D1: AVLNode<int>::_insert(int, int) (avl.hpp:191)
+  n1: 324192 0x406DC8: AVLTree<int>::insert(int, int) (avl.hpp:462)
+   n1: 324192 0x405CA5: TreeTraversalTest() (safe_tree_test.cpp:87)
+    n1: 324192 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+     n1: 324192 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+      n1: 324192 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+       n1: 324192 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+        n1: 324192 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+         n1: 324192 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+          n0: 324192 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+ n1: 72704 0x4EC2414: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.25)
+  n1: 72704 0x4010731: _dl_init (dl-init.c:72)
+   n0: 72704 0x40010C8: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+ n0: 12561 in 135 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=5
+#-----------
+time=28000273
+mem_heap_B=476497
+mem_heap_extra_B=99855
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=6
+#-----------
+time=33716589
+mem_heap_B=563249
+mem_heap_extra_B=121423
+mem_stacks_B=0
+heap_tree=detailed
+n3: 563249 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 477984 0x40C0D1: AVLNode<int>::_insert(int, int) (avl.hpp:191)
+  n1: 477984 0x406DC8: AVLTree<int>::insert(int, int) (avl.hpp:462)
+   n1: 477984 0x405CA5: TreeTraversalTest() (safe_tree_test.cpp:87)
+    n1: 477984 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+     n1: 477984 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+      n1: 477984 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+       n1: 477984 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+        n1: 477984 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+         n1: 477984 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+          n0: 477984 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+ n1: 72704 0x4EC2414: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.25)
+  n1: 72704 0x4010731: _dl_init (dl-init.c:72)
+   n0: 72704 0x40010C8: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+ n0: 12561 in 135 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=7
+#-----------
+time=40031785
+mem_heap_B=656945
+mem_heap_extra_B=144967
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=8
+#-----------
+time=44159627
+mem_heap_B=718353
+mem_heap_extra_B=160199
+mem_stacks_B=0
+heap_tree=detailed
+n3: 718353 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 633088 0x40C0D1: AVLNode<int>::_insert(int, int) (avl.hpp:191)
+  n1: 633088 0x406DC8: AVLTree<int>::insert(int, int) (avl.hpp:462)
+   n1: 633088 0x405CA5: TreeTraversalTest() (safe_tree_test.cpp:87)
+    n1: 633088 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+     n1: 633088 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+      n1: 633088 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+       n1: 633088 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+        n1: 633088 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+         n1: 633088 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+          n0: 633088 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+ n1: 72704 0x4EC2414: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.25)
+  n1: 72704 0x4010731: _dl_init (dl-init.c:72)
+   n0: 72704 0x40010C8: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+ n0: 12561 in 135 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=9
+#-----------
+time=48089610
+mem_heap_B=775825
+mem_heap_extra_B=174687
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=10
+#-----------
+time=52332897
+mem_heap_B=838417
+mem_heap_extra_B=190335
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=11
+#-----------
+time=58259553
+mem_heap_B=926385
+mem_heap_extra_B=212207
+mem_stacks_B=0
+heap_tree=detailed
+n3: 926385 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 841120 0x40C0D1: AVLNode<int>::_insert(int, int) (avl.hpp:191)
+  n1: 841120 0x406DC8: AVLTree<int>::insert(int, int) (avl.hpp:462)
+   n1: 841120 0x405CA5: TreeTraversalTest() (safe_tree_test.cpp:87)
+    n1: 841120 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+     n1: 841120 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+      n1: 841120 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+       n1: 841120 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+        n1: 841120 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+         n1: 841120 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+          n0: 841120 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+ n1: 72704 0x4EC2414: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.25)
+  n1: 72704 0x4010731: _dl_init (dl-init.c:72)
+   n0: 72704 0x40010C8: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+ n0: 12561 in 135 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=12
+#-----------
+time=63386587
+mem_heap_B=1002033
+mem_heap_extra_B=231119
+mem_stacks_B=0
+heap_tree=detailed
+n3: 1002033 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 916768 0x40C0D1: AVLNode<int>::_insert(int, int) (avl.hpp:191)
+  n1: 916768 0x406DC8: AVLTree<int>::insert(int, int) (avl.hpp:462)
+   n1: 916768 0x405CA5: TreeTraversalTest() (safe_tree_test.cpp:87)
+    n1: 916768 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+     n1: 916768 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+      n1: 916768 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+       n1: 916768 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+        n1: 916768 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+         n1: 916768 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+          n0: 916768 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+ n1: 72704 0x4EC2414: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.25)
+  n1: 72704 0x4010731: _dl_init (dl-init.c:72)
+   n0: 72704 0x40010C8: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+ n0: 12561 in 135 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=13
+#-----------
+time=68937289
+mem_heap_B=1083921
+mem_heap_extra_B=251591
+mem_stacks_B=0
+heap_tree=detailed
+n3: 1083921 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 998656 0x40C0D1: AVLNode<int>::_insert(int, int) (avl.hpp:191)
+  n1: 998656 0x406DC8: AVLTree<int>::insert(int, int) (avl.hpp:462)
+   n1: 998656 0x405CA5: TreeTraversalTest() (safe_tree_test.cpp:87)
+    n1: 998656 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+     n1: 998656 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+      n1: 998656 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+       n1: 998656 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+        n1: 998656 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+         n1: 998656 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+          n0: 998656 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+ n1: 72704 0x4EC2414: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.25)
+  n1: 72704 0x4010731: _dl_init (dl-init.c:72)
+   n0: 72704 0x40010C8: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+ n0: 12561 in 135 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=14
+#-----------
+time=75003097
+mem_heap_B=1172561
+mem_heap_extra_B=273751
+mem_stacks_B=0
+heap_tree=detailed
+n3: 1172561 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 1087296 0x40C0D1: AVLNode<int>::_insert(int, int) (avl.hpp:191)
+  n1: 1087296 0x406DC8: AVLTree<int>::insert(int, int) (avl.hpp:462)
+   n1: 1087296 0x405CA5: TreeTraversalTest() (safe_tree_test.cpp:87)
+    n1: 1087296 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+     n1: 1087296 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+      n1: 1087296 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+       n1: 1087296 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+        n1: 1087296 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+         n1: 1087296 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+          n0: 1087296 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+ n1: 72704 0x4EC2414: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.25)
+  n1: 72704 0x4010731: _dl_init (dl-init.c:72)
+   n0: 72704 0x40010C8: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+ n0: 12561 in 135 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=15
+#-----------
+time=81654338
+mem_heap_B=1268561
+mem_heap_extra_B=297751
+mem_stacks_B=0
+heap_tree=detailed
+n3: 1268561 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 1183296 0x40C0D1: AVLNode<int>::_insert(int, int) (avl.hpp:191)
+  n1: 1183296 0x406DC8: AVLTree<int>::insert(int, int) (avl.hpp:462)
+   n1: 1183296 0x405CA5: TreeTraversalTest() (safe_tree_test.cpp:87)
+    n1: 1183296 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+     n1: 1183296 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+      n1: 1183296 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+       n1: 1183296 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+        n1: 1183296 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+         n1: 1183296 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+          n0: 1183296 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+ n1: 72704 0x4EC2414: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.25)
+  n1: 72704 0x4010731: _dl_init (dl-init.c:72)
+   n0: 72704 0x40010C8: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+ n0: 12561 in 135 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=16
+#-----------
+time=85154505
+mem_heap_B=1318577
+mem_heap_extra_B=310375
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=17
+#-----------
+time=89796903
+mem_heap_B=1386097
+mem_heap_extra_B=327135
+mem_stacks_B=0
+heap_tree=detailed
+n3: 1386097 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 1300832 0x40C0D1: AVLNode<int>::_insert(int, int) (avl.hpp:191)
+  n1: 1300832 0x406DC8: AVLTree<int>::insert(int, int) (avl.hpp:462)
+   n1: 1300832 0x405CA5: TreeTraversalTest() (safe_tree_test.cpp:87)
+    n1: 1300832 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+     n1: 1300832 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+      n1: 1300832 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+       n1: 1300832 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+        n1: 1300832 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+         n1: 1300832 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+          n0: 1300832 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+ n1: 72704 0x4EC2414: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.25)
+  n1: 72704 0x4010731: _dl_init (dl-init.c:72)
+   n0: 72704 0x40010C8: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+ n0: 12561 in 135 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=18
+#-----------
+time=97663297
+mem_heap_B=1499121
+mem_heap_extra_B=355511
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=19
+#-----------
+time=101801466
+mem_heap_B=1558865
+mem_heap_extra_B=370447
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=20
+#-----------
+time=106106339
+mem_heap_B=1621521
+mem_heap_extra_B=385991
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=21
+#-----------
+time=110589632
+mem_heap_B=1685713
+mem_heap_extra_B=402159
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=22
+#-----------
+time=115250954
+mem_heap_B=1753521
+mem_heap_extra_B=418991
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=23
+#-----------
+time=120338269
+mem_heap_B=1826929
+mem_heap_extra_B=437343
+mem_stacks_B=0
+heap_tree=detailed
+n3: 1826929 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 1741664 0x40C0D1: AVLNode<int>::_insert(int, int) (avl.hpp:191)
+  n1: 1741664 0x406DC8: AVLTree<int>::insert(int, int) (avl.hpp:462)
+   n1: 1741664 0x405CA5: TreeTraversalTest() (safe_tree_test.cpp:87)
+    n1: 1741664 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+     n1: 1741664 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+      n1: 1741664 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+       n1: 1741664 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+        n1: 1741664 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+         n1: 1741664 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+          n0: 1741664 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+ n1: 72704 0x4EC2414: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.25)
+  n1: 72704 0x4010731: _dl_init (dl-init.c:72)
+   n0: 72704 0x40010C8: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+ n0: 12561 in 135 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=24
+#-----------
+time=125439098
+mem_heap_B=1900561
+mem_heap_extra_B=455751
+mem_stacks_B=0
+heap_tree=detailed
+n3: 1900561 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 1815296 0x40C0D1: AVLNode<int>::_insert(int, int) (avl.hpp:191)
+  n1: 1815296 0x406DC8: AVLTree<int>::insert(int, int) (avl.hpp:462)
+   n1: 1815296 0x405CA5: TreeTraversalTest() (safe_tree_test.cpp:87)
+    n1: 1815296 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+     n1: 1815296 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+      n1: 1815296 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+       n1: 1815296 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+        n1: 1815296 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+         n1: 1815296 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+          n0: 1815296 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+ n1: 72704 0x4EC2414: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.25)
+  n1: 72704 0x4010731: _dl_init (dl-init.c:72)
+   n0: 72704 0x40010C8: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+ n0: 12561 in 135 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=25
+#-----------
+time=130733049
+mem_heap_B=1976465
+mem_heap_extra_B=474847
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=26
+#-----------
+time=136201600
+mem_heap_B=2055921
+mem_heap_extra_B=494591
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=27
+#-----------
+time=141891457
+mem_heap_B=2137521
+mem_heap_extra_B=515111
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=28
+#-----------
+time=147845090
+mem_heap_B=2222577
+mem_heap_extra_B=536375
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=29
+#-----------
+time=154136778
+mem_heap_B=2311473
+mem_heap_extra_B=558599
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=30
+#-----------
+time=161031197
+mem_heap_B=2409393
+mem_heap_extra_B=582959
+mem_stacks_B=0
+heap_tree=detailed
+n3: 2409393 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 2324128 0x40C0D1: AVLNode<int>::_insert(int, int) (avl.hpp:191)
+  n1: 2324128 0x406DC8: AVLTree<int>::insert(int, int) (avl.hpp:462)
+   n1: 2324128 0x405CA5: TreeTraversalTest() (safe_tree_test.cpp:87)
+    n1: 2324128 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+     n1: 2324128 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+      n1: 2324128 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+       n1: 2324128 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+        n1: 2324128 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+         n1: 2324128 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+          n0: 2324128 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+ n1: 72704 0x4EC2414: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.25)
+  n1: 72704 0x4010731: _dl_init (dl-init.c:72)
+   n0: 72704 0x40010C8: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+ n0: 12561 in 135 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=31
+#-----------
+time=167917038
+mem_heap_B=2506673
+mem_heap_extra_B=607279
+mem_stacks_B=0
+heap_tree=detailed
+n3: 2506673 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 2421408 0x40C0D1: AVLNode<int>::_insert(int, int) (avl.hpp:191)
+  n1: 2421408 0x406DC8: AVLTree<int>::insert(int, int) (avl.hpp:462)
+   n1: 2421408 0x405CA5: TreeTraversalTest() (safe_tree_test.cpp:87)
+    n1: 2421408 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+     n1: 2421408 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+      n1: 2421408 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+       n1: 2421408 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+        n1: 2421408 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+         n1: 2421408 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+          n0: 2421408 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+ n1: 72704 0x4EC2414: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.25)
+  n1: 72704 0x4010731: _dl_init (dl-init.c:72)
+   n0: 72704 0x40010C8: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+ n0: 12561 in 135 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=32
+#-----------
+time=175083257
+mem_heap_B=2607921
+mem_heap_extra_B=632591
+mem_stacks_B=0
+heap_tree=detailed
+n3: 2607921 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 2522656 0x40C0D1: AVLNode<int>::_insert(int, int) (avl.hpp:191)
+  n1: 2522656 0x406DC8: AVLTree<int>::insert(int, int) (avl.hpp:462)
+   n1: 2522656 0x405CA5: TreeTraversalTest() (safe_tree_test.cpp:87)
+    n1: 2522656 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+     n1: 2522656 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+      n1: 2522656 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+       n1: 2522656 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+        n1: 2522656 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+         n1: 2522656 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+          n0: 2522656 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+ n1: 72704 0x4EC2414: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.25)
+  n1: 72704 0x4010731: _dl_init (dl-init.c:72)
+   n0: 72704 0x40010C8: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+ n0: 12561 in 135 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=33
+#-----------
+time=182540356
+mem_heap_B=2713265
+mem_heap_extra_B=658927
+mem_stacks_B=0
+heap_tree=detailed
+n3: 2713265 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 2628000 0x40C0D1: AVLNode<int>::_insert(int, int) (avl.hpp:191)
+  n1: 2628000 0x406DC8: AVLTree<int>::insert(int, int) (avl.hpp:462)
+   n1: 2628000 0x405CA5: TreeTraversalTest() (safe_tree_test.cpp:87)
+    n1: 2628000 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+     n1: 2628000 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+      n1: 2628000 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+       n1: 2628000 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+        n1: 2628000 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+         n1: 2628000 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+          n0: 2628000 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+ n1: 72704 0x4EC2414: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.25)
+  n1: 72704 0x4010731: _dl_init (dl-init.c:72)
+   n0: 72704 0x40010C8: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+ n0: 12561 in 135 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=34
+#-----------
+time=190300246
+mem_heap_B=2822897
+mem_heap_extra_B=686335
+mem_stacks_B=0
+heap_tree=detailed
+n3: 2822897 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 2737632 0x40C0D1: AVLNode<int>::_insert(int, int) (avl.hpp:191)
+  n1: 2737632 0x406DC8: AVLTree<int>::insert(int, int) (avl.hpp:462)
+   n1: 2737632 0x405CA5: TreeTraversalTest() (safe_tree_test.cpp:87)
+    n1: 2737632 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+     n1: 2737632 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+      n1: 2737632 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+       n1: 2737632 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+        n1: 2737632 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+         n1: 2737632 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+          n0: 2737632 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+ n1: 72704 0x4EC2414: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.25)
+  n1: 72704 0x4010731: _dl_init (dl-init.c:72)
+   n0: 72704 0x40010C8: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+ n0: 12561 in 135 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=35
+#-----------
+time=194297724
+mem_heap_B=2879377
+mem_heap_extra_B=700455
+mem_stacks_B=0
+heap_tree=detailed
+n3: 2879377 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 2794112 0x40C0D1: AVLNode<int>::_insert(int, int) (avl.hpp:191)
+  n1: 2794112 0x406DC8: AVLTree<int>::insert(int, int) (avl.hpp:462)
+   n1: 2794112 0x405CA5: TreeTraversalTest() (safe_tree_test.cpp:87)
+    n1: 2794112 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+     n1: 2794112 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+      n1: 2794112 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+       n1: 2794112 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+        n1: 2794112 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+         n1: 2794112 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+          n0: 2794112 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+ n1: 72704 0x4EC2414: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.25)
+  n1: 72704 0x4010731: _dl_init (dl-init.c:72)
+   n0: 72704 0x40010C8: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+ n0: 12561 in 135 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=36
+#-----------
+time=198372465
+mem_heap_B=2936945
+mem_heap_extra_B=714847
+mem_stacks_B=0
+heap_tree=detailed
+n3: 2936945 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 2851680 0x40C0D1: AVLNode<int>::_insert(int, int) (avl.hpp:191)
+  n1: 2851680 0x406DC8: AVLTree<int>::insert(int, int) (avl.hpp:462)
+   n1: 2851680 0x405CA5: TreeTraversalTest() (safe_tree_test.cpp:87)
+    n1: 2851680 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+     n1: 2851680 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+      n1: 2851680 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+       n1: 2851680 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+        n1: 2851680 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+         n1: 2851680 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+          n0: 2851680 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+ n1: 72704 0x4EC2414: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.25)
+  n1: 72704 0x4010731: _dl_init (dl-init.c:72)
+   n0: 72704 0x40010C8: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+ n0: 12561 in 135 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=37
+#-----------
+time=202531246
+mem_heap_B=2995697
+mem_heap_extra_B=729535
+mem_stacks_B=0
+heap_tree=detailed
+n3: 2995697 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 2910432 0x40C0D1: AVLNode<int>::_insert(int, int) (avl.hpp:191)
+  n1: 2910432 0x406DC8: AVLTree<int>::insert(int, int) (avl.hpp:462)
+   n1: 2910432 0x405CA5: TreeTraversalTest() (safe_tree_test.cpp:87)
+    n1: 2910432 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+     n1: 2910432 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+      n1: 2910432 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+       n1: 2910432 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+        n1: 2910432 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+         n1: 2910432 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+          n0: 2910432 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+ n1: 72704 0x4EC2414: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.25)
+  n1: 72704 0x4010731: _dl_init (dl-init.c:72)
+   n0: 72704 0x40010C8: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+ n0: 12561 in 135 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=38
+#-----------
+time=206773103
+mem_heap_B=3055633
+mem_heap_extra_B=744519
+mem_stacks_B=0
+heap_tree=detailed
+n3: 3055633 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 2970368 0x40C0D1: AVLNode<int>::_insert(int, int) (avl.hpp:191)
+  n1: 2970368 0x406DC8: AVLTree<int>::insert(int, int) (avl.hpp:462)
+   n1: 2970368 0x405CA5: TreeTraversalTest() (safe_tree_test.cpp:87)
+    n1: 2970368 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+     n1: 2970368 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+      n1: 2970368 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+       n1: 2970368 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+        n1: 2970368 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+         n1: 2970368 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+          n0: 2970368 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+ n1: 72704 0x4EC2414: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.25)
+  n1: 72704 0x4010731: _dl_init (dl-init.c:72)
+   n0: 72704 0x40010C8: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+ n0: 12561 in 135 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=39
+#-----------
+time=211102247
+mem_heap_B=3116785
+mem_heap_extra_B=759807
+mem_stacks_B=0
+heap_tree=detailed
+n3: 3116785 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 3031520 0x40C0D1: AVLNode<int>::_insert(int, int) (avl.hpp:191)
+  n1: 3031520 0x406DC8: AVLTree<int>::insert(int, int) (avl.hpp:462)
+   n1: 3031520 0x405CA5: TreeTraversalTest() (safe_tree_test.cpp:87)
+    n1: 3031520 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+     n1: 3031520 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+      n1: 3031520 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+       n1: 3031520 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+        n1: 3031520 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+         n1: 3031520 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+          n0: 3031520 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+ n1: 72704 0x4EC2414: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.25)
+  n1: 72704 0x4010731: _dl_init (dl-init.c:72)
+   n0: 72704 0x40010C8: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+ n0: 12561 in 135 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=40
+#-----------
+time=215515521
+mem_heap_B=3179153
+mem_heap_extra_B=775399
+mem_stacks_B=0
+heap_tree=detailed
+n3: 3179153 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 3093888 0x40C0D1: AVLNode<int>::_insert(int, int) (avl.hpp:191)
+  n1: 3093888 0x406DC8: AVLTree<int>::insert(int, int) (avl.hpp:462)
+   n1: 3093888 0x405CA5: TreeTraversalTest() (safe_tree_test.cpp:87)
+    n1: 3093888 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+     n1: 3093888 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+      n1: 3093888 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+       n1: 3093888 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+        n1: 3093888 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+         n1: 3093888 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+          n0: 3093888 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+ n1: 72704 0x4EC2414: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.25)
+  n1: 72704 0x4010731: _dl_init (dl-init.c:72)
+   n0: 72704 0x40010C8: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+ n0: 12561 in 135 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=41
+#-----------
+time=220007723
+mem_heap_B=3242097
+mem_heap_extra_B=791255
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=42
+#-----------
+time=225257518
+mem_heap_B=3727697
+mem_heap_extra_B=851175
+mem_stacks_B=0
+heap_tree=detailed
+n6: 3727697 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 3199968 0x40C0D1: AVLNode<int>::_insert(int, int) (avl.hpp:191)
+  n1: 3199968 0x406DC8: AVLTree<int>::insert(int, int) (avl.hpp:462)
+   n1: 3199968 0x405CA5: TreeTraversalTest() (safe_tree_test.cpp:87)
+    n1: 3199968 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+     n1: 3199968 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+      n1: 3199968 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+       n1: 3199968 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+        n1: 3199968 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+         n1: 3199968 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+          n0: 3199968 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+ n1: 245760 0x40881F: __gnu_cxx::new_allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > >::allocate(unsigned long, void const*) (new_allocator.h:111)
+  n1: 245760 0x4087CA: std::allocator_traits<std::allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > > >::allocate(std::allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > >&, unsigned long) (alloc_traits.h:436)
+   n1: 245760 0x408521: std::_Vector_base<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >, std::allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > > >::_M_allocate(unsigned long) (stl_vector.h:172)
+    n1: 245760 0x408048: void std::vector<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >, std::allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > > >::_M_realloc_insert<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > >(__gnu_cxx::__normal_iterator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >*, std::vector<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >, std::allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > > > >, std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >&&) (vector.tcc:406)
+     n1: 245760 0x407F4C: void std::vector<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >, std::allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > > >::emplace_back<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > >(std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >&&) (vector.tcc:105)
+      n1: 245760 0x407E5E: std::vector<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >, std::allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > > >::push_back(std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >&&) (stl_vector.h:954)
+       n1: 245760 0x407E1E: InsPoint<AVLNode<int> >::add_to_copied_nodes(SafeNode<AVLNode<int> >*) (SafeTree.hpp:340)
+        n2: 245760 0x407C61: SafeNode<AVLNode<int> >::SafeNode(InsPoint<AVLNode<int> >&, AVLNode<int>*) (SafeTree.hpp:104)
+         n1: 245760 0x406BC7: SafeNode<AVLNode<int> >::getChild(int) (SafeTree.hpp:162)
+          n2: 245760 0x405A4F: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+           n2: 245760 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+            n1: 245760 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+             n2: 245760 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+              n1: 245760 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+               n1: 245760 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                n1: 245760 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                 n2: 245760 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                  n1: 245760 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                   n1: 245760 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                    n1: 245760 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                     n1: 245760 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                      n1: 245760 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                       n2: 245760 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                        n2: 245760 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                         n1: 163840 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                          n1: 163840 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                           n1: 163840 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                            n1: 163840 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                             n1: 163840 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                              n0: 163840 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                         n1: 81920 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                          n1: 81920 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                           n1: 81920 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                            n1: 81920 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                             n1: 81920 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                              n0: 81920 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                        n0: 0 in 1 place, below massif's threshold (1.00%)
+                  n0: 0 in 1 place, below massif's threshold (1.00%)
+              n0: 0 in 1 place, below massif's threshold (1.00%)
+            n0: 0 in 1 place, below massif's threshold (1.00%)
+           n0: 0 in 1 place, below massif's threshold (1.00%)
+         n0: 0 in 1 place, below massif's threshold (1.00%)
+ n1: 98304 0x406BA6: SafeNode<AVLNode<int> >::getChild(int) (SafeTree.hpp:162)
+  n2: 98304 0x405A4F: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+   n2: 98256 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+    n2: 98208 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+     n2: 98160 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+      n2: 98112 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+       n2: 98064 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+        n2: 98016 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+         n2: 97920 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+          n2: 97728 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+           n2: 97344 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+            n2: 96576 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+             n2: 95040 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+              n2: 91968 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+               n2: 85824 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                n2: 73536 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                 n1: 49008 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                  n1: 49008 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                   n1: 49008 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                    n1: 49008 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                     n1: 49008 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                      n1: 49008 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                       n1: 49008 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                        n1: 49008 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                         n0: 49008 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                 n0: 24528 in 1 place, below massif's threshold (1.00%)
+                n0: 12288 in 1 place, below massif's threshold (1.00%)
+               n0: 6144 in 1 place, below massif's threshold (1.00%)
+              n0: 3072 in 1 place, below massif's threshold (1.00%)
+             n0: 1536 in 1 place, below massif's threshold (1.00%)
+            n0: 768 in 1 place, below massif's threshold (1.00%)
+           n0: 384 in 1 place, below massif's threshold (1.00%)
+          n0: 192 in 1 place, below massif's threshold (1.00%)
+         n0: 96 in 1 place, below massif's threshold (1.00%)
+        n0: 48 in 1 place, below massif's threshold (1.00%)
+       n0: 48 in 1 place, below massif's threshold (1.00%)
+      n0: 48 in 1 place, below massif's threshold (1.00%)
+     n0: 48 in 1 place, below massif's threshold (1.00%)
+    n0: 48 in 1 place, below massif's threshold (1.00%)
+   n0: 48 in 1 place, below massif's threshold (1.00%)
+ n1: 72704 0x4EC2414: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.25)
+  n1: 72704 0x4010731: _dl_init (dl-init.c:72)
+   n0: 72704 0x40010C8: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+ n2: 65600 0x407C09: SafeNode<AVLNode<int> >::SafeNode(InsPoint<AVLNode<int> >&, AVLNode<int>*) (SafeTree.hpp:99)
+  n1: 65536 0x406BC7: SafeNode<AVLNode<int> >::getChild(int) (SafeTree.hpp:162)
+   n2: 65536 0x405A4F: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+    n2: 65504 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+     n2: 65472 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+      n2: 65440 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+       n2: 65408 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+        n2: 65376 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+         n2: 65344 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+          n2: 65280 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+           n2: 65152 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+            n2: 64896 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+             n2: 64384 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+              n2: 63360 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+               n2: 61312 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                n2: 57216 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                 n1: 49024 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                  n0: 49024 in 2 places, all below massif's threshold (1.00%)
+                 n0: 8192 in 1 place, below massif's threshold (1.00%)
+                n0: 4096 in 1 place, below massif's threshold (1.00%)
+               n0: 2048 in 1 place, below massif's threshold (1.00%)
+              n0: 1024 in 1 place, below massif's threshold (1.00%)
+             n0: 512 in 1 place, below massif's threshold (1.00%)
+            n0: 256 in 1 place, below massif's threshold (1.00%)
+           n0: 128 in 1 place, below massif's threshold (1.00%)
+          n0: 64 in 1 place, below massif's threshold (1.00%)
+         n0: 32 in 1 place, below massif's threshold (1.00%)
+        n0: 32 in 1 place, below massif's threshold (1.00%)
+       n0: 32 in 1 place, below massif's threshold (1.00%)
+      n0: 32 in 1 place, below massif's threshold (1.00%)
+     n0: 32 in 1 place, below massif's threshold (1.00%)
+    n0: 32 in 1 place, below massif's threshold (1.00%)
+  n0: 64 in 1 place, below massif's threshold (1.00%)
+ n0: 45361 in 133 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=43
+#-----------
+time=229732611
+mem_heap_B=4274785
+mem_heap_extra_B=967455
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=44
+#-----------
+time=234177727
+mem_heap_B=4995681
+mem_heap_extra_B=1065759
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=45
+#-----------
+time=240815610
+mem_heap_B=6824273
+mem_heap_extra_B=1195239
+mem_stacks_B=0
+heap_tree=detailed
+n6: 6824273 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 3199968 0x40C0D1: AVLNode<int>::_insert(int, int) (avl.hpp:191)
+  n1: 3199968 0x406DC8: AVLTree<int>::insert(int, int) (avl.hpp:462)
+   n1: 3199968 0x405CA5: TreeTraversalTest() (safe_tree_test.cpp:87)
+    n1: 3199968 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+     n1: 3199968 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+      n1: 3199968 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+       n1: 3199968 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+        n1: 3199968 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+         n1: 3199968 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+          n0: 3199968 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+ n1: 1966080 0x40881F: __gnu_cxx::new_allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > >::allocate(unsigned long, void const*) (new_allocator.h:111)
+  n1: 1966080 0x4087CA: std::allocator_traits<std::allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > > >::allocate(std::allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > >&, unsigned long) (alloc_traits.h:436)
+   n1: 1966080 0x408521: std::_Vector_base<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >, std::allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > > >::_M_allocate(unsigned long) (stl_vector.h:172)
+    n1: 1966080 0x408048: void std::vector<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >, std::allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > > >::_M_realloc_insert<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > >(__gnu_cxx::__normal_iterator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >*, std::vector<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >, std::allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > > > >, std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >&&) (vector.tcc:406)
+     n1: 1966080 0x407F4C: void std::vector<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >, std::allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > > >::emplace_back<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > >(std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >&&) (vector.tcc:105)
+      n1: 1966080 0x407E5E: std::vector<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >, std::allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > > >::push_back(std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >&&) (stl_vector.h:954)
+       n1: 1966080 0x407E1E: InsPoint<AVLNode<int> >::add_to_copied_nodes(SafeNode<AVLNode<int> >*) (SafeTree.hpp:340)
+        n2: 1966080 0x407C61: SafeNode<AVLNode<int> >::SafeNode(InsPoint<AVLNode<int> >&, AVLNode<int>*) (SafeTree.hpp:104)
+         n1: 1966080 0x406BC7: SafeNode<AVLNode<int> >::getChild(int) (SafeTree.hpp:162)
+          n2: 1966080 0x405A4F: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+           n2: 1966080 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+            n1: 1966080 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+             n2: 1966080 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+              n1: 1966080 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+               n1: 1966080 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                n1: 1966080 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                 n2: 1966080 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                  n1: 1966080 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                   n1: 1966080 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                    n1: 1966080 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                     n1: 1966080 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                      n1: 1966080 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                       n2: 1966080 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                        n2: 1966080 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                         n1: 1310720 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                          n1: 1310720 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                           n1: 1310720 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                            n1: 1310720 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                             n1: 1310720 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                              n0: 1310720 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                         n1: 655360 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                          n1: 655360 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                           n1: 655360 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                            n1: 655360 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                             n1: 655360 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                              n0: 655360 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                        n0: 0 in 1 place, below massif's threshold (1.00%)
+                  n0: 0 in 1 place, below massif's threshold (1.00%)
+              n0: 0 in 1 place, below massif's threshold (1.00%)
+            n0: 0 in 1 place, below massif's threshold (1.00%)
+           n0: 0 in 1 place, below massif's threshold (1.00%)
+         n0: 0 in 1 place, below massif's threshold (1.00%)
+ n1: 786432 0x406BA6: SafeNode<AVLNode<int> >::getChild(int) (SafeTree.hpp:162)
+  n2: 786432 0x405A4F: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+   n2: 786384 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+    n2: 786336 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+     n2: 786288 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+      n2: 786192 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+       n2: 786000 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+        n2: 785616 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+         n2: 784848 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+          n2: 783312 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+           n2: 780240 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+            n2: 774096 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+             n2: 761808 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+              n2: 737232 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+               n2: 688080 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                n2: 589776 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                 n1: 393168 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                  n1: 393168 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                   n1: 393168 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                    n1: 393168 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                     n1: 393168 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                      n1: 393168 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                       n1: 393168 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                        n1: 393168 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                         n0: 393168 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                 n1: 196608 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                  n1: 196608 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                   n1: 196608 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                    n1: 196608 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                     n1: 196608 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                      n1: 196608 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                       n1: 196608 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                        n0: 196608 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                n1: 98304 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                 n1: 98304 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                  n1: 98304 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                   n1: 98304 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                    n1: 98304 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                     n1: 98304 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                      n1: 98304 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                       n0: 98304 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+               n0: 49152 in 1 place, below massif's threshold (1.00%)
+              n0: 24576 in 1 place, below massif's threshold (1.00%)
+             n0: 12288 in 1 place, below massif's threshold (1.00%)
+            n0: 6144 in 1 place, below massif's threshold (1.00%)
+           n0: 3072 in 1 place, below massif's threshold (1.00%)
+          n0: 1536 in 1 place, below massif's threshold (1.00%)
+         n0: 768 in 1 place, below massif's threshold (1.00%)
+        n0: 384 in 1 place, below massif's threshold (1.00%)
+       n0: 192 in 1 place, below massif's threshold (1.00%)
+      n0: 96 in 1 place, below massif's threshold (1.00%)
+     n0: 48 in 1 place, below massif's threshold (1.00%)
+    n0: 48 in 1 place, below massif's threshold (1.00%)
+   n0: 48 in 1 place, below massif's threshold (1.00%)
+ n2: 524352 0x407C09: SafeNode<AVLNode<int> >::SafeNode(InsPoint<AVLNode<int> >&, AVLNode<int>*) (SafeTree.hpp:99)
+  n1: 524288 0x406BC7: SafeNode<AVLNode<int> >::getChild(int) (SafeTree.hpp:162)
+   n2: 524288 0x405A4F: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+    n2: 524256 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+     n2: 524224 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+      n2: 524192 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+       n2: 524128 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+        n2: 524000 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+         n2: 523744 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+          n2: 523232 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+           n2: 522208 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+            n2: 520160 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+             n2: 516064 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+              n2: 507872 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+               n2: 491488 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                n2: 458720 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                 n2: 393184 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                  n1: 262112 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                   n1: 262112 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                    n1: 262112 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                     n1: 262112 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                      n1: 262112 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                       n1: 262112 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                        n1: 262112 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                         n1: 262112 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                          n0: 262112 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                  n1: 131072 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                   n1: 131072 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                    n1: 131072 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                     n1: 131072 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                      n1: 131072 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                       n1: 131072 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                        n1: 131072 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                         n0: 131072 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                 n0: 65536 in 1 place, below massif's threshold (1.00%)
+                n0: 32768 in 1 place, below massif's threshold (1.00%)
+               n0: 16384 in 1 place, below massif's threshold (1.00%)
+              n0: 8192 in 1 place, below massif's threshold (1.00%)
+             n0: 4096 in 1 place, below massif's threshold (1.00%)
+            n0: 2048 in 1 place, below massif's threshold (1.00%)
+           n0: 1024 in 1 place, below massif's threshold (1.00%)
+          n0: 512 in 1 place, below massif's threshold (1.00%)
+         n0: 256 in 1 place, below massif's threshold (1.00%)
+        n0: 128 in 1 place, below massif's threshold (1.00%)
+       n0: 64 in 1 place, below massif's threshold (1.00%)
+      n0: 32 in 1 place, below massif's threshold (1.00%)
+     n0: 32 in 1 place, below massif's threshold (1.00%)
+    n0: 32 in 1 place, below massif's threshold (1.00%)
+  n0: 64 in 1 place, below massif's threshold (1.00%)
+ n2: 262160 0x407BE6: SafeNode<AVLNode<int> >::SafeNode(InsPoint<AVLNode<int> >&, AVLNode<int>*) (SafeTree.hpp:96)
+  n1: 262144 0x406BC7: SafeNode<AVLNode<int> >::getChild(int) (SafeTree.hpp:162)
+   n2: 262144 0x405A4F: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+    n2: 262128 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+     n2: 262112 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+      n2: 262096 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+       n2: 262064 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+        n2: 262000 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+         n2: 261872 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+          n2: 261616 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+           n2: 261104 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+            n2: 260080 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+             n2: 258032 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+              n2: 253936 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+               n2: 245744 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                n2: 229360 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                 n2: 196592 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                  n1: 131056 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                   n1: 131056 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                    n1: 131056 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                     n1: 131056 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                      n1: 131056 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                       n1: 131056 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                        n1: 131056 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                         n1: 131056 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                          n0: 131056 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                  n0: 65536 in 1 place, below massif's threshold (1.00%)
+                 n0: 32768 in 1 place, below massif's threshold (1.00%)
+                n0: 16384 in 1 place, below massif's threshold (1.00%)
+               n0: 8192 in 1 place, below massif's threshold (1.00%)
+              n0: 4096 in 1 place, below massif's threshold (1.00%)
+             n0: 2048 in 1 place, below massif's threshold (1.00%)
+            n0: 1024 in 1 place, below massif's threshold (1.00%)
+           n0: 512 in 1 place, below massif's threshold (1.00%)
+          n0: 256 in 1 place, below massif's threshold (1.00%)
+         n0: 128 in 1 place, below massif's threshold (1.00%)
+        n0: 64 in 1 place, below massif's threshold (1.00%)
+       n0: 32 in 1 place, below massif's threshold (1.00%)
+      n0: 16 in 1 place, below massif's threshold (1.00%)
+     n0: 16 in 1 place, below massif's threshold (1.00%)
+    n0: 16 in 1 place, below massif's threshold (1.00%)
+  n0: 16 in 1 place, below massif's threshold (1.00%)
+ n0: 85281 in 133 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=46
+#-----------
+time=245318815
+mem_heap_B=6705985
+mem_heap_extra_B=1329495
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=47
+#-----------
+time=252072704
+mem_heap_B=7511425
+mem_heap_extra_B=1530855
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=48
+#-----------
+time=258593538
+mem_heap_B=10363217
+mem_heap_extra_B=1588455
+mem_stacks_B=0
+heap_tree=detailed
+n6: 10363217 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 3932160 0x40881F: __gnu_cxx::new_allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > >::allocate(unsigned long, void const*) (new_allocator.h:111)
+  n1: 3932160 0x4087CA: std::allocator_traits<std::allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > > >::allocate(std::allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > >&, unsigned long) (alloc_traits.h:436)
+   n1: 3932160 0x408521: std::_Vector_base<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >, std::allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > > >::_M_allocate(unsigned long) (stl_vector.h:172)
+    n1: 3932160 0x408048: void std::vector<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >, std::allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > > >::_M_realloc_insert<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > >(__gnu_cxx::__normal_iterator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >*, std::vector<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >, std::allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > > > >, std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >&&) (vector.tcc:406)
+     n1: 3932160 0x407F4C: void std::vector<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >, std::allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > > >::emplace_back<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > >(std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >&&) (vector.tcc:105)
+      n1: 3932160 0x407E5E: std::vector<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >, std::allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > > >::push_back(std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >&&) (stl_vector.h:954)
+       n1: 3932160 0x407E1E: InsPoint<AVLNode<int> >::add_to_copied_nodes(SafeNode<AVLNode<int> >*) (SafeTree.hpp:340)
+        n2: 3932160 0x407C61: SafeNode<AVLNode<int> >::SafeNode(InsPoint<AVLNode<int> >&, AVLNode<int>*) (SafeTree.hpp:104)
+         n1: 3932160 0x406BC7: SafeNode<AVLNode<int> >::getChild(int) (SafeTree.hpp:162)
+          n2: 3932160 0x405A4F: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+           n2: 3932160 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+            n1: 3932160 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+             n2: 3932160 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+              n1: 3932160 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+               n1: 3932160 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                n1: 3932160 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                 n2: 3932160 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                  n1: 3932160 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                   n1: 3932160 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                    n1: 3932160 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                     n1: 3932160 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                      n1: 3932160 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                       n2: 3932160 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                        n2: 3932160 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                         n1: 3932160 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                          n1: 3932160 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                           n1: 3932160 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                            n1: 3932160 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                             n1: 3932160 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                              n0: 3932160 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                         n0: 0 in 1 place, below massif's threshold (1.00%)
+                        n0: 0 in 1 place, below massif's threshold (1.00%)
+                  n0: 0 in 1 place, below massif's threshold (1.00%)
+              n0: 0 in 1 place, below massif's threshold (1.00%)
+            n0: 0 in 1 place, below massif's threshold (1.00%)
+           n0: 0 in 1 place, below massif's threshold (1.00%)
+         n0: 0 in 1 place, below massif's threshold (1.00%)
+ n1: 3199968 0x40C0D1: AVLNode<int>::_insert(int, int) (avl.hpp:191)
+  n1: 3199968 0x406DC8: AVLTree<int>::insert(int, int) (avl.hpp:462)
+   n1: 3199968 0x405CA5: TreeTraversalTest() (safe_tree_test.cpp:87)
+    n1: 3199968 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+     n1: 3199968 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+      n1: 3199968 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+       n1: 3199968 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+        n1: 3199968 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+         n1: 3199968 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+          n0: 3199968 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+ n1: 1572864 0x406BA6: SafeNode<AVLNode<int> >::getChild(int) (SafeTree.hpp:162)
+  n2: 1572864 0x405A4F: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+   n2: 1572816 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+    n2: 1572768 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+     n2: 1572672 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+      n2: 1572480 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+       n2: 1572096 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+        n2: 1571328 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+         n2: 1569792 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+          n2: 1566720 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+           n2: 1560576 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+            n2: 1548288 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+             n2: 1523712 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+              n2: 1474560 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+               n2: 1376256 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                n2: 1179648 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                 n1: 786432 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                  n1: 786432 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                   n1: 786432 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                    n1: 786432 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                     n1: 786432 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                      n1: 786432 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                       n1: 786432 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                        n1: 786432 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                         n0: 786432 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                 n1: 393216 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                  n1: 393216 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                   n1: 393216 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                    n1: 393216 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                     n1: 393216 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                      n1: 393216 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                       n1: 393216 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                        n0: 393216 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                n1: 196608 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                 n1: 196608 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                  n1: 196608 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                   n1: 196608 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                    n1: 196608 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                     n1: 196608 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                      n1: 196608 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                       n0: 196608 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+               n0: 98304 in 1 place, below massif's threshold (1.00%)
+              n0: 49152 in 1 place, below massif's threshold (1.00%)
+             n0: 24576 in 1 place, below massif's threshold (1.00%)
+            n0: 12288 in 1 place, below massif's threshold (1.00%)
+           n0: 6144 in 1 place, below massif's threshold (1.00%)
+          n0: 3072 in 1 place, below massif's threshold (1.00%)
+         n0: 1536 in 1 place, below massif's threshold (1.00%)
+        n0: 768 in 1 place, below massif's threshold (1.00%)
+       n0: 384 in 1 place, below massif's threshold (1.00%)
+      n0: 192 in 1 place, below massif's threshold (1.00%)
+     n0: 96 in 1 place, below massif's threshold (1.00%)
+    n0: 48 in 1 place, below massif's threshold (1.00%)
+   n0: 48 in 1 place, below massif's threshold (1.00%)
+ n2: 1048640 0x407C09: SafeNode<AVLNode<int> >::SafeNode(InsPoint<AVLNode<int> >&, AVLNode<int>*) (SafeTree.hpp:99)
+  n1: 1048576 0x406BC7: SafeNode<AVLNode<int> >::getChild(int) (SafeTree.hpp:162)
+   n2: 1048576 0x405A4F: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+    n2: 1048544 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+     n2: 1048512 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+      n2: 1048448 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+       n2: 1048320 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+        n2: 1048064 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+         n2: 1047552 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+          n2: 1046528 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+           n2: 1044480 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+            n2: 1040384 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+             n2: 1032192 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+              n2: 1015808 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+               n2: 983040 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                n2: 917504 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                 n2: 786432 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                  n1: 524288 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                   n1: 524288 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                    n1: 524288 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                     n1: 524288 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                      n1: 524288 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                       n1: 524288 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                        n1: 524288 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                         n1: 524288 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                          n0: 524288 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                  n1: 262144 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                   n1: 262144 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                    n1: 262144 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                     n1: 262144 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                      n1: 262144 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                       n1: 262144 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                        n1: 262144 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                         n0: 262144 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                 n1: 131072 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                  n1: 131072 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                   n1: 131072 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                    n1: 131072 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                     n1: 131072 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                      n1: 131072 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                       n1: 131072 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                        n0: 131072 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                n0: 65536 in 1 place, below massif's threshold (1.00%)
+               n0: 32768 in 1 place, below massif's threshold (1.00%)
+              n0: 16384 in 1 place, below massif's threshold (1.00%)
+             n0: 8192 in 1 place, below massif's threshold (1.00%)
+            n0: 4096 in 1 place, below massif's threshold (1.00%)
+           n0: 2048 in 1 place, below massif's threshold (1.00%)
+          n0: 1024 in 1 place, below massif's threshold (1.00%)
+         n0: 512 in 1 place, below massif's threshold (1.00%)
+        n0: 256 in 1 place, below massif's threshold (1.00%)
+       n0: 128 in 1 place, below massif's threshold (1.00%)
+      n0: 64 in 1 place, below massif's threshold (1.00%)
+     n0: 32 in 1 place, below massif's threshold (1.00%)
+    n0: 32 in 1 place, below massif's threshold (1.00%)
+  n0: 64 in 1 place, below massif's threshold (1.00%)
+ n2: 524304 0x407BE6: SafeNode<AVLNode<int> >::SafeNode(InsPoint<AVLNode<int> >&, AVLNode<int>*) (SafeTree.hpp:96)
+  n1: 524288 0x406BC7: SafeNode<AVLNode<int> >::getChild(int) (SafeTree.hpp:162)
+   n2: 524288 0x405A4F: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+    n2: 524272 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+     n2: 524256 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+      n2: 524224 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+       n2: 524160 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+        n2: 524032 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+         n2: 523776 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+          n2: 523264 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+           n2: 522240 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+            n2: 520192 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+             n2: 516096 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+              n2: 507904 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+               n2: 491520 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                n2: 458752 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                 n2: 393216 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                  n1: 262144 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                   n1: 262144 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                    n1: 262144 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                     n1: 262144 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                      n1: 262144 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                       n1: 262144 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                        n1: 262144 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                         n1: 262144 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                          n0: 262144 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                  n1: 131072 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                   n1: 131072 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                    n1: 131072 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                     n1: 131072 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                      n1: 131072 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                       n1: 131072 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                        n1: 131072 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                         n0: 131072 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                 n0: 65536 in 1 place, below massif's threshold (1.00%)
+                n0: 32768 in 1 place, below massif's threshold (1.00%)
+               n0: 16384 in 1 place, below massif's threshold (1.00%)
+              n0: 8192 in 1 place, below massif's threshold (1.00%)
+             n0: 4096 in 1 place, below massif's threshold (1.00%)
+            n0: 2048 in 1 place, below massif's threshold (1.00%)
+           n0: 1024 in 1 place, below massif's threshold (1.00%)
+          n0: 512 in 1 place, below massif's threshold (1.00%)
+         n0: 256 in 1 place, below massif's threshold (1.00%)
+        n0: 128 in 1 place, below massif's threshold (1.00%)
+       n0: 64 in 1 place, below massif's threshold (1.00%)
+      n0: 32 in 1 place, below massif's threshold (1.00%)
+     n0: 16 in 1 place, below massif's threshold (1.00%)
+    n0: 16 in 1 place, below massif's threshold (1.00%)
+  n0: 16 in 1 place, below massif's threshold (1.00%)
+ n0: 85281 in 133 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=49
+#-----------
+time=260844599
+mem_heap_B=9321057
+mem_heap_extra_B=1655583
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=50
+#-----------
+time=264345132
+mem_heap_B=9738465
+mem_heap_extra_B=1759935
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=51
+#-----------
+time=267845394
+mem_heap_B=10155873
+mem_heap_extra_B=1864303
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=52
+#-----------
+time=271345683
+mem_heap_B=10573281
+mem_heap_extra_B=1968655
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=53
+#-----------
+time=274846130
+mem_heap_B=10990785
+mem_heap_extra_B=2073031
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=54
+#-----------
+time=278347056
+mem_heap_B=11408193
+mem_heap_extra_B=2177383
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=55
+#-----------
+time=281847688
+mem_heap_B=11825793
+mem_heap_extra_B=2281783
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=56
+#-----------
+time=294149021
+mem_heap_B=17441105
+mem_heap_extra_B=2378935
+mem_stacks_B=0
+heap_tree=detailed
+n6: 17441105 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 7864320 0x40881F: __gnu_cxx::new_allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > >::allocate(unsigned long, void const*) (new_allocator.h:111)
+  n1: 7864320 0x4087CA: std::allocator_traits<std::allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > > >::allocate(std::allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > >&, unsigned long) (alloc_traits.h:436)
+   n1: 7864320 0x408521: std::_Vector_base<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >, std::allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > > >::_M_allocate(unsigned long) (stl_vector.h:172)
+    n1: 7864320 0x408048: void std::vector<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >, std::allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > > >::_M_realloc_insert<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > >(__gnu_cxx::__normal_iterator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >*, std::vector<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >, std::allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > > > >, std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >&&) (vector.tcc:406)
+     n1: 7864320 0x407F4C: void std::vector<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >, std::allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > > >::emplace_back<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > >(std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >&&) (vector.tcc:105)
+      n1: 7864320 0x407E5E: std::vector<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >, std::allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > > >::push_back(std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >&&) (stl_vector.h:954)
+       n1: 7864320 0x407E1E: InsPoint<AVLNode<int> >::add_to_copied_nodes(SafeNode<AVLNode<int> >*) (SafeTree.hpp:340)
+        n2: 7864320 0x407C61: SafeNode<AVLNode<int> >::SafeNode(InsPoint<AVLNode<int> >&, AVLNode<int>*) (SafeTree.hpp:104)
+         n1: 7864320 0x406BC7: SafeNode<AVLNode<int> >::getChild(int) (SafeTree.hpp:162)
+          n2: 7864320 0x405A4F: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+           n1: 5242880 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+            n1: 5242880 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+             n1: 5242880 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+              n1: 5242880 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+               n1: 5242880 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                n1: 5242880 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                 n1: 5242880 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                  n0: 5242880 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+           n2: 2621440 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+            n1: 2621440 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+             n2: 2621440 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+              n1: 2621440 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+               n1: 2621440 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                n1: 2621440 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                 n2: 2621440 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                  n1: 2621440 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                   n1: 2621440 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                    n1: 2621440 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                     n1: 2621440 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                      n1: 2621440 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                       n2: 2621440 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                        n2: 2621440 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                         n1: 2621440 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                          n1: 2621440 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                           n1: 2621440 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                            n1: 2621440 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                             n1: 2621440 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                              n0: 2621440 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                         n0: 0 in 1 place, below massif's threshold (1.00%)
+                        n0: 0 in 1 place, below massif's threshold (1.00%)
+                  n0: 0 in 1 place, below massif's threshold (1.00%)
+              n0: 0 in 1 place, below massif's threshold (1.00%)
+            n0: 0 in 1 place, below massif's threshold (1.00%)
+         n0: 0 in 1 place, below massif's threshold (1.00%)
+ n1: 3199968 0x40C0D1: AVLNode<int>::_insert(int, int) (avl.hpp:191)
+  n1: 3199968 0x406DC8: AVLTree<int>::insert(int, int) (avl.hpp:462)
+   n1: 3199968 0x405CA5: TreeTraversalTest() (safe_tree_test.cpp:87)
+    n1: 3199968 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+     n1: 3199968 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+      n1: 3199968 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+       n1: 3199968 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+        n1: 3199968 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+         n1: 3199968 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+          n0: 3199968 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+ n1: 3145728 0x406BA6: SafeNode<AVLNode<int> >::getChild(int) (SafeTree.hpp:162)
+  n2: 3145728 0x405A4F: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+   n2: 3145632 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+    n2: 3145536 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+     n2: 3145344 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+      n2: 3144960 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+       n2: 3144192 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+        n2: 3142656 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+         n2: 3139584 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+          n2: 3133440 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+           n2: 3121152 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+            n2: 3096576 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+             n2: 3047424 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+              n2: 2949120 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+               n2: 2752512 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                n2: 2359296 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                 n1: 1572864 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                  n1: 1572864 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                   n1: 1572864 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                    n1: 1572864 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                     n1: 1572864 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                      n1: 1572864 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                       n1: 1572864 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                        n1: 1572864 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                         n0: 1572864 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                 n1: 786432 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                  n1: 786432 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                   n1: 786432 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                    n1: 786432 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                     n1: 786432 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                      n1: 786432 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                       n1: 786432 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                        n0: 786432 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                n1: 393216 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                 n1: 393216 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                  n1: 393216 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                   n1: 393216 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                    n1: 393216 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                     n1: 393216 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                      n1: 393216 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                       n0: 393216 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+               n0: 196608 in 1 place, below massif's threshold (1.00%)
+              n0: 98304 in 1 place, below massif's threshold (1.00%)
+             n0: 49152 in 1 place, below massif's threshold (1.00%)
+            n0: 24576 in 1 place, below massif's threshold (1.00%)
+           n0: 12288 in 1 place, below massif's threshold (1.00%)
+          n0: 6144 in 1 place, below massif's threshold (1.00%)
+         n0: 3072 in 1 place, below massif's threshold (1.00%)
+        n0: 1536 in 1 place, below massif's threshold (1.00%)
+       n0: 768 in 1 place, below massif's threshold (1.00%)
+      n0: 384 in 1 place, below massif's threshold (1.00%)
+     n0: 192 in 1 place, below massif's threshold (1.00%)
+    n0: 96 in 1 place, below massif's threshold (1.00%)
+   n0: 96 in 1 place, below massif's threshold (1.00%)
+ n2: 2097216 0x407C09: SafeNode<AVLNode<int> >::SafeNode(InsPoint<AVLNode<int> >&, AVLNode<int>*) (SafeTree.hpp:99)
+  n1: 2097152 0x406BC7: SafeNode<AVLNode<int> >::getChild(int) (SafeTree.hpp:162)
+   n2: 2097152 0x405A4F: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+    n2: 2097088 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+     n2: 2097024 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+      n2: 2096896 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+       n2: 2096640 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+        n2: 2096128 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+         n2: 2095104 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+          n2: 2093056 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+           n2: 2088960 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+            n2: 2080768 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+             n2: 2064384 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+              n2: 2031616 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+               n2: 1966080 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                n2: 1835008 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                 n2: 1572864 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                  n1: 1048576 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                   n1: 1048576 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                    n1: 1048576 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                     n1: 1048576 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                      n1: 1048576 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                       n1: 1048576 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                        n1: 1048576 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                         n1: 1048576 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                          n0: 1048576 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                  n1: 524288 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                   n1: 524288 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                    n1: 524288 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                     n1: 524288 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                      n1: 524288 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                       n1: 524288 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                        n1: 524288 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                         n0: 524288 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                 n1: 262144 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                  n1: 262144 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                   n1: 262144 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                    n1: 262144 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                     n1: 262144 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                      n1: 262144 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                       n1: 262144 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                        n0: 262144 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                n0: 131072 in 1 place, below massif's threshold (1.00%)
+               n0: 65536 in 1 place, below massif's threshold (1.00%)
+              n0: 32768 in 1 place, below massif's threshold (1.00%)
+             n0: 16384 in 1 place, below massif's threshold (1.00%)
+            n0: 8192 in 1 place, below massif's threshold (1.00%)
+           n0: 4096 in 1 place, below massif's threshold (1.00%)
+          n0: 2048 in 1 place, below massif's threshold (1.00%)
+         n0: 1024 in 1 place, below massif's threshold (1.00%)
+        n0: 512 in 1 place, below massif's threshold (1.00%)
+       n0: 256 in 1 place, below massif's threshold (1.00%)
+      n0: 128 in 1 place, below massif's threshold (1.00%)
+     n0: 64 in 1 place, below massif's threshold (1.00%)
+    n0: 64 in 1 place, below massif's threshold (1.00%)
+  n0: 64 in 1 place, below massif's threshold (1.00%)
+ n2: 1048592 0x407BE6: SafeNode<AVLNode<int> >::SafeNode(InsPoint<AVLNode<int> >&, AVLNode<int>*) (SafeTree.hpp:96)
+  n1: 1048576 0x406BC7: SafeNode<AVLNode<int> >::getChild(int) (SafeTree.hpp:162)
+   n2: 1048576 0x405A4F: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+    n2: 1048544 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+     n2: 1048512 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+      n2: 1048448 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+       n2: 1048320 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+        n2: 1048064 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+         n2: 1047552 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+          n2: 1046528 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+           n2: 1044480 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+            n2: 1040384 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+             n2: 1032192 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+              n2: 1015808 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+               n2: 983040 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                n2: 917504 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                 n2: 786432 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                  n1: 524288 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                   n1: 524288 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                    n1: 524288 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                     n1: 524288 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                      n1: 524288 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                       n1: 524288 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                        n1: 524288 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                         n1: 524288 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                          n0: 524288 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                  n1: 262144 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                   n1: 262144 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                    n1: 262144 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                     n1: 262144 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                      n1: 262144 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                       n1: 262144 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                        n1: 262144 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                         n0: 262144 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                 n0: 131072 in 1 place, below massif's threshold (1.00%)
+                n0: 65536 in 1 place, below massif's threshold (1.00%)
+               n0: 32768 in 1 place, below massif's threshold (1.00%)
+              n0: 16384 in 1 place, below massif's threshold (1.00%)
+             n0: 8192 in 1 place, below massif's threshold (1.00%)
+            n0: 4096 in 1 place, below massif's threshold (1.00%)
+           n0: 2048 in 1 place, below massif's threshold (1.00%)
+          n0: 1024 in 1 place, below massif's threshold (1.00%)
+         n0: 512 in 1 place, below massif's threshold (1.00%)
+        n0: 256 in 1 place, below massif's threshold (1.00%)
+       n0: 128 in 1 place, below massif's threshold (1.00%)
+      n0: 64 in 1 place, below massif's threshold (1.00%)
+     n0: 32 in 1 place, below massif's threshold (1.00%)
+    n0: 32 in 1 place, below massif's threshold (1.00%)
+  n0: 16 in 1 place, below massif's threshold (1.00%)
+ n0: 85281 in 133 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=57
+#-----------
+time=297649288
+mem_heap_B=15237313
+mem_heap_extra_B=2483335
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=58
+#-----------
+time=301149478
+mem_heap_B=15654769
+mem_heap_extra_B=2587703
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=59
+#-----------
+time=304650478
+mem_heap_B=16072225
+mem_heap_extra_B=2692063
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=60
+#-----------
+time=308151133
+mem_heap_B=16489633
+mem_heap_extra_B=2796415
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=61
+#-----------
+time=311651790
+mem_heap_B=16907137
+mem_heap_extra_B=2900791
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=62
+#-----------
+time=315152002
+mem_heap_B=17324561
+mem_heap_extra_B=3005151
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=63
+#-----------
+time=318652980
+mem_heap_B=17742049
+mem_heap_extra_B=3109519
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=64
+#-----------
+time=321892430
+mem_heap_B=18128113
+mem_heap_extra_B=3206055
+mem_stacks_B=0
+heap_tree=peak
+n6: 18128113 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 5242880 0x40881F: __gnu_cxx::new_allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > >::allocate(unsigned long, void const*) (new_allocator.h:111)
+  n1: 5242880 0x4087CA: std::allocator_traits<std::allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > > >::allocate(std::allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > >&, unsigned long) (alloc_traits.h:436)
+   n1: 5242880 0x408521: std::_Vector_base<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >, std::allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > > >::_M_allocate(unsigned long) (stl_vector.h:172)
+    n1: 5242880 0x408048: void std::vector<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >, std::allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > > >::_M_realloc_insert<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > >(__gnu_cxx::__normal_iterator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >*, std::vector<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >, std::allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > > > >, std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >&&) (vector.tcc:406)
+     n1: 5242880 0x407F4C: void std::vector<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >, std::allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > > >::emplace_back<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > >(std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >&&) (vector.tcc:105)
+      n1: 5242880 0x407E5E: std::vector<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >, std::allocator<std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> > > >::push_back(std::pair<SafeNode<AVLNode<int> >*, AVLNode<int> >&&) (stl_vector.h:954)
+       n1: 5242880 0x407E1E: InsPoint<AVLNode<int> >::add_to_copied_nodes(SafeNode<AVLNode<int> >*) (SafeTree.hpp:340)
+        n2: 5242880 0x407C61: SafeNode<AVLNode<int> >::SafeNode(InsPoint<AVLNode<int> >&, AVLNode<int>*) (SafeTree.hpp:104)
+         n1: 5242880 0x406BC7: SafeNode<AVLNode<int> >::getChild(int) (SafeTree.hpp:162)
+          n2: 5242880 0x405A4F: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+           n1: 5242880 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+            n1: 5242880 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+             n1: 5242880 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+              n1: 5242880 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+               n1: 5242880 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                n1: 5242880 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                 n1: 5242880 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                  n0: 5242880 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+           n0: 0 in 1 place, below massif's threshold (1.00%)
+         n0: 0 in 1 place, below massif's threshold (1.00%)
+ n1: 4799952 0x406BA6: SafeNode<AVLNode<int> >::getChild(int) (SafeTree.hpp:162)
+  n2: 4799952 0x405A4F: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+   n2: 4799856 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+    n2: 4799664 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+     n2: 4799280 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+      n2: 4798512 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+       n2: 4796976 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+        n2: 4793904 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+         n2: 4787760 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+          n2: 4775472 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+           n2: 4750896 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+            n2: 4701744 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+             n2: 4603440 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+              n2: 4406832 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+               n2: 4013616 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                n2: 3227184 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                 n1: 1654320 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                  n1: 1654320 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                   n1: 1654320 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                    n1: 1654320 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                     n1: 1654320 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                      n1: 1654320 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                       n1: 1654320 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                        n1: 1654320 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                         n0: 1654320 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                 n1: 1572864 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                  n1: 1572864 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                   n1: 1572864 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                    n1: 1572864 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                     n1: 1572864 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                      n1: 1572864 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                       n1: 1572864 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                        n0: 1572864 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                n1: 786432 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                 n1: 786432 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                  n1: 786432 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                   n1: 786432 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                    n1: 786432 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                     n1: 786432 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                      n1: 786432 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                       n0: 786432 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+               n1: 393216 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                n1: 393216 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                 n1: 393216 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                  n1: 393216 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                   n1: 393216 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                    n1: 393216 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                     n1: 393216 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                      n0: 393216 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+              n0: 196608 in 1 place, below massif's threshold (1.00%)
+             n0: 98304 in 1 place, below massif's threshold (1.00%)
+            n0: 49152 in 1 place, below massif's threshold (1.00%)
+           n0: 24576 in 1 place, below massif's threshold (1.00%)
+          n0: 12288 in 1 place, below massif's threshold (1.00%)
+         n0: 6144 in 1 place, below massif's threshold (1.00%)
+        n0: 3072 in 1 place, below massif's threshold (1.00%)
+       n0: 1536 in 1 place, below massif's threshold (1.00%)
+      n0: 768 in 1 place, below massif's threshold (1.00%)
+     n0: 384 in 1 place, below massif's threshold (1.00%)
+    n0: 192 in 1 place, below massif's threshold (1.00%)
+   n0: 96 in 1 place, below massif's threshold (1.00%)
+ n2: 3200032 0x407C09: SafeNode<AVLNode<int> >::SafeNode(InsPoint<AVLNode<int> >&, AVLNode<int>*) (SafeTree.hpp:99)
+  n1: 3199968 0x406BC7: SafeNode<AVLNode<int> >::getChild(int) (SafeTree.hpp:162)
+   n2: 3199968 0x405A4F: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+    n2: 3199904 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+     n2: 3199776 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+      n2: 3199520 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+       n2: 3199008 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+        n2: 3197984 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+         n2: 3195936 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+          n2: 3191840 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+           n2: 3183648 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+            n2: 3167264 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+             n2: 3134496 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+              n2: 3068960 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+               n2: 2937888 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                n2: 2675744 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                 n2: 2151456 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                  n1: 1102880 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                   n1: 1102880 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                    n1: 1102880 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                     n1: 1102880 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                      n1: 1102880 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                       n1: 1102880 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                        n1: 1102880 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                         n1: 1102880 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                          n0: 1102880 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                  n1: 1048576 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                   n1: 1048576 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                    n1: 1048576 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                     n1: 1048576 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                      n1: 1048576 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                       n1: 1048576 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                        n1: 1048576 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                         n0: 1048576 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                 n1: 524288 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                  n1: 524288 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                   n1: 524288 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                    n1: 524288 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                     n1: 524288 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                      n1: 524288 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                       n1: 524288 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                        n0: 524288 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                n1: 262144 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                 n1: 262144 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                  n1: 262144 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                   n1: 262144 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                    n1: 262144 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                     n1: 262144 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                      n1: 262144 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                       n0: 262144 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+               n0: 131072 in 1 place, below massif's threshold (1.00%)
+              n0: 65536 in 1 place, below massif's threshold (1.00%)
+             n0: 32768 in 1 place, below massif's threshold (1.00%)
+            n0: 16384 in 1 place, below massif's threshold (1.00%)
+           n0: 8192 in 1 place, below massif's threshold (1.00%)
+          n0: 4096 in 1 place, below massif's threshold (1.00%)
+         n0: 2048 in 1 place, below massif's threshold (1.00%)
+        n0: 1024 in 1 place, below massif's threshold (1.00%)
+       n0: 512 in 1 place, below massif's threshold (1.00%)
+      n0: 256 in 1 place, below massif's threshold (1.00%)
+     n0: 128 in 1 place, below massif's threshold (1.00%)
+    n0: 64 in 1 place, below massif's threshold (1.00%)
+  n0: 64 in 1 place, below massif's threshold (1.00%)
+ n1: 3199968 0x40C0D1: AVLNode<int>::_insert(int, int) (avl.hpp:191)
+  n1: 3199968 0x406DC8: AVLTree<int>::insert(int, int) (avl.hpp:462)
+   n1: 3199968 0x405CA5: TreeTraversalTest() (safe_tree_test.cpp:87)
+    n1: 3199968 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+     n1: 3199968 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+      n1: 3199968 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+       n1: 3199968 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+        n1: 3199968 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+         n1: 3199968 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+          n0: 3199968 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+ n2: 1600000 0x407BE6: SafeNode<AVLNode<int> >::SafeNode(InsPoint<AVLNode<int> >&, AVLNode<int>*) (SafeTree.hpp:96)
+  n1: 1599984 0x406BC7: SafeNode<AVLNode<int> >::getChild(int) (SafeTree.hpp:162)
+   n2: 1599984 0x405A4F: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+    n2: 1599952 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+     n2: 1599888 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+      n2: 1599760 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+       n2: 1599504 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+        n2: 1598992 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+         n2: 1597968 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+          n2: 1595920 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+           n2: 1591824 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+            n2: 1583632 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+             n2: 1567248 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+              n2: 1534480 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+               n2: 1468944 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                n2: 1337872 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                 n2: 1075728 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                  n1: 551440 0x405A5B: tree_validate(AVLNode<int>*, SafeNode<AVLNode<int> >*) (safe_tree_test.cpp:50)
+                   n1: 551440 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                    n1: 551440 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                     n1: 551440 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                      n1: 551440 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                       n1: 551440 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                        n1: 551440 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                         n1: 551440 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                          n0: 551440 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                  n1: 524288 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                   n1: 524288 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                    n1: 524288 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                     n1: 524288 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                      n1: 524288 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                       n1: 524288 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                        n1: 524288 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                         n0: 524288 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                 n1: 262144 0x405DC1: TreeTraversalTest() (safe_tree_test.cpp:102)
+                  n1: 262144 0x40661F: ____C_A_T_C_H____T_E_S_T____0() (safe_tree_test.cpp:182)
+                   n1: 262144 0x429A79: Catch::RunContext::invokeActiveTestCase() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                    n1: 262144 0x427BD4: Catch::RunContext::runCurrentTest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                     n1: 262144 0x426E4B: Catch::RunContext::runTest(Catch::TestCase const&) (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                      n1: 262144 0x42D6CF: Catch::Session::runInternal() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                       n1: 262144 0x42C798: Catch::Session::run() (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                        n0: 262144 0x442246: main (in /mnt/c/Users/Sotiris/documents/projects/thesis/gith/RcuHTMParallelTrees/src/safe_tree_test)
+                n0: 131072 in 1 place, below massif's threshold (1.00%)
+               n0: 65536 in 1 place, below massif's threshold (1.00%)
+              n0: 32768 in 1 place, below massif's threshold (1.00%)
+             n0: 16384 in 1 place, below massif's threshold (1.00%)
+            n0: 8192 in 1 place, below massif's threshold (1.00%)
+           n0: 4096 in 1 place, below massif's threshold (1.00%)
+          n0: 2048 in 1 place, below massif's threshold (1.00%)
+         n0: 1024 in 1 place, below massif's threshold (1.00%)
+        n0: 512 in 1 place, below massif's threshold (1.00%)
+       n0: 256 in 1 place, below massif's threshold (1.00%)
+      n0: 128 in 1 place, below massif's threshold (1.00%)
+     n0: 64 in 1 place, below massif's threshold (1.00%)
+    n0: 32 in 1 place, below massif's threshold (1.00%)
+  n0: 16 in 1 place, below massif's threshold (1.00%)
+ n0: 85281 in 133 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=65
+#-----------
+time=325392617
+mem_heap_B=16786673
+mem_heap_extra_B=2870631
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=66
+#-----------
+time=328892903
+mem_heap_B=15445281
+mem_heap_extra_B=2535263
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=67
+#-----------
+time=332393090
+mem_heap_B=14103857
+mem_heap_extra_B=2199911
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=68
+#-----------
+time=335893376
+mem_heap_B=12762465
+mem_heap_extra_B=1864559
+mem_stacks_B=0
+heap_tree=empty

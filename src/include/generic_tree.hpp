@@ -46,8 +46,6 @@ class StackOverflowError {
         };
 };
 
-
-
 template <class NodeType>
 class SearchTreeStack{
  private:
@@ -100,58 +98,60 @@ class SearchTreeStack{
 };
 
 
-
-// template <class NodeType>
-// class SearchTreeStackWithIndex{
-//     private:
-//         NodeType **stack;
-//         int currentIndex; 
-//     public:
-//         //SearchTreeStack used to traverse tree structures
-//         SearchTreeStackWithIndex() {
-//                 this->stack = new std::pair<NodeType*,int>[STACK_DEPTH];
-//                 this->currentIndex = -1;
-//             };
+/* NOT NEEDED YET
+template <class NodeType>
+class SearchTreeStackWithIndex{
+    private:
+        NodeType **stack;
+        int currentIndex; 
+    public:
+        //SearchTreeStack used to traverse tree structures
+        SearchTreeStackWithIndex() {
+                this->stack = new std::pair<NodeType*,int>[STACK_DEPTH];
+                this->currentIndex = -1;
+            };
         
-//         ~SearchTreeStackWithIndex(){
-//             delete [] stack;
-//         }
+        ~SearchTreeStackWithIndex(){
+            delete [] stack;
+        }
 
-//         inline std::pair<NodeType*,int> *bottom() {
-//             if (currentIndex == -1) {
-//                 return nullptr;
-//             }
+        inline std::pair<NodeType*,int> *bottom() {
+            if (currentIndex == -1) {
+                return nullptr;
+            }
 
-//             return stack[0];
-//         }
+            return stack[0];
+        }
         
 
-//         //push pushes a node into the stack
-//         //and stores the index of the next child
-//         inline void push(NodeType *node, int index) {
-//             currentIndex++;
+        //push pushes a node into the stack
+        //and stores the index of the next child
+        inline void push(NodeType *node, int index) {
+            currentIndex++;
 
-//             if (currentIndex > STACK_DEPTH) {
-//                 throw StackOverflowError(currentIndex,STACK_DEPTH);
-//             }
+            if (currentIndex > STACK_DEPTH) {
+                throw StackOverflowError(currentIndex,STACK_DEPTH);
+            }
 
-//             stack[currentIndex] = std::pair<NodeType*,int>(node,index);
-//         };
-//         //pop removes an element from the top of the stack
-//         //and returns the element
-//         std::pair<NodeType*,int> pop() {
-//             if (currentIndex < 0) {
-//                 return std::pair<NodeType*,int>(nullptr,-1);
-//             } 
+            stack[currentIndex] = std::pair<NodeType*,int>(node,index);
+        };
+        //pop removes an element from the top of the stack
+        //and returns the element
+        std::pair<NodeType*,int> pop() {
+            if (currentIndex < 0) {
+                return std::pair<NodeType*,int>(nullptr,-1);
+            } 
 
-//             return stack[currentIndex--];
-//         };
-//         //Empty returns true if stack is empty, else false
-//         bool Empty() {
-//             return currentIndex == -1;
-//         };
+            return stack[currentIndex--];
+        };
+        //Empty returns true if stack is empty, else false
+        bool Empty() {
+            return currentIndex == -1;
+        };
 
-// };
+};
+
+*/
 
 
 #endif

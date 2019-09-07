@@ -42,14 +42,14 @@ class AVLNode
         setR(right);
     };
 
-    inline static int nChildren() {
+    static int nChildren() {
         return 2;
     }
 
 
 
 
-    static inline int nodeBalance(AVLNode *node) {
+    static int nodeBalance(AVLNode *node) {
         if (!node) {
             return 0;
         }
@@ -63,7 +63,7 @@ class AVLNode
         return l_height - r_height;
     };
 
-    static inline unsigned int maxheight(AVLNode *l, AVLNode *r) {
+    static unsigned int maxheight(AVLNode *l, AVLNode *r) {
         int l_height = l ? l->height: 0;
         int r_height = r ? r->height: 0;
 
@@ -74,20 +74,20 @@ class AVLNode
         return r_height;
     };
 
-    inline AVLNode* getL() {return children[0];};
+    AVLNode* getL() {return children[0];};
 
-    inline AVLNode* getR() {return children[1];};
+    AVLNode* getR() {return children[1];};
 
-    inline void setL(AVLNode *newNode) {children[0] = newNode;};
+    void setL(AVLNode *newNode) {children[0] = newNode;};
 
-    inline void setR(AVLNode *newNode) {children[1] = newNode;};
+    void setR(AVLNode *newNode) {children[1] = newNode;};
 
-    inline AVLNode* getChild(int n) {
+    AVLNode* getChild(const int n) {
         assert(n >=0 && n < nChildren() );
         return children[n];
     }
 
-    inline void setChild(int n, AVLNode * node_to_set) {
+    void setChild(const int n, AVLNode * node_to_set) {
         assert(n >=0 && n < nChildren() );
         children[n] = node_to_set;
     }

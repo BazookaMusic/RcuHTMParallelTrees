@@ -16,6 +16,9 @@
 // to avoid having to redeclare in every test
 std::string test_string;
 
+const unsigned int N_INSERT = 1000000;
+const unsigned int N_REMOVES = 1000000;
+
 
 bool avlCreation() {
     auto avlnode = new AVLNode<int>(12, 12, nullptr, nullptr);
@@ -67,22 +70,22 @@ bool StackTest() {
 
 
 bool insertTest() {
-    const unsigned int NUM_ITEMS = 10000;
+    
 
     std::ostringstream testss;
 
     testss << "TESTING INSERTS "
-            << "WITH NUMBER OF INSERTIONS = " << NUM_ITEMS << ":";
+            << "WITH NUMBER OF INSERTIONS = " << N_INSERT << ":";
 
     std::cout<< testss.str();
 
 
     auto tree = AVLTree<int>();
-    for (unsigned int i = 0; i < NUM_ITEMS; i++) {
+    for (unsigned int i = 0; i < N_INSERT; i++) {
          tree.insert(i, 1);
     }
 
-    for (unsigned i = 0; i < NUM_ITEMS; i++) {
+    for (unsigned i = 0; i < N_INSERT; i++) {
         if (!tree.lookup(i)) return false;
     }
 
@@ -98,33 +101,32 @@ bool insertTest() {
 
 
 bool removeTest() {
-    const unsigned int NUM_ITEMS = 20;
 
     std::ostringstream testss;
 
     testss << "TESTING REMOVES "
-        << "WITH NUMBER OF INSERTIONS = " <<  NUM_ITEMS / 2 << ":";
+        << "WITH NUMBER OF INSERTIONS = " <<  N_REMOVES / 2 << ":";
 
     std::cout << testss.str();
     auto tree = AVLTree<int>();
-    for (unsigned int i = 0; i < NUM_ITEMS; i++) {
+    for (unsigned int i = 0; i < N_REMOVES; i++) {
          tree.insert(i, 1);
     }
 
-    for (unsigned i = 0; i < NUM_ITEMS; i++) {
+    for (unsigned i = 0; i < N_REMOVES; i++) {
         if (!tree.lookup(i)) return false;
     }
 
 
-    for (unsigned int i = 0; i < NUM_ITEMS / 2; i++) {
+    for (unsigned int i = 0; i < N_REMOVES / 2; i++) {
         tree.remove(i);
     }
 
-    for (unsigned i = 0; i < NUM_ITEMS / 2; i++) {
+    for (unsigned i = 0; i < N_REMOVES / 2; i++) {
         if (tree.lookup(i)) return false;
     }
 
-    for (unsigned i = NUM_ITEMS / 2; i < NUM_ITEMS; i++) {
+    for (unsigned i = N_REMOVES / 2; i < N_REMOVES; i++) {
         if (!tree.lookup(i)) return false;
     }
 
@@ -161,9 +163,9 @@ typedef AVLNode<int> testNode;
 // bool genericNodeTest() {
 //     test_string = "Testing creation";
 //     std::cout << test_string;
-//     const unsigned int NUM_ITEMS = 20;
+//     const unsigned int N_INSERT = 20;
 //     auto tree = AVLTree<int>();
-//     for (unsigned int i = 0; i < NUM_ITEMS; i++)
+//     for (unsigned int i = 0; i < N_INSERT; i++)
 //     {
 //          tree.insert(i,1);
 //     }

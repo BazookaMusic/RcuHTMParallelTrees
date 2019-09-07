@@ -3,11 +3,14 @@
 
 
 #include <memory>
-#include <unordered_map>
-#include <tuple>
 
+#include <tuple>
+#include <iostream>
+#include <vector>
+#include <deque>
 
 #include "generic_tree.hpp"
+// #include "tsl/robin_map.h"
 
 /* SafeTrees require Nodes with the following methods
  1. A default empty constructor
@@ -27,15 +30,17 @@ class InsPoint;
 template <class NodeType>
 class SafeNode
 {
+    friend class InsPoint<NodeType>;
     private:
         InsPoint<NodeType>& ins_point;
-        NodeType* original;
+        NodeType* const original;
         NodeType* copy;
-        int nChildren;
-        SafeNode** children;
+        const int nChildren;
+        SafeNode** const children;
+        bool deleted;
 
         
-        void deep_delete() {
+        void node_delete() {
             if (!this) {
                 return;
             }
@@ -44,26 +49,59 @@ class SafeNode
             ~SafeNode();
         }
 
-        // delete previous and move new value
-        static void move(SafeNode<NodeType*>& to_be_replaced, SafeNode<NodeType*> replacement) {
-            to_be_replaced.deep_delete();
+        // mark previous for deletion and move new value
+        static SafeNode<NodeType>* move(SafeNode<NodeType>*& to_be_replaced, SafeNode<NodeType>* replacement) {
+
+            auto temp = to_be_replaced;
+
+            if (to_be_replaced) {
+                // mark for deletion
+                to_be_replaced->deleted = true;
+            }
+            
+
+            // replace value
             to_be_replaced = replacement;
+
+            return temp;
         }
+
+        
+        static void sub_tree_delete(SafeNode<NodeType>* root) {
+            if (!root) {
+                return;
+            }
+
+            for (int i = 0; i < root->nChildren; i++)
+            {
+                sub_tree_delete(root->children[i]);
+            }
+            
+            root->deleted = true;
+            delete root;
+        }
+
     
     public:
         SafeNode(){};
         ~SafeNode() {
             delete [] children;
+
+            if (deleted) {
+                delete copy;
+            }
         }
         SafeNode(InsPoint<NodeType>& _ins_point, NodeType* _original): 
         ins_point(_ins_point), original(_original),
-        nChildren(original->nChildren()), children(new SafeNode*[nChildren]) {
+        nChildren(original->nChildren()), children(new SafeNode*[nChildren]),
+        deleted(false) {
             if (original) {
                 copy = new NodeType();
                 *copy = *original;
                 // keep old reference and new reference
                 // for validation
-                ins_point.hash_insert(original);
+                //ins_point.hash_insert(original);
+                ins_point.add_to_copied_nodes(this);
             }
 
             for (int i = 0; i < nChildren; i++)
@@ -75,27 +113,28 @@ class SafeNode
         };
 
 
+
         int children_length() {
             return nChildren;
         }
 
-        //getOriginal used to access original
-        //node (any modifications are not guaranteed thread safe)
+        // getOriginal: used to access original
+        // node (any modifications are not guaranteed thread safe)
         NodeType* getOriginal() {
             return original;
         }
 
-        //get reference to safe copy of node,
-        //can be modified freely
-        //as only one thread has access to it
+        // safeRef: get reference to safe copy of node,
+        // can be modified freely
+        // as only one thread has access to it
         NodeType* safeRef() {
             return copy;
         }
 
 
-        //getChild, returns either an already linked SafeNode
+        //getChild: returns either an already linked SafeNode
         //or creates a new SafeNode when accessing an unsafe node
-        SafeNode<NodeType>* getChild(int child_pos) {
+        SafeNode<NodeType>* getChild(const int child_pos) {
             /* process:
             A SafeNode without set children will have nullptr in
             its array. When getting the child of a SafeNode:
@@ -107,6 +146,7 @@ class SafeNode
             // no oob errors
             assert(child_pos >= 0 && child_pos < nChildren);
             
+            
             //child has already been copied
             if (children[child_pos]) {
                 return children[child_pos];
@@ -114,10 +154,12 @@ class SafeNode
 
             SafeNode<NodeType>* new_safe = nullptr;
 
+            const auto original_child = original->getChild(child_pos);
+
             //child not copied yet,
             //copy and use the copy from now on
-            if (original->getChild(child_pos)) {
-                new_safe = new SafeNode<NodeType>(ins_point ,original->getChild(child_pos));
+            if (original_child) {
+                new_safe = new SafeNode<NodeType>(ins_point , original_child);
                 children[child_pos] = new_safe;
             }
            
@@ -125,62 +167,104 @@ class SafeNode
             return new_safe;
         }
 
-        // setChild, sets the child with index child_pos
+        // setChild: sets the child with index child_pos
         // to be the SafeNode newVal.
-        // Deletes previous node.
-        void setChild(int child_pos, SafeNode<NodeType>* newVal) {
+        // Returns unique pointer to deleted node to
+        // be used for manual memory management 
+        // (eg. deleting the entire subtree)
+        std::unique_ptr<SafeNode<NodeType>> setChild(int child_pos, SafeNode<NodeType>* newVal) {
             // no oob errors
             assert(child_pos >= 0 && child_pos < nChildren);
 
-            
+            auto child = children[child_pos];
+
+            if (!child) {
+                children[child_pos] = newVal;
+                copy->setChild(child_pos, newVal? newVal->safeRef() : nullptr);
+                return nullptr;
+            }
+
+            SafeNode<NodeType>* old_node = child;
 
             // update children of safe node
             // old node is deleted
             move(children[child_pos], newVal);
 
             // connect copy pointer, replace with new
-            copy->setChild(child_pos,newVal? newVal->safeRef() : nullptr);
-           
+            copy->setChild(child_pos, newVal? newVal->safeRef() : nullptr);
+
+            return old_node? std::unique_ptr<SafeNode<NodeType>>(old_node): nullptr;;
         }
 
         
-        // setChild, sets the child with index child_pos
+        // setNewChild: sets the child with index child_pos
         // to be a new SafeNode.
         // Accepts a pointer to an unsafe node.
-        // Deletes previous node.
-        void setNewChild(int child_pos, NodeType* newVal) {
+        // Returns unique pointer to deleted node to
+        // be used for manual memory management (eg. deleting the entire subtree)
+        std::unique_ptr<SafeNode<NodeType>> setNewChild(int child_pos, NodeType* newVal) {
             // no oob errors
             assert(child_pos >= 0 && child_pos < nChildren);
+
+            auto child = children[child_pos];
 
             SafeNode<NodeType>* new_safe_node = nullptr;
 
             if (newVal) {
-                // wrap
-               
-
                 // update children of safe node
                 // by updating child unique pointer
                 // old SafeNode is deleted
                 new_safe_node = make_safe(newVal);
-                move(children[child_pos], new_safe_node);
+            } 
+
+            if (!child) {
+                children[child_pos] = new_safe_node;
+                copy->setChild(child_pos, new_safe_node? new_safe_node->safeRef() : nullptr);
+                return nullptr;
             }
 
-            // connect copy pointer
+            SafeNode<NodeType>* old_node = child;
+
+            // update children of safe node
+            // old node is deleted
+            move(children[child_pos], new_safe_node);
+
+            // connect copy pointer, replace with new
             copy->setChild(child_pos, new_safe_node? new_safe_node->safeRef() : nullptr);
+
+            return old_node? std::unique_ptr<SafeNode<NodeType>>(old_node): nullptr;;
+
         }
 
-        // use to create a SafeNode from a normal node,
+        // clipTree: delete entire subtree with
+        // the child at position child_pos as root
+        void clipTree(int child_pos) {
+            assert(child_pos >= 0 && child_pos < nChildren);
+
+            if (children[child_pos]) {
+                children[child_pos]->subtreeDelete();
+            }
+
+            children[child_pos] = nullptr;
+        }
+        
+        // subtreeDelete: delete subtree rooted at this node
+        void subtreeDelete() {
+            sub_tree_delete(this); 
+        }
+
+        // make_safe: use to create a SafeNode from a normal node,
         // returns nullptr if nullptr is given.
-        SafeNode<NodeType> make_safe(NodeType* some_node) {
+        SafeNode<NodeType>* make_safe(NodeType* some_node) {
             if (!some_node) {
                 return nullptr;
             }
 
-            return new SafeNode<NodeType>(*this, some_node); 
+            return new SafeNode<NodeType>(ins_point, some_node); 
         }
 
         // make copy of SafeNode
-        SafeNode<NodeType>* make_copy(SafeNode<NodeType>* a_safe_node) {
+        SafeNode<NodeType>* clone(SafeNode<NodeType>* a_safe_node) {
             if (!a_safe_node) {
                 return nullptr;
             }
@@ -196,39 +280,29 @@ template <class NodeType>
 class InsPoint
 {
     typedef SearchTreeStack<NodeType> Stack;
+    using NodePair = std::pair<SafeNode<NodeType>*,NodeType>;
 
     private:
-        std::unordered_map<NodeType*,NodeType> orig_copy_map;
+        std::deque<NodePair> copied_nodes;
         SafeNode<NodeType>* head;
         int child_to_exchange;
-        std::unique_ptr<Stack> path_to_ins_point;
-        
-
+        Stack& path_to_ins_point;
 
 
     public:
-        InsPoint(NodeType* ins_node, std::unique_ptr<Stack>& path): 
-        orig_copy_map(std::unordered_map<NodeType*,NodeType>{}), head(new SafeNode<NodeType>(*this, ins_node))
-        {
-            path_to_ins_point = std::move(path);
-        };
+        InsPoint(NodeType* ins_node, Stack& path): 
+        head(new SafeNode<NodeType>(*this, ins_node)),
+        path_to_ins_point(path)
+        {};
+
+        ~InsPoint() {
+            //cleanup_tree(head);
+            for (auto it = copied_nodes.begin(); it != copied_nodes.end(); ++it)  {
+                delete it->first;
+            }
+
+        }
         
-
-        // static void recursive_delete(SafeNode<NodeType>* a_node) {
-        //     if (!a_node) {
-        //         return;
-        //     }
-
-        //     for (int i = 0; i < a_node->children_length(); i++ ) {
-        //         recursive_delete(a_node->children[i]);
-        //     }
-
-        //     delete a_node;
-        // }
-
-        // ~InsPoint() {
-        //     recursive_delete(head);
-        // }
 
         // get head
         SafeNode<NodeType>* get_head() {
@@ -237,10 +311,14 @@ class InsPoint
 
         
 
-
+        /*
         void hash_insert(NodeType* orig) {
             orig_copy_map.insert(std::make_pair(orig,*orig)); 
 
+        } */
+
+        void add_to_copied_nodes(SafeNode<NodeType>* a_node) {
+            copied_nodes.push_back(std::make_pair(a_node, *(a_node->original)));
         }
 
         // connect created tree copy by exchanging proper parent pointer
