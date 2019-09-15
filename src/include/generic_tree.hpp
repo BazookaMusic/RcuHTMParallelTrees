@@ -2,6 +2,9 @@
     #define GENERIC_TREE_HPP
 
 #include <tuple>
+#include <deque>
+#include <sstream>
+
 
 
 template <class T>
@@ -35,31 +38,34 @@ class SearchTree
 
 
 const int STACK_DEPTH = 64;
-class StackOverflowError {
+class StackOverflowError: public std::exception {
     private:
-    int maxDepth, attemptedDepth;
+     int maxDepth, attemptedDepth;
 
     public:
-    StackOverflowError(int maxDepth, int attemptedDepth) {
-        this->maxDepth = maxDepth;
-        this->attemptedDepth = attemptedDepth;
-        };
+     StackOverflowError(int maxDepth, int attemptedDepth): maxDepth(maxDepth),attemptedDepth(attemptedDepth) {};
+
+	 const char * what () const throw ()
+     {
+         std::ostringstream stringStream;
+         stringStream << "Stack Overflow: Max Depth was:" << maxDepth << " and tried to insert " << attemptedDepth << " elements";
+        
+     	 return stringStream.str().data();
+     }
+
+    
 };
 
 template <class NodeType>
-class SearchTreeStack{
+class TreePathStack{
  private:
-        NodeType **stack;
+        NodeType* stack[STACK_DEPTH];
         int currentIndex; 
  public:
-        //SearchTreeStack used to traverse tree structures
-        SearchTreeStack() {
-                this->stack = new NodeType*[STACK_DEPTH];
-                this->currentIndex = -1;
-            };
+        //TreePathStack used to traverse tree structures
+        TreePathStack(): currentIndex(-1) {};
         
-        ~SearchTreeStack(){
-            delete [] stack;
+        ~TreePathStack(){
         }
 
         NodeType *bottom() {
@@ -68,6 +74,10 @@ class SearchTreeStack{
             }
 
             return stack[0];
+        }
+
+        NodeType** stack_contents() {
+            return stack;
         }
         
 
@@ -97,21 +107,68 @@ class SearchTreeStack{
 
 };
 
+/*
+
+Infinite stack
+for when path size is not enough 
+
+*/
+template <class NodeType>
+class NodeStack{
+ private:
+        std::deque<NodeType*> stack;
+        int currentIndex; 
+ public:
+        //TreePathStack used to traverse tree structures
+        NodeStack(): currentIndex(-1) {};
+        
+
+        NodeType* bottom() {
+            if (currentIndex == -1) {
+                return nullptr;
+            }
+
+            return stack[0];
+        }
+        
+
+        //push pushes a node into the stack
+        void push(NodeType *node) {
+            stack[++currentIndex] = node;
+        };
+        //pop removes an element from the top of the stack
+        //and returns the element
+        NodeType* pop() {
+            if (currentIndex < 0) {
+                return nullptr;
+            } 
+
+            return stack[currentIndex--];
+        };
+        //Empty returns true if stack is empty, else false
+        bool Empty() {
+            return currentIndex == -1;
+        };
+
+};
+
+
+
 
 /* NOT NEEDED YET
 template <class NodeType>
-class SearchTreeStackWithIndex{
+class TreePathStackWithIndex{
     private:
         NodeType **stack;
         int currentIndex; 
     public:
-        //SearchTreeStack used to traverse tree structures
-        SearchTreeStackWithIndex() {
+        //TreePathStack used to traverse tree structures
+        TreePathStackWithIndex() {
                 this->stack = new std::pair<NodeType*,int>[STACK_DEPTH];
                 this->currentIndex = -1;
             };
         
-        ~SearchTreeStackWithIndex(){
+        ~TreePathStackWithIndex(){
             delete [] stack;
         }
 

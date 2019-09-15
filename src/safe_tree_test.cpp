@@ -3,29 +3,31 @@
 #include <iostream>
 #include <ctime>
 #include <thread>
+#include <deque>
 
 #include "include/avl.hpp"
 #include "include/catch.hpp"
 #include "include/SafeTree.hpp"
 #include "include/urcu.hpp"
 
+
 #include "utils/test_helpers.cpp"
-#include "include/tsl/robin_map.h"
+
 
 using TestNode = AVLNode<int>; 
-const int INSERT_N = 10000000;
+const int INSERT_N = 1000000;
 
 
 
 bool InsPointCreationTest() {
     auto a = new AVLNode<int>(1,2,nullptr,nullptr);
 
-    auto myPath = SearchTreeStack<AVLNode<int>>();
+    auto myPath = TreePathStack<AVLNode<int>>();
 
-    InsPoint<AVLNode<int>> ins = InsPoint<AVLNode<int>>(a,myPath);
+    InsPoint<AVLNode<int>> ins(a,myPath);
 
     // check if original pointer is properly saved
-    if (ins.get_head()->getOriginal() == a)
+    if (ins.getHead()->getOriginal() == a)
     {
         return true;
     }
@@ -57,7 +59,14 @@ bool tree_validate(TestNode* root, SafeNode<TestNode>* safe_root) {
     return root == safe_root->getOriginal();
 }
 
-void tree_copy(TestNode* root, TestNode* real_root, tsl::robin_map<TestNode*,TestNode>& map) {
+void tree_trav_copy(SafeNode<TestNode>* safe_root) {
+    if (!safe_root) {return;}
+
+    tree_trav_copy(safe_root->getChild(0));
+    tree_trav_copy(safe_root->getChild(1));
+}
+
+void tree_copy(TestNode* root, TestNode* real_root, std::deque<std::pair<TestNode*,TestNode>>& deq) {
     if (!root) {
         return;
     }
@@ -71,10 +80,10 @@ void tree_copy(TestNode* root, TestNode* real_root, tsl::robin_map<TestNode*,Tes
         real_root = copy;
     }
 
-    map.insert(std::make_pair(root,*root));
+    deq.push_back(std::make_pair(root,*root));
 
-    tree_copy(left, real_root, map);
-    tree_copy(right, real_root, map);
+    tree_copy(left, real_root, deq);
+    tree_copy(right, real_root, deq);
 
 }
 
@@ -88,18 +97,19 @@ bool TreeTraversalTest() {
     }
    
 
-    auto myPath = SearchTreeStack<AVLNode<int>>();
+    auto myPath = TreePathStack<AVLNode<int>>();
 
-    InsPoint<AVLNode<int>> ins = InsPoint<AVLNode<int>>(tree.getRoot(),myPath);
+    InsPoint<AVLNode<int>> ins(tree.getRoot(),myPath);
 
-    auto root = ins.get_head()->getOriginal();
+    auto root = ins.getHead()->getOriginal();
 
     if (root != tree.getRoot()) {
         return false;
     }
 
-
-    return tree_validate(root, ins.get_head());
+    tree_trav_copy(ins.getHead());
+    return true;
+   // return tree_validate(root, ins.getHead());
 }
 
 void build(SafeNode<TestNode>* safe_root) {
@@ -110,7 +120,6 @@ void build(SafeNode<TestNode>* safe_root) {
         safe_root->setNewChild(1, new TestNode(1,2,nullptr,nullptr));
         safe_root = safe_root->getChild(0);
     }
-    
     
 }
 
@@ -135,18 +144,18 @@ bool TreeBuildTest() {
     }
     
 
-    auto myPath = SearchTreeStack<AVLNode<int>>();
+    auto myPath = TreePathStack<AVLNode<int>>();
 
-    InsPoint<AVLNode<int>> ins = InsPoint<AVLNode<int>>(tree.getRoot(),myPath);
+    InsPoint<AVLNode<int>> ins(tree.getRoot(),myPath);
 
-    auto root = ins.get_head()->getOriginal();
+    auto root = ins.getHead()->getOriginal();
 
     if (root != tree.getRoot()) {
         return false;
     }
 
 
-    return tree_build(ins.get_head());
+    return tree_build(ins.getHead());
 }
 
 
@@ -158,19 +167,23 @@ bool TreeCopyTest() {
         tree.insert(i,i);
     }
 
-    auto myPath = SearchTreeStack<AVLNode<int>>();
+    auto myPath = TreePathStack<AVLNode<int>>();
 
-    InsPoint<AVLNode<int>> ins = InsPoint<AVLNode<int>>(tree.getRoot(),myPath);
+    InsPoint<AVLNode<int>> ins(tree.getRoot(),myPath);
 
-    auto root = ins.get_head()->getOriginal();
+    auto root = ins.getHead()->getOriginal();
 
     if (root != tree.getRoot()) {
         return false;
     }
 
-    tsl::robin_map<TestNode*,TestNode> a_map;
+   std::deque<std::pair<TestNode*,TestNode>> deq;
 
-    tree_copy(root, nullptr, a_map);
+    tree_copy(root, nullptr, deq);
+
+     for (auto it = deq.begin(); it != deq.end(); ++it)  {
+        delete it->first;
+    }
 
 
     return true;
@@ -178,10 +191,11 @@ bool TreeCopyTest() {
 
 
 TEST_CASE("InsPointCreationTest Test", "[rcu]") {
-    std::cout << "InsPoint Creation TEST" <<std::endl;
+    std::cout << "InsPoint Creation Test" <<std::endl;
     REQUIRE(InsPointCreationTest());
-    std::cout << "InsPoint Traversal TEST" <<std::endl;
-    //REQUIRE(TreeTraversalTest());
+    std::cout << "InsPoint Traversal Test" <<std::endl;
+    REQUIRE(TreeTraversalTest());
+    std::cout << "InsPoint New Tree Test" <<std::endl;
     REQUIRE(TreeBuildTest());
     //REQUIRE_NOTHROW(TreeCopyTest());
 }

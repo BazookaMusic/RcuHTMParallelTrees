@@ -1,10 +1,16 @@
 // Copyright 2019 Sotiris Dragonas
-#ifndef URCU_SRC_INCLUDE_URCU_HPP_
-    #define URCU_SRC_INCLUDE_URCU_HPP_
+#ifndef USERSPACERCU_INCLUDE_URCU_HPP_
+    #define USERSPACERCU_INCLUDE_URCU_HPP_
 
-    #include <assert.h>
+    // used for line sharing
+    #ifndef URCU_CACHE_SIZE
+        #define URCU_CACHE_LINE 64
+    #endif
+
+    #include <cassert>
     #include <atomic>
     #include <iostream>
+    #include <memory>
 
 
     typedef struct RCUNode {
@@ -15,27 +21,24 @@
     class RCU;
 
 
-
-
     class RCULock {
      private:
             const int index;
             RCUNode** _rcu_table;
             const int threads;
-            std::atomic<int64_t>* time;
+            bool valid;
 
      public:
-            RCULock(const int i, RCUNode** rcu_table, const int threads):
-             index(i), _rcu_table(rcu_table), threads(threads) {
-                assert(threads > 0 && index < threads && _rcu_table[index]);
-                time = &_rcu_table[index]->time;
-                _rcu_table[index]->time += 1;
-            }
+        RCULock(const RCULock&) = delete;
+        
+        RCULock(RCULock&& a_lock);
 
-            ~RCULock() {
-                assert(threads > 0 && index < threads && _rcu_table[index]);
-                *time |= 1;
-            }
+        RCULock& operator=(const RCULock&) = delete;
+
+        // RCULock: Read locks its scope after its creation,
+        // unlocks when out of scope
+        RCULock(const int i, RCUNode** rcu_table, const int threads);
+        ~RCULock(void);
     };
 
 
@@ -50,25 +53,18 @@
             RCUNode** rcu_table;
 
      public:
-            explicit RCU(int num_threads): threads(num_threads) {
-                rcu_table = new RCUNode*[threads];
+            RCU(const RCU&) = delete;
+            RCU& operator=(const RCU&) = delete;
 
-                RCUNode* new_node;
-                for (int i = 0; i < threads; i++) {
-                    new_node = new RCUNode;
-                    new_node->time = 1;
-                    rcu_table[i] = new_node;
-                }
-            }
+            // RCU: Allows registering threads for read locking
+            // and synchronizing writes
+            explicit RCU(int num_threads);
 
-            ~RCU() {
-                for (int i = 0; i < threads; i++) {
-                    delete rcu_table[i];
-                }
-
-                delete [] rcu_table;
-            }
-
+            ~RCU();
+            // urcu_register_thread: register a thread to the rcu service
+            // and return an object to create read locks and synchronize
+            // with readers. thread_id should be unique and between 0 and
+            // number of threads
             RCUSentinel urcu_register_thread(int thread_id);
     };
 
@@ -79,46 +75,32 @@
             int64_t *times;
 
      public:
-            RCUSentinel(const int thread_id, const RCU* _rcu): index(thread_id), rcu(_rcu) {
-                assert(rcu);
-                times = new int64_t[rcu->threads];
-            }
+            RCUSentinel& operator=(const RCUSentinel&) = delete;
+            RCUSentinel(const RCUSentinel&) = delete;
 
-            ~RCUSentinel() {
-                delete [] times;
-            }
+            // only move constructor
+            RCUSentinel(RCUSentinel&& a_sentinel);
+           
+
+            // RCUSentinel: allows a registered thread to
+            // create RCULocks and to wait for previously
+            // created locks. Requires a unique id for each thread
+            // from 0 to number of threads - 1. Non-unique ids
+            // will cause undefined behavior.
+            RCUSentinel(const int id, const RCU* _rcu);
+
+            ~RCUSentinel();
 
 
-
-            // RCULock object creates a read lock,
-            // which is released when it goes out of scope
-            // or it's destructor is called
+            // urcu_read_lock: Create an RCULock object for
+            // the registered thread
             RCULock urcu_read_lock() {
                 return RCULock(index, rcu->rcu_table, rcu->threads);
             }
 
-
-            void urcu_synchronize() {
-                for (int i = 0; i < rcu->threads; i++) {
-                    times[i] =
-                        rcu->rcu_table[i]->time.load(std::memory_order_relaxed);
-                }
-
-                for (int i = 0; i < rcu->threads; i++) {
-                    if (times[i] & 1) continue;
-                    for (;;) {
-                        int64_t t =
-                            rcu->
-                                rcu_table[i]->
-                                    time.load(std::memory_order_relaxed);
-
-                        if (t & 1 || t > times[i]) {
-                            break;
-                        }
-                    }
-                }
-            }
+            // wait for previously created read locks
+            void urcu_synchronize();
     };
-#endif  // URCU_SRC_INCLUDE_URCU_HPP_
+#endif  // USERSPACERCU_INCLUDE_URCU_HPP_
 
 

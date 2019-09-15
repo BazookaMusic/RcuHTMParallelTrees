@@ -37,7 +37,7 @@ bool avlCreation() {
 
 bool StackTest() {
     AVLNode<int> *node;
-    auto stack = new SearchTreeStack<AVLNode<int>>();
+    auto stack = new TreePathStack<AVLNode<int>>();
 
 
 
@@ -170,14 +170,14 @@ typedef AVLNode<int> testNode;
 //          tree.insert(i,1);
 //     }
 
-//     std::unique_ptr<SearchTreeStack<testNode>>
-//                       myPath(new SearchTreeStack<testNode>());
+//     std::unique_ptr<TreePathStack<testNode>>
+//                       myPath(new TreePathStack<testNode>());
 
 
 //     InsPoint<testNode> in(tree.getRootPointer(), myPath);
 
 
-//     auto firstnode = in.get_head();
+//     auto firstnode = in.getHead();
 //     auto first_tree_node = tree.getRoot();
 
 //     if (firstnode->safeRef()->key != first_tree_node->key) {

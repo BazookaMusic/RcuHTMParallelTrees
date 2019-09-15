@@ -7,7 +7,7 @@
 
 
 template <class T> class AVLNode;
-template <class T> class SearchTreeStack;
+template <class T> class TreePathStack;
 
 enum Error {None, AlreadyInserted, KeyFound, KeyNotFound};
 
@@ -16,6 +16,8 @@ template <class T>
 struct OperationResult {
     AVLNode<T> *result;
     enum Error err;
+
+    OperationResult(AVLNode<T>* res, enum Error err) : result(res), err(err){};
 
 };
 
@@ -41,6 +43,11 @@ class AVLNode
         setL(left);
         setR(right);
     };
+
+    bool operator == (const AVLNode &ref) const {
+        return key == ref.key && val == ref.val && height == ref.height
+            && children[0] == ref.children[0] && children[1] == ref.children[1];
+    }
 
     static int nChildren() {
         return 2;
@@ -90,6 +97,10 @@ class AVLNode
     void setChild(const int n, AVLNode * node_to_set) {
         assert(n >=0 && n < nChildren() );
         children[n] = node_to_set;
+    }
+
+    AVLNode* nextChild(int key_to_search) {
+        return key_to_search <= key ? getL() : getR();
     }
 
 
@@ -151,12 +162,12 @@ class AVLNode
         // search for key or insertion
         // position
         //save path in stack
-        SearchTreeStack<AVLNode<T>> insertStack;
+        TreePathStack<AVLNode<T>> insertStack;
 
         for (auto curr = this; curr != nullptr;) {
             // if key was found, do not insert again
             if (curr->key == k) {
-                return OperationResult<T> {.result = nullptr, .err = AlreadyInserted};
+                return OperationResult<T>(nullptr,AlreadyInserted);
             }
 
             // catch overflow
@@ -237,16 +248,16 @@ class AVLNode
         
 
         if (n) {
-            return OperationResult<T> {.result = nullptr, .err = None};
+            return OperationResult<T>(nullptr,None);
         }  else {
-            return OperationResult<T> {.result = prev, .err = None};
+            return OperationResult<T>(prev, None);
         }
 
 
     }
 
     
-    AVLNode *_deleteNodeOneOrNoChildren(const int k,AVLNode *curr,AVLNode *parentOfDeleted) {
+    AVLNode* _deleteNodeOneOrNoChildren(const int k,AVLNode *curr,AVLNode *parentOfDeleted) {
         AVLNode *temp;
 
         temp = curr->getL() ? curr->getL() : curr->getR(); // either has left or right child
@@ -277,7 +288,7 @@ class AVLNode
 	// position
 	//save path in stack
 	auto curr = this;
-	SearchTreeStack<AVLNode<T>> deleteStack;
+	TreePathStack<AVLNode<T>> deleteStack;
 
 	AVLNode *parentOfDeleted = nullptr;
 
@@ -302,7 +313,7 @@ class AVLNode
 
 	// not found case
 	if (!curr) {
-		return OperationResult<T> {.result = nullptr, .err = KeyNotFound};
+		return OperationResult<T>(nullptr,KeyNotFound);
 	}
 
 	// found case
@@ -315,7 +326,7 @@ class AVLNode
 
 		// tree is empty
 		if (!parentOfDeleted) {
-			return OperationResult<T> {.result = nullptr, .err = None};
+			return OperationResult<T>(nullptr,None);
 		}
 	} else {
 		// node with two children: Get the inorder
@@ -405,10 +416,10 @@ class AVLNode
 	}
 
 	if (brokeSooner) { // return nullptr to point out that root doesn't change
-		return OperationResult<T> {.result = nullptr, .err = None};
+		return OperationResult<T>(nullptr,None);
 	}
 
-	return OperationResult<T> {.result = prev, .err = None};
+	return OperationResult<T>(prev,None);
 
 }
 
@@ -452,6 +463,7 @@ public:
      AVLNode<T> **getRootPointer() {
         return &root;
     }
+
 
     bool insert(int k, T val)  {
         if (!root) {

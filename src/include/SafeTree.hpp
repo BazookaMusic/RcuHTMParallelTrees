@@ -17,6 +17,8 @@
  4. void setChild(int i, NodeType * n)
  5. int nextChild(int key) : returns index of pointer to follow to find key k
  6. int nChildren() : amount of children per node
+ 7. bool operator == (const NodeType &ref) const: an equality operator to compare nodes (can check for equality only on mutable values)
+ 8. bool operator == (const T &ref) const: an equality operator to compare values
 */
 
 
@@ -37,15 +39,6 @@ class SafeNode
         SafeNode** const children;
         bool deleted;
 
-        
-        void node_delete() {
-            if (!this) {
-                return;
-            }
-
-            delete copy;
-            ~SafeNode();
-        }
 
         // mark previous for deletion and move new value
         static SafeNode<NodeType>* move(SafeNode<NodeType>*& to_be_replaced, SafeNode<NodeType>* replacement) {
@@ -76,7 +69,6 @@ class SafeNode
             }
             
             root->deleted = true;
-            delete root;
         }
 
     
@@ -88,20 +80,25 @@ class SafeNode
             if (deleted) {
                 delete copy;
             }
+
+            if (ins_point.copyWasConnected()) {
+                delete original;
+            }
         }
         SafeNode(InsPoint<NodeType>& _ins_point, NodeType* _original): 
         ins_point(_ins_point), original(_original),
         nChildren(original->nChildren()), children(new SafeNode*[nChildren]),
         deleted(false) {
-            if (original) {
-                copy = new NodeType();
-                *copy = *original;
-                // keep old reference and new reference
-                // for validation
-                //ins_point.hash_insert(original);
-                ins_point.add_to_copied_nodes(this);
-            }
 
+            // constructor will only be called internally and
+            // thus original is guaranteed non-Null
+            copy = new NodeType();
+            *copy = *original;
+            // keep old reference and new reference
+            // for validation
+            //ins_point.hash_insert(original);
+            ins_point.add_to_copied_nodes(this);
+            
             for (int i = 0; i < nChildren; i++)
             {
                 children[i] = nullptr;
@@ -170,7 +167,7 @@ class SafeNode
         // Returns unique pointer to deleted node to
         // be used for manual memory management 
         // (eg. deleting the entire subtree)
-        std::unique_ptr<SafeNode<NodeType>> setChild(int child_pos, SafeNode<NodeType>* newVal) {
+        SafeNode<NodeType>* setChild(int child_pos, SafeNode<NodeType>* newVal) {
             // no oob errors
             assert(child_pos >= 0 && child_pos < nChildren);
 
@@ -191,16 +188,16 @@ class SafeNode
             // connect copy pointer, replace with new
             copy->setChild(child_pos, newVal? newVal->safeRef() : nullptr);
 
-            return old_node? std::unique_ptr<SafeNode<NodeType>>(old_node): nullptr;;
+            return old_node;;
         }
 
         
         // setNewChild: sets the child with index child_pos
         // to be a new SafeNode.
         // Accepts a pointer to an unsafe node.
-        // Returns unique pointer to deleted node to
+        // Returns pointer to deleted node to
         // be used for manual memory management (eg. deleting the entire subtree)
-        std::unique_ptr<SafeNode<NodeType>> setNewChild(int child_pos, NodeType* newVal) {
+        SafeNode<NodeType>* setNewChild(int child_pos, NodeType* newVal) {
             // no oob errors
             assert(child_pos >= 0 && child_pos < nChildren);
 
@@ -230,7 +227,7 @@ class SafeNode
             // connect copy pointer, replace with new
             copy->setChild(child_pos, new_safe_node? new_safe_node->safeRef() : nullptr);
 
-            return old_node? std::unique_ptr<SafeNode<NodeType>>(old_node): nullptr;;
+            return old_node;
 
         }
 
@@ -277,7 +274,7 @@ class SafeNode
 template <class NodeType>
 class InsPoint
 {
-    typedef SearchTreeStack<NodeType> Stack;
+    typedef TreePathStack<NodeType> Stack;
     using NodePair = std::pair<SafeNode<NodeType>*,NodeType>;
 
     private:
@@ -286,34 +283,50 @@ class InsPoint
         int child_to_exchange;
         Stack& path_to_ins_point;
 
+        bool copy_connected;
+
 
     public:
-        InsPoint(NodeType* ins_node, Stack& path): 
+        // no copying or moving
+        InsPoint& operator=(const InsPoint&) = delete;
+        InsPoint(const InsPoint&) = delete;
+
+        explicit InsPoint(NodeType* ins_node, Stack& path): 
         head(new SafeNode<NodeType>(*this, ins_node)),
-        path_to_ins_point(path)
+        path_to_ins_point(path), copy_connected(false)
         {};
 
         ~InsPoint() {
-            //cleanup_tree(head);
+
+            // if InsPoint is deleted
+            // but its copy
+            // isn't connected
+            // everything should be cleaned up
+            const bool clean_all = !copy_connected;
+
             for (auto it = copied_nodes.begin(); it != copied_nodes.end(); ++it)  {
+                it->first->deleted = clean_all;
                 delete it->first;
             }
 
         }
+
+        // get head
+        SafeNode<NodeType>* setHead(NodeType* some_node) {
+            head = new SafeNode<NodeType>(*this, some_node);
+            return head;
+        }
         
 
         // get head
-        SafeNode<NodeType>* get_head() {
+        SafeNode<NodeType>* getHead() {
             return head;
         }
 
-        
+        bool copyWasConnected() {
+            return copy_connected;
+        }
 
-        /*
-        void hash_insert(NodeType* orig) {
-            orig_copy_map.insert(std::make_pair(orig,*orig)); 
-
-        } */
 
         void add_to_copied_nodes(SafeNode<NodeType>* a_node) {
             copied_nodes.push_back(std::make_pair(a_node, *(a_node->original)));
@@ -331,6 +344,41 @@ class InsPoint
                 // swap it
                 ins_point_node->setChild(child_pointer_to_swap, head->safeRef());
             }
+            
+            // originals can be deleted
+            copy_connected = true;
+        }
+
+        // validate copy and abort transaction
+        // on failure
+        bool validate_copy(NodeType* root, int key) {
+            
+            // SHOULD ABORT TRANSACTIONS
+
+            auto path_stack = path_to_ins_point.stack_contents();
+            auto path_length = path_to_ins_point.currentIndex;
+
+            auto temp_root = root;
+
+            // check if path to ins_point is undisturbed by other threads
+            for (int i = 0; i <= path_length; i++, temp_root = temp_root->next_child(key)) {
+                if (temp_root != path_stack[i]) {
+                    return false;
+                }
+            }
+
+            // nodes and their values in the copied tree should not have changed
+            for (auto it = copied_nodes.begin(); it != copied_nodes.end(); ++it) {
+                    // the original node     what it contained
+                    // according to the      when it was added to
+                    // SafeNode              the SafeNode
+                if (*(it->first->original) != it->second) {
+                    return false;
+                }
+            }
+
+            // all checks ok
+            return true;
         }
 
         SafeNode<NodeType>* pop_path() {
