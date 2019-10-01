@@ -145,6 +145,16 @@ class NodeStack{
 
             return stack[currentIndex--];
         };
+        //peek returns a reference to the top
+        //of the stack
+        NodeType* peek() {
+            if (currentIndex < 0) {
+                return nullptr;
+            } 
+
+            return stack[currentIndex];
+        };
+
         //Empty returns true if stack is empty, else false
         bool Empty() {
             return currentIndex == -1;

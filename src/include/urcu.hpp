@@ -29,6 +29,8 @@
             bool valid;
 
      public:
+        // delete copy constructor to avoid
+        // double references
         RCULock(const RCULock&) = delete;
         
         RCULock(RCULock&& a_lock);
@@ -71,7 +73,7 @@
     class RCUSentinel {
      private:
             const int index;
-            const RCU* rcu;
+            RCU* rcu;
             int64_t *times;
 
      public:
@@ -87,7 +89,7 @@
             // created locks. Requires a unique id for each thread
             // from 0 to number of threads - 1. Non-unique ids
             // will cause undefined behavior.
-            RCUSentinel(const int id, const RCU* _rcu);
+            RCUSentinel(const int id, RCU* _rcu);
 
             ~RCUSentinel();
 

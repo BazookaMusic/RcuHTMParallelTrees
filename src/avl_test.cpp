@@ -174,7 +174,7 @@ typedef AVLNode<int> testNode;
 //                       myPath(new TreePathStack<testNode>());
 
 
-//     InsPoint<testNode> in(tree.getRootPointer(), myPath);
+//     ConnPoint<testNode> in(tree.getRootPointer(), myPath);
 
 
 //     auto firstnode = in.getHead();

@@ -49,8 +49,12 @@ class AVLNode
             && children[0] == ref.children[0] && children[1] == ref.children[1];
     }
 
-    static int nChildren() {
+    static constexpr int maxChildren() {
         return 2;
+    }
+
+    AVLNode** getChildren() {
+        return children;
     }
 
 
@@ -90,12 +94,12 @@ class AVLNode
     void setR(AVLNode *newNode) {children[1] = newNode;};
 
     AVLNode* getChild(const int n) {
-        assert(n >=0 && n < nChildren() );
+        assert(n >=0 && n < maxChildren() );
         return children[n];
     }
 
     void setChild(const int n, AVLNode * node_to_set) {
-        assert(n >=0 && n < nChildren() );
+        assert(n >=0 && n < maxChildren() );
         children[n] = node_to_set;
     }
 

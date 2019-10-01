@@ -19,15 +19,15 @@ const int INSERT_N = 1000000;
 
 
 
-bool InsPointCreationTest() {
+bool ConnPointCreationTest() {
     auto a = new AVLNode<int>(1,2,nullptr,nullptr);
 
     auto myPath = TreePathStack<AVLNode<int>>();
 
-    InsPoint<AVLNode<int>> ins(a,myPath);
+    ConnPoint<AVLNode<int>> ins(a,nullptr,myPath);
 
     // check if original pointer is properly saved
-    if (ins.getHead()->getOriginal() == a)
+    if (ins.getConnPoint() == a)
     {
         return true;
     }
@@ -48,7 +48,7 @@ bool tree_validate(TestNode* root, SafeNode<TestNode>* safe_root) {
 
     bool isValid = true;
 
-    for (int i = 0; i < root->nChildren(); i++) {
+    for (int i = 0; i < TestNode::maxChildren(); i++) {
         isValid &= tree_validate(root->getChild(i), safe_root->getChild(i));
     }
 
@@ -99,11 +99,11 @@ bool TreeTraversalTest() {
 
     auto myPath = TreePathStack<AVLNode<int>>();
 
-    InsPoint<AVLNode<int>> ins(tree.getRoot(),myPath);
+    ConnPoint<AVLNode<int>> ins(nullptr,tree.getRootPointer(),myPath);
 
-    auto root = ins.getHead()->getOriginal();
+    auto root = ins.setRootAsHead();
 
-    if (root != tree.getRoot()) {
+    if (root->getOriginal() != tree.getRoot()) {
         return false;
     }
 
@@ -146,11 +146,11 @@ bool TreeBuildTest() {
 
     auto myPath = TreePathStack<AVLNode<int>>();
 
-    InsPoint<AVLNode<int>> ins(tree.getRoot(),myPath);
+    ConnPoint<AVLNode<int>> ins(tree.getRoot(),tree.getRootPointer(),myPath);
 
-    auto root = ins.getHead()->getOriginal();
+    auto root = ins.setRootAsHead();
 
-    if (root != tree.getRoot()) {
+    if (root->getOriginal() != tree.getRoot()) {
         return false;
     }
 
@@ -160,42 +160,42 @@ bool TreeBuildTest() {
 
 
 
-bool TreeCopyTest() {
-    auto tree = AVLTree<int>();
+// bool TreeCopyTest() {
+//     auto tree = AVLTree<int>();
     
-    for (int i = 0; i < INSERT_N; i++) {
-        tree.insert(i,i);
-    }
+//     for (int i = 0; i < INSERT_N; i++) {
+//         tree.insert(i,i);
+//     }
 
-    auto myPath = TreePathStack<AVLNode<int>>();
+//     auto myPath = TreePathStack<AVLNode<int>>();
 
-    InsPoint<AVLNode<int>> ins(tree.getRoot(),myPath);
+//     ConnPoint<AVLNode<int>> ins(tree.getRoot(),tree.getRootPointer(),myPath);
 
-    auto root = ins.getHead()->getOriginal();
+//     auto root = ins.setRootAsHead();
 
-    if (root != tree.getRoot()) {
-        return false;
-    }
+//     if (root->getOriginal() != tree.getRoot()) {
+//         return false;
+//     }
 
-   std::deque<std::pair<TestNode*,TestNode>> deq;
+//    std::deque<std::pair<TestNode*,TestNode>> deq;
 
-    tree_copy(root, nullptr, deq);
+//     tree_copy(root, nullptr, deq);
 
-     for (auto it = deq.begin(); it != deq.end(); ++it)  {
-        delete it->first;
-    }
-
-
-    return true;
-}
+//      for (auto it = deq.begin(); it != deq.end(); ++it)  {
+//         delete it->first;
+//     }
 
 
-TEST_CASE("InsPointCreationTest Test", "[rcu]") {
-    std::cout << "InsPoint Creation Test" <<std::endl;
-    REQUIRE(InsPointCreationTest());
-    std::cout << "InsPoint Traversal Test" <<std::endl;
+//     return true;
+// }
+
+
+TEST_CASE("ConnPointCreationTest Test", "[rcu]") {
+    std::cout << "ConnPoint Creation Test" <<std::endl;
+    REQUIRE(ConnPointCreationTest());
+    std::cout << "ConnPoint Traversal Test" <<std::endl;
     REQUIRE(TreeTraversalTest());
-    std::cout << "InsPoint New Tree Test" <<std::endl;
+    std::cout << "ConnPoint New Tree Test" <<std::endl;
     REQUIRE(TreeBuildTest());
     //REQUIRE_NOTHROW(TreeCopyTest());
 }

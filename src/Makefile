@@ -6,18 +6,16 @@ CURR_DIR=/mnt/c/Users/Sotiris/documents/projects/thesis/avl_cpp
 OBJ=./obj
 
 
-URCU_LIB_DIR=../../../urcu/src/
+URCU_LIB_DIR=../../userspaceRCUcpp/src/
 
 INCLUDES = $(wildcard $(IDIR)/*.hpp)
 
 
-DEPS=$(URCU_LIB_DIR)/obj/urcu.o 
+DEPS= obj/urcu.o 
 
 
 all: avl_test safe_tree_test
 
-$(URCU_LIB_DIR)/obj/urcu.o: $(URCU_LIB_DIR)/urcu.cpp $(URCU_LIB_DIR)/include/urcu.hpp
-	cd $(URCU_LIB_DIR) && make
 
 
 obj/catch_test_main.o: catch_test_main.cpp
