@@ -105,7 +105,7 @@ bool removeTest() {
     std::ostringstream testss;
 
     testss << "TESTING REMOVES "
-        << "WITH NUMBER OF INSERTIONS = " <<  N_REMOVES / 2 << ":";
+        << "WITH NUMBER OF REMOVALS = " <<  N_REMOVES / 2 << ":";
 
     std::cout << testss.str();
     auto tree = AVLTree<int>();

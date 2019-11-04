@@ -1,8 +1,6 @@
 IDIR=./include
 CC=clang++
 CFLAGS= -g -std=c++0x -pthread -O3  -Wall -Werror -Wextra -Wpedantic
-
-CURR_DIR=/mnt/c/Users/Sotiris/documents/projects/thesis/avl_cpp
 OBJ=./obj
 
 

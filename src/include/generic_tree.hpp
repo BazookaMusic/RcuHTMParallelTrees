@@ -4,7 +4,7 @@
 #include <tuple>
 #include <deque>
 #include <sstream>
-
+#include <string>
 
 
 template <class T>
@@ -13,10 +13,6 @@ class SearchTreeNode
     public:
         int key;
         T val;
-    
-    public:
-        SearchTreeNode(){};
-
 };
 
 template <class T>
@@ -40,26 +36,34 @@ class SearchTree
 const int STACK_DEPTH = 64;
 class StackOverflowError: public std::exception {
     private:
-     int maxDepth, attemptedDepth;
+     const char * err;
 
     public:
-     StackOverflowError(int maxDepth, int attemptedDepth): maxDepth(maxDepth),attemptedDepth(attemptedDepth) {};
-
-	 const char * what () const throw ()
-     {
+     StackOverflowError(int maxDepth, int attemptedDepth) {
          std::ostringstream stringStream;
-         stringStream << "Stack Overflow: Max Depth was:" << maxDepth << " and tried to insert " << attemptedDepth << " elements";
-        
-     	 return stringStream.str().data();
-     }
 
+        stringStream << "Stack Overflow: Max Depth was:" << maxDepth << " and tried to insert " << attemptedDepth << " elements";
+
+        auto str = stringStream.str();
+
+        err = str.c_str();
+
+
+     };
+
+	 const char * what() const throw ()
+     {
+
+         return err;
+
+     }
     
 };
 
 template <class NodeType>
 class TreePathStack{
  private:
-        NodeType* stack[STACK_DEPTH];
+        std::array<NodeType*,STACK_DEPTH> stack;
         int currentIndex; 
  public:
         //TreePathStack used to traverse tree structures
@@ -93,7 +97,7 @@ class TreePathStack{
         };
         //pop removes an element from the top of the stack
         //and returns the element
-        NodeType *pop() {
+        NodeType* pop() {
             if (currentIndex < 0) {
                 return nullptr;
             } 
@@ -164,25 +168,19 @@ class NodeStack{
 
 
 
-
-/* NOT NEEDED YET
 template <class NodeType>
 class TreePathStackWithIndex{
     private:
-        NodeType **stack;
+        std::array<std::pair<NodeType*,int>,STACK_DEPTH> stack;
         int currentIndex; 
     public:
         //TreePathStack used to traverse tree structures
         TreePathStackWithIndex() {
-                this->stack = new std::pair<NodeType*,int>[STACK_DEPTH];
                 this->currentIndex = -1;
             };
-        
-        ~TreePathStackWithIndex(){
-            delete [] stack;
-        }
 
-        inline std::pair<NodeType*,int> *bottom() {
+
+        inline std::pair<NodeType*,int> bottom() {
             if (currentIndex == -1) {
                 return nullptr;
             }
@@ -214,11 +212,7 @@ class TreePathStackWithIndex{
         //Empty returns true if stack is empty, else false
         bool Empty() {
             return currentIndex == -1;
-        };
+        }
 
 };
-
-*/
-
-
 #endif

@@ -57,6 +57,10 @@ class AVLNode
         return children;
     }
 
+    int getKey() {
+        return key;
+    }
+
 
 
 
@@ -106,6 +110,17 @@ class AVLNode
     AVLNode* nextChild(int key_to_search) {
         return key_to_search <= key ? getL() : getR();
     }
+
+    AVLNode* find(int key_to_search) {
+        for (auto curr = this; curr != nullptr; curr = key_to_search < curr->getKey() ? curr->getL() : curr->getR()) {
+            if (key_to_search == curr->getKey()) {
+                return curr;
+            }
+        }
+
+        return nullptr;
+    }
+
 
 
     AVLNode *rightRotate(AVLNode *z) {
@@ -516,6 +531,7 @@ public:
         return false;
     }
 
+
     // returns true if AVL Tree constraints hold
     bool isAVL() {
         return _AVLVerify(this->root);
@@ -531,11 +547,3 @@ public:
 };
 
 #endif
-
-
-
-
-
-
-
-

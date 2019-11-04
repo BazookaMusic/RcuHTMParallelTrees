@@ -92,4 +92,56 @@ memory usage 10000: 20.35MB
 
 ---
 
+---
 
+## 02/10/2019
+
+### Τι έγινε
+
+1. Copy connection tests
+2. Αλλαγή ονόματος api των connection points
+
+---
+
+## 04/10/2019
+
+### Τι έγινε
+
+1. Validation Tests
+2. Προστέθηκε το modified flag στο connPoint ώστε να
+μην γίνεται τίποτα χωρίς να έχει γίνει αλλαγή στο δέντρο
+3. Pop Path tests (πολύ βαρετή δουλειά)   | REFACTOR?|
+4. Άλλαξαν ονόματα και έγιναν αλλαγές στις μεθόδους που ξεκινάς τη δημιουργία
+ενός δέντρου-αντίγραφου
+5. Μετατράπηκαν τα C arrays σε std::arrays για να καθαρίζονται πιο intuitively
+
+---
+## 06/10/2019
+
+### Τι έγινε
+
+1. Υλοποιήθηκε και ελέγχθηκε ενα spinlock για χρήση με TSX
+2. Υλοποιήθηκε ένα scope controlled κλείδωμα με TSX στο TSXGuard
+
+Δυσκολίες: Ήταν δύσκολο να ελεγχθούν διότι ο συγχρονισμός
+δεν φαινόταν απαραίτητος προτού εισάγω πολύ δουλειά σε κάθε thread.
+
+#### Highlights
+  tsx_scope ιδέα: http://individual.utoronto.ca/mikedaiwang/tm/Intel_TSX_Overview.pdf
+  _mm_pause()
+  http://www.1024cores.net/home/lock-free-algorithms/tricks/spinning
+
+---
+
+## 07-08/10/2019
+
+### Τι έγινε
+
+1. Debugging στο TSXGuard και δημιουργία συστήματος user abort
+2. Κανονικότατο testing
+
+### Δυσκολίες
+
+    1. Χωρίς alignment τα στατιστικά προκαλούσαν πολλά conflict aborts.
+    2. Ο remote υπολογιστής δε με αφήνει να χρησιμοποιήσω vscode.
+---

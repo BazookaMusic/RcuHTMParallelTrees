@@ -9,6 +9,8 @@
 #include "include/catch.hpp"
 #include "include/SafeTree.hpp"
 #include "include/urcu.hpp"
+#include "include/TSXGuard.hpp"
+
 
 
 #include "utils/test_helpers.cpp"
@@ -17,17 +19,20 @@
 using TestNode = AVLNode<int>; 
 const int INSERT_N = 1000000;
 
+TSX::SpinLock lock;
+
+
 
 
 bool ConnPointCreationTest() {
     auto a = new AVLNode<int>(1,2,nullptr,nullptr);
 
-    auto myPath = TreePathStack<AVLNode<int>>();
+    auto myPath = TreePathStackWithIndex<AVLNode<int>>();
 
-    ConnPoint<AVLNode<int>> ins(a,nullptr,myPath);
+    ConnPoint<AVLNode<int>> ins(nullptr,&a,myPath,lock);
 
     // check if original pointer is properly saved
-    if (ins.getConnPoint() == a)
+    if (ins.getConnPoint() == nullptr)
     {
         return true;
     }
@@ -74,7 +79,7 @@ void tree_copy(TestNode* root, TestNode* real_root, std::deque<std::pair<TestNod
     auto left = root->getL();
     auto right = root->getR();
 
-    auto copy = new TestNode(root->key,root->val,left,right);
+    auto copy = new TestNode(root->getKey(),root->val,left,right);
 
     if (!real_root) {
         real_root = copy;
@@ -97,11 +102,11 @@ bool TreeTraversalTest() {
     }
    
 
-    auto myPath = TreePathStack<AVLNode<int>>();
+    auto myPath = TreePathStackWithIndex<AVLNode<int>>();
 
-    ConnPoint<AVLNode<int>> ins(nullptr,tree.getRootPointer(),myPath);
+    ConnPoint<AVLNode<int>> ins(nullptr,tree.getRootPointer(),myPath,lock);
 
-    auto root = ins.setRootAsHead();
+    auto root = ins.safeTreeAtRoot();
 
     if (root->getOriginal() != tree.getRoot()) {
         return false;
@@ -139,16 +144,16 @@ bool tree_build( SafeNode<TestNode>* safe_root) {
 bool TreeBuildTest() {
     auto tree = AVLTree<int>();
     
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < INSERT_N; i++) {
         tree.insert(i,i);
     }
     
 
-    auto myPath = TreePathStack<AVLNode<int>>();
+    auto myPath = TreePathStackWithIndex<AVLNode<int>>();
 
-    ConnPoint<AVLNode<int>> ins(tree.getRoot(),tree.getRootPointer(),myPath);
+    ConnPoint<AVLNode<int>> ins(nullptr,tree.getRootPointer(),myPath,lock);
 
-    auto root = ins.setRootAsHead();
+    auto root = ins.safeTreeAtRoot();
 
     if (root->getOriginal() != tree.getRoot()) {
         return false;
@@ -158,46 +163,315 @@ bool TreeBuildTest() {
     return tree_build(ins.getHead());
 }
 
-
-
-// bool TreeCopyTest() {
-//     auto tree = AVLTree<int>();
+bool inTheMiddleTest() {
+     auto tree = AVLTree<int>();
     
-//     for (int i = 0; i < INSERT_N; i++) {
-//         tree.insert(i,i);
-//     }
+    for (int i = 0; i < 1000; i++) {
+        tree.insert(i,i);
+    }
 
-//     auto myPath = TreePathStack<AVLNode<int>>();
+    auto myPath = TreePathStackWithIndex<AVLNode<int>>();
 
-//     ConnPoint<AVLNode<int>> ins(tree.getRoot(),tree.getRootPointer(),myPath);
+    const auto left_child_orig = tree.getRoot()->getL();
+    const auto left_right_child_orig = left_child_orig->getR();
 
-//     auto root = ins.setRootAsHead();
+    const auto left_right_left_orig = left_right_child_orig->getL();
 
-//     if (root->getOriginal() != tree.getRoot()) {
-//         return false;
-//     }
+    myPath.push(left_child_orig,1);
+    myPath.push(left_right_child_orig,0);
+    
+    ConnPoint<AVLNode<int>> ins(left_right_child_orig,tree.getRootPointer(),myPath,lock);
 
-//    std::deque<std::pair<TestNode*,TestNode>> deq;
+    // ins point is left child of left right child
+    auto copy_root = ins.copyChild(0);
 
-//     tree_copy(root, nullptr, deq);
+    copy_root->setNewChild(0,new TestNode(1,2,nullptr,nullptr));
 
-//      for (auto it = deq.begin(); it != deq.end(); ++it)  {
-//         delete it->first;
-//     }
+    ins.connect_copy();
+
+    const auto left_child = tree.getRoot()->getL();
+    const auto left_right_child = left_child->getR();
+    const auto left_right_left = left_right_child->getL();
+
+   
 
 
-//     return true;
-// }
+    bool success = left_right_left->getL()->getKey() == 1 &&
+        left_right_left->getKey() == left_right_left_orig->getKey();
 
 
-TEST_CASE("ConnPointCreationTest Test", "[rcu]") {
+
+    return success;
+}
+
+bool rootChangeTest() {
+     auto tree = AVLTree<int>();
+    
+    for (int i = 0; i < 10; i++) {
+        tree.insert(i,i);
+    }
+
+    auto myPath = TreePathStackWithIndex<AVLNode<int>>();
+
+    
+    ConnPoint<AVLNode<int>> ins(nullptr,tree.getRootPointer(),myPath,lock);
+
+    ins.createNewTree(new TestNode(222222,2,nullptr,nullptr));
+
+    ins.connect_copy();
+
+    return tree.getRoot()->getKey() == 222222;
+}
+
+bool CopyConnectionTest() {
+    return inTheMiddleTest() && rootChangeTest();
+
+}
+
+bool connectionPointNotInTree() {
+
+    // building an example avl tree
+
+     auto tree = AVLTree<int>();
+    
+    for (int i = 0; i < 100; i++) {
+        tree.insert(i,i);
+    }
+
+    auto myPath = TreePathStackWithIndex<AVLNode<int>>();
+
+    const auto left_child_orig = tree.getRoot()->getL();
+    const auto left_right_child_orig = left_child_orig->getR();
+
+    //const auto left_right_left_orig = left_right_child_orig->getL();
+
+    myPath.push(left_child_orig,1);
+    myPath.push(left_right_child_orig,0);
+    
+    ConnPoint<AVLNode<int>> ins(left_right_child_orig,tree.getRootPointer(),myPath,lock);
+
+    // done
+
+    // clip tree at left child, setting its right to null
+    // connPoint disconnected
+    left_child_orig->setChild(1, nullptr);
+
+    return !ins.validate_copy();
+}
+
+bool childPointerInOriginalTreeChanged() {
+
+    // building an example avl tree
+
+    auto tree = AVLTree<int>();
+    
+    for (int i = 0; i < 100; i++) {
+        tree.insert(i,i);
+    }
+
+    auto myPath = TreePathStackWithIndex<AVLNode<int>>();
+
+    const auto left_child_orig = tree.getRoot()->getL();
+    const auto left_right_child_orig = left_child_orig->getR();
+
+    //const auto left_right_left_orig = left_right_child_orig->getL();
+
+    myPath.push(left_child_orig,0);
+    myPath.push(left_right_child_orig,1);
+    
+    ConnPoint<AVLNode<int>> ins(left_right_child_orig,tree.getRootPointer(),myPath,lock);
+
+    auto rootCopy = ins.copyChild(0);
+    auto itsLeftChild = rootCopy->getChild(0);
+    rootCopy->getChild(1);
+
+    // oops, clipped the original tree
+    itsLeftChild->getOriginal()->setChild(0,nullptr);
+
+    return !ins.validate_copy();
+}
+
+
+bool unalteredTree() {
+
+    // building an example avl tree
+
+     auto tree = AVLTree<int>();
+    
+    for (int i = 0; i < 100; i++) {
+        tree.insert(i,i);
+    }
+
+    auto myPath = TreePathStackWithIndex<AVLNode<int>>();
+
+    const auto left_child_orig = tree.getRoot()->getL();
+    const auto left_right_child_orig = left_child_orig->getR();
+
+    //const auto left_right_left_orig = left_right_child_orig->getL();
+
+    myPath.push(left_child_orig, 0);
+    myPath.push(left_right_child_orig, 1);
+    
+    ConnPoint<AVLNode<int>> ins(left_right_child_orig,tree.getRootPointer(),myPath,lock);
+
+    auto rootCopy = ins.copyChild(0);
+    rootCopy->getChild(0);
+    rootCopy->getChild(1);
+
+
+    return ins.validate_copy();
+}
+
+
+bool ValidationTest() {
+    return connectionPointNotInTree() && childPointerInOriginalTreeChanged() && unalteredTree();
+}
+
+bool NullHeadPopPath() {
+    const auto LEFT = 0;
+
+    // create a tree
+
+    TestNode* l_child = new TestNode(1,2,nullptr,nullptr);
+    TestNode* root = new TestNode(1,2,l_child,nullptr);
+
+    TreePathStackWithIndex<TestNode> myPath;
+
+    myPath.push(root,LEFT);
+
+    // connection point below root
+
+    ConnPoint<TestNode> conn(root,&root,myPath,lock);
+
+    // make a new
+    conn.newSafeTreeAt(0, nullptr);
+
+    // head is null
+    // pop 
+    auto newRoot = conn.pop_path();
+    
+
+    return newRoot->getOriginal() == root && conn.validate_copy() && conn.getHead() == newRoot;
+
+}
+
+
+bool nonNullHeadPop() {
+    const auto LEFT = 0;
+
+    // create a tree
+
+    TestNode* l_child = new TestNode(1,2,nullptr,nullptr);
+    TestNode* root = new TestNode(1,2,l_child,nullptr);
+
+    TreePathStackWithIndex<TestNode> myPath;
+
+    myPath.push(root,LEFT);
+
+    // connection point below root
+
+    ConnPoint<TestNode> conn(root,&root,myPath,lock);
+
+    // make a new
+    conn.copyChild(0);
+
+    // pop 
+    auto newRoot = conn.pop_path();
+    
+
+    return newRoot->getOriginal() == root && conn.validate_copy() && conn.getHead() == newRoot;
+
+}
+
+bool PopUntilNull() {
+    const auto LEFT = 0;
+
+    // create a tree
+
+    TestNode* l_child = new TestNode(1,2,nullptr,nullptr);
+    TestNode* root = new TestNode(1,2,l_child,nullptr);
+
+    TreePathStackWithIndex<TestNode> myPath;
+
+    myPath.push(root,LEFT);
+
+    // connection point below root
+
+    ConnPoint<TestNode> conn(root,&root,myPath,lock);
+
+    // make a new
+    conn.copyChild(0);
+
+    // pop 
+    conn.pop_path();
+    auto shouldBeNull = conn.pop_path();
+    
+
+    return shouldBeNull == nullptr && conn.validate_copy();
+}
+
+bool oldHeadAndNewHeadConnect() {
+    const auto LEFT = 0;
+
+    // create a tree
+
+    TestNode* l_child = new TestNode(1,2,nullptr,nullptr);
+    TestNode* root = new TestNode(1,2,l_child,nullptr);
+
+    TreePathStackWithIndex<TestNode> myPath;
+
+    myPath.push(root,LEFT);
+
+    // connection point below root
+
+    ConnPoint<TestNode> conn(root,&root,myPath,lock);
+
+    // make a new
+    conn.copyChild(0);
+
+    // pop 
+    conn.pop_path();
+    conn.pop_path();
+
+
+    auto copyRoot = conn.getHead();
+
+    if (!copyRoot) {
+        return false;
+    }
+
+
+    
+
+    return copyRoot->getOriginal() == root 
+    && copyRoot->getChild(LEFT)->getOriginal() == l_child
+    && conn.validate_copy();
+}
+
+
+bool PopPathTest() {
+    return NullHeadPopPath() && nonNullHeadPop() & PopUntilNull() 
+    && oldHeadAndNewHeadConnect();
+}
+
+
+
+
+
+TEST_CASE("ConnPoint Tests", "[ConnPoint]") {
     std::cout << "ConnPoint Creation Test" <<std::endl;
     REQUIRE(ConnPointCreationTest());
     std::cout << "ConnPoint Traversal Test" <<std::endl;
     REQUIRE(TreeTraversalTest());
     std::cout << "ConnPoint New Tree Test" <<std::endl;
     REQUIRE(TreeBuildTest());
-    //REQUIRE_NOTHROW(TreeCopyTest());
+    std::cout << "ConnPoint Copy Connection Test" <<std::endl;
+    REQUIRE(CopyConnectionTest());
+    std::cout << "ConnPoint Validation Test" <<std::endl;
+    REQUIRE(ValidationTest());
+    std::cout << "ConnPoint Pop Path Test" <<std::endl;
+    REQUIRE(PopPathTest());
+    
 }
 
 
