@@ -1,6 +1,6 @@
 # RCU HTM Parallel Trees
 
-A C++ to make designing thread safe trees as easy as copying
+A C++ library to make designing thread safe trees as easy as copying
 the Geeks for Geeks guides ;)
 
 See BSTHtm folder for a binary search tree implementation
