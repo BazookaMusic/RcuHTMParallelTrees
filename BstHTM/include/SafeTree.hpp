@@ -1,5 +1,14 @@
 #ifndef SAFE_TREE_HPP
     #define SAFE_TREE_HPP
+    #define TSX_MEM_POOL
+    #define USER_MEM_POOL
+    //#define STATIC_VECTORS_AND_ARRAYS
+
+    #ifndef RCU_HTM_MAX_THREADS
+        #define RCU_HTM_MAX_THREADS 100
+    #endif
+
+    
 
 
 #include <memory>
@@ -9,24 +18,28 @@
 #include <deque>
 #include <array>
 #include <tuple>
+#include <new>
+#include <cassert>
 
 
 
 #include "generic_tree.hpp"
 #include "TSXGuard.hpp"
 
+static constexpr int MAX_THREADS = 100;
+
+
+
 
 /* SafeTrees require Nodes with the following methods
  1.     An int getKey() method to return the key
- 2.     A copy constructor
+ 2.     A copy constructor, copy assignment and destructor (RULE OF THREE)
  3.     NodeType* getChild(int i)
  4.     void setChild(int i, NodeType * n)
- 5.     NodeType** getChildren(): returns pointer to array of children,
- 6.     static constexpr int maxChildren(): max amount of children for each node, 
- 7.     NodeType* find(int key): search tree and return pointer to node with desired key
- 8.     bool traversalDone(int key): returns true if the node with key is the caller, can also
+ 5.     static constexpr int maxChildren(): max amount of children for each node, 
+ 6.     bool traversalDone(int key): returns true if the node with key is the caller, can also
         consider other factors like if it is a terminal node
- 9.     int nextChild(int key): return index of next child to search for key
+ 7.     int nextChild(int key): return index of next child to search for key
 */
 
 static constexpr unsigned char VALIDATION_FAILED = 0xee;
@@ -35,7 +48,7 @@ template <class NodeType>
 class ConnPoint;
 
 template <class NodeType>
-class SafeNode
+class alignas(16) SafeNode
 {
     friend class ConnPoint<NodeType>;
     private:
@@ -86,12 +99,15 @@ class SafeNode
         void make_copy() {
             assert(original == copy);
 
-            copy = new NodeType(*original);
+            #ifdef USER_MEM_POOL
+                copy = ConnPoint<NodeType>::create_new_node(*original);
+            #else
+                copy = new NodeType(*original);
+            #endif
 
-            auto copy_children = copy->getChildren();
 
             for (int i = 0; i < NodeType::maxChildren(); i++) {
-                copy_children[i] = children_pointers_snapshot[i];
+                copy->setChild(i,children_pointers_snapshot[i]);
             }
         }
 
@@ -103,7 +119,9 @@ class SafeNode
     public:
         SafeNode(const SafeNode& other) = delete;
         SafeNode& operator=(const SafeNode&) = delete;
-        SafeNode(){};
+        SafeNode(){}
+
+        #ifndef USER_NODE_POOL
         ~SafeNode() {
             if (node_from_orig_tree) {
                 if (deleted && original != copy) {
@@ -115,25 +133,22 @@ class SafeNode
                 }
             }  
         }
+        #endif
         SafeNode(ConnPoint<NodeType>& _conn_point, NodeType* _original, bool node_from_orig_tree = true): 
         conn_point(_conn_point), 
         original(_original), 
         copy(_original),
         deleted(false),
-        node_from_orig_tree(node_from_orig_tree)
-         {
+        node_from_orig_tree(node_from_orig_tree) {
 
-            
             // all nodes will be added to validation set
             // as it is used for memory management as well
             conn_point.add_to_validation_set(this);
 
-            const auto original_children = original->getChildren();
-
             if (node_from_orig_tree) {
                 for (int i = 0; i < NodeType::maxChildren(); i++) {
                         // keep backup of the original child pointers
-                        children_pointers_snapshot[i] = original_children[i];
+                        children_pointers_snapshot[i] = original->getChild(i);
                 }
             }
             
@@ -148,7 +163,7 @@ class SafeNode
 
 
             
-        };
+        }
 
 
 
@@ -175,6 +190,7 @@ class SafeNode
             if (node_from_orig_tree && copy == original) {
                 make_copy();
             }
+            
             return copy;
         }
 
@@ -202,7 +218,7 @@ class SafeNode
             // explicitly
             // means that you
             // seek to modify it
-            if (copy == original) {
+            if (copy == original && node_from_orig_tree) {
                 make_copy();
             }
             
@@ -245,7 +261,7 @@ class SafeNode
 
             // node needs to be modified
             // copy it
-            if (copy == original) {
+            if (copy == original && node_from_orig_tree) {
                 make_copy();
             }
 
@@ -334,15 +350,32 @@ struct ConnectionPointer {
 template <class NodeType>
 NodeType* find(NodeType* root, int desired_key);
 
-template <class NodeType>
+template <class T>
 struct ConnPointData {
-    ConnectionPointer<NodeType> con_ptr;    
-    NodeType* connection_point;
-    bool found;
-    TreePathStackWithIndex<NodeType> path;
-    NodeType* conn_point;
-    NodeType** root_of_structure;
+    friend class ConnPoint<T>;
+    
+    template <class NodeType, typename nextChildF, typename traversalDoneF>
+    friend ConnPointData<NodeType> find_conn_point_custom(int key, NodeType** root, nextChildF&& nextChild_func, traversalDoneF&& trav_done_func);
+
+    private:
+        ConnectionPointer<T> con_ptr;    
+        T* connection_point_;
+        bool found_;
+        TreePathStackWithIndex<T> path;
+        T** root_of_structure;
+    public:
+        bool found() const {
+            return found_;
+        }
+
+        T* connection_point() const {
+            return connection_point_;
+        }
+
+        
 };
+
+
 
 class Transaction {
     private:
@@ -387,6 +420,101 @@ class Transaction {
         }
 };
 
+#ifdef TSX_MEM_POOL
+    // A SafeNode Memory Pool
+    
+
+    template<class Object>
+    struct memory_pool {
+        using buffer_type = typename std::aligned_storage<sizeof(Object), alignof(Object)>::type;
+
+        static_assert(sizeof(buffer_type) >= sizeof(Object), "wrong size");
+
+        explicit memory_pool(std::size_t limit)
+                : objects(new buffer_type[limit]),limit_(limit), used_(0) {
+        }
+
+        memory_pool(const memory_pool&) = delete;
+        memory_pool(memory_pool&&) = default;
+        memory_pool& operator=(const memory_pool&) = delete;
+        memory_pool& operator=(memory_pool&&) = delete;
+
+        template<class...Args>
+        Object* create(Args &&...args) {
+            if (used_ < limit_) {
+                auto candidate = new(std::addressof(objects[used_])) Object(std::forward<Args>(args)...);
+                ++ used_;
+                return candidate;
+            }
+            else {
+                exit(-1);
+                return nullptr;
+            }
+        }
+
+
+        buffer_type* reset() {
+            used_ = 0;
+            return objects;
+        }
+
+        buffer_type* objects;
+        std::size_t limit_;
+        std::size_t used_;
+       
+    };
+
+    template<class Object>
+    struct memory_pool_tracked: public memory_pool<Object> {
+
+        using buffer_type = typename std::aligned_storage<sizeof(Object), alignof(Object)>::type;
+        
+        memory_pool_tracked(std::size_t limit): memory_pool<Object>(limit) {
+            pool_lock.lock();
+            ++index;
+            thread_buffers[index] = memory_pool<Object>::objects;
+            pool_lock.unlock();
+        }
+
+        void fill_pool() {
+            memory_pool<Object>::objects = new buffer_type[memory_pool<Object>::limit_];
+            pool_lock.lock();
+            ++index;
+            thread_buffers[index] = memory_pool<Object>::objects;
+            pool_lock.unlock();
+        }
+
+        
+         void hard_reset() {
+            for (auto i = 0; i <= index; i++) {
+                delete [] thread_buffers[i];
+                thread_buffers[i] = nullptr;
+            }
+
+            memory_pool<Object>::used_ = 0;
+            memory_pool<Object>::objects = nullptr;
+
+            index = -1;
+
+        }
+
+         static TSX::SpinLock pool_lock;
+         static typename memory_pool_tracked<Object>::buffer_type** thread_buffers;
+         static int index;
+
+    };
+
+    template<class Object>
+    TSX::SpinLock memory_pool_tracked<Object>::pool_lock;
+
+    template<class Object>
+    typename memory_pool_tracked<Object>::buffer_type** memory_pool_tracked<Object>::thread_buffers = new buffer_type*[MAX_THREADS];
+
+    template<class Object>
+    int memory_pool_tracked<Object>::index = -1;
+#endif
+
+
 template <class NodeType>
 class ConnPoint
 {
@@ -394,10 +522,21 @@ class ConnPoint
     friend class SafeNode<NodeType>;
 
     private:
+        #ifdef TSX_MEM_POOL
+            thread_local static memory_pool<SafeNode<NodeType>> pool;
+        #endif
+
+        #ifdef USER_MEM_POOL
+            thread_local static memory_pool_tracked<NodeType> user_node_pool;
+        #endif
+
         // returns if copy connection was successful
         bool& connect_success;
-
-        std::deque<SafeNode<NodeType>*> validation_set;
+        #ifdef STATIC_VECTORS_AND_ARRAYS
+            static thread_local std::vector<SafeNode<NodeType>*> validation_set;
+        #else
+            std::deque<SafeNode<NodeType>*> validation_set;
+        #endif
 
         // the connection point is the node whose child pointer will
         // be modified to connect the copied tree
@@ -478,8 +617,12 @@ class ConnPoint
             if (!some_node) {
                 return nullptr;
             }
-            
+           #ifdef TSX_MEM_POOL
+            return ConnPoint::pool.create(*this, some_node);
+           #else
             return new SafeNode<NodeType>(*this, some_node);
+           #endif
+        
         }
 
         
@@ -493,7 +636,7 @@ class ConnPoint
 
         ConnPoint(ConnPointData<NodeType> data, bool& connected_successfully, Transaction& t):
         connect_success(connected_successfully),
-        connection_point(data.connection_point), connection_pointer(nullptr),
+        connection_point(data.connection_point_), connection_pointer(nullptr),
         _root(data.root_of_structure),
         conn_pointer_snapshot(data.con_ptr.snapshot),
         child_to_exchange(data.con_ptr.child_index),
@@ -506,6 +649,14 @@ class ConnPoint
         already_locked(t.go_to_fallback()),
         non_explicit_retries(t.get_non_explicit_retries())
         {
+            #ifdef TSX_MEM_POOL
+                pool.reset();
+            #endif
+
+            #ifdef STATIC_VECTORS_AND_ARRAYS
+                validation_set.clear();
+            #endif
+
             if (child_to_exchange != INSERT_POSITIONS::AT_ROOT) {
                 connection_pointer =  &((*connection_point).getChildren()[child_to_exchange]);
             } else {
@@ -513,7 +664,7 @@ class ConnPoint
             }
 
             connect_success = false;
-        };
+        }
 
         ~ConnPoint() {
 
@@ -540,6 +691,24 @@ class ConnPoint
 
         }
 
+        #ifdef USER_MEM_POOL
+            // create a new node from the pool
+            template <typename ...Args>
+            static NodeType* create_new_node(Args&& ...args) {
+                return user_node_pool.create(std::forward<Args>(args)...);
+
+            }
+
+            static void init_node_pool() {
+                user_node_pool.fill_pool();
+            }
+
+            static void reset_node_pool() {
+                user_node_pool.hard_reset();
+            }
+
+        #endif
+
         void DEBUG_PRINT_COPIED_NODES() {
             auto a = getRoot();
 
@@ -554,7 +723,7 @@ class ConnPoint
         bool connect_atomically() noexcept {
             unsigned char err_status = 0;
             
-            TSX::TSXGuardWithStats guard(non_explicit_retries,_lock,err_status,_stats, already_locked);
+            TSX::TSXGuardWithStats guard(non_explicit_retries,_lock,err_status,_stats, already_locked, TSX::STUBBORN);
 
 
             if (err_status != VALIDATION_FAILED) {
@@ -586,7 +755,13 @@ class ConnPoint
                 return nullptr;
             }
 
-            auto newNode = new SafeNode<NodeType>(*this, some_node, false);
+            
+            #ifdef TSX_MEM_POOL
+                auto newNode = ConnPoint::pool.create(*this, some_node, false);
+            #else
+                auto newNode = new SafeNode<NodeType>(*this, some_node, false);
+            #endif
+
 
             for (auto elem = newNode->modified.begin(); elem != newNode->modified.end(); elem++ ) {
                     *elem = true;
@@ -638,7 +813,12 @@ class ConnPoint
 
 
         void add_to_validation_set(SafeNode<NodeType>* a_node) {
-            validation_set.push_back(a_node);
+            #ifdef STATIC_VECTORS_AND_ARRAYS
+                validation_set.emplace_back(a_node);
+            #else
+                validation_set.push_back(a_node);
+            #endif
+                
         }
 
         // connect created tree copy by exchanging proper parent pointer
@@ -662,16 +842,10 @@ class ConnPoint
             if (!connection_point) {
                 //std::cout << "NO CONN" << std::endl;
                 if (conn_pointer_snapshot != *_root) {
-                   
-                    // std::cout << "root was " <<  conn_pointer_snapshot << " with key " <<
-                    // (conn_pointer_snapshot? conn_pointer_snapshot->getKey():-1) <<
-                    // " and now is " << *_root << " with key " << (*_root ? (*_root)->getKey(): -1) <<  std::endl;
-                    //std::cout << "NOT ROOT" << std::endl;
                     TSX::TSXGuard::abort<VALIDATION_FAILED>();
                     return false;
                 }
-            } else {
-                
+            } else { 
                 if (conn_pointer_snapshot != connection_point->getChild(child_to_exchange)) {
                     // std::cout << conn_pointer_snapshot << " different from " << connection_point->getChild(child_to_exchange) << std::endl;
                    // std::cout << "WRONG CONN POINTER" << std::endl;
@@ -695,15 +869,13 @@ class ConnPoint
                     if ((*it)->node_from_orig_tree) {
                         // the original node and its current children
                         const auto original_node = (*it)->original;
-                        auto current_children = original_node->getChildren();
 
                         // the saved children which shouldn't have changed
-                        auto &saved_children = (*it)->children_pointers_snapshot;
+                        const auto &saved_children = (*it)->children_pointers_snapshot;
 
 
                         for (int i = 0; i < NodeType::maxChildren(); i++) {
-                            if (saved_children[i] != current_children[i]) {
-                               //std::cout << "WRONG CHILDREN" << std::endl;
+                            if (saved_children[i] != original_node->getChild(i)) {
                                 TSX::TSXGuard::abort<VALIDATION_FAILED>();
                                 return false;
                             }
@@ -725,7 +897,7 @@ class ConnPoint
             // to pop, else it makes no sense
             assert(connection_point && "connection point should be not null to pop");
 
-            assert(child_to_exchange != -1 && "A copied tree should exist to pop from the path.Consider creating one through a function like \
+            assert(child_to_exchange != -1 && "A copied tree should exist to pop from the path. Consider creating one through a function like \
             copyChild or place the connection point higher in the tree.");
 
 
@@ -750,13 +922,15 @@ class ConnPoint
             
 
             // pop node
-            std::tie(popped_node,popped_node_next_index) = path_to_conn_point.pop();
+            auto parent_of_conn_point = path_to_conn_point.pop();
+            popped_node = parent_of_conn_point.node;
+            popped_node_next_index = parent_of_conn_point.next_child;
 
             // for the new connection point
             // the pointer to change
             // should point to the previous
             // connection point
-            conn_pointer_snapshot = connection_point;
+            conn_pointer_snapshot = connection_pointer;
             
             // calculate which child should be changed to insert copied tree
             // by using the previous connection point's key
@@ -767,6 +941,9 @@ class ConnPoint
             connection_point = popped_node;
 
             // also update connection pointer
+            // but keep previous value
+            // to force its validation
+            auto old_connection_pointer = connection_pointer;
             connection_pointer = &((*connection_point).getChildren()[next_child_index]);
             
 
@@ -780,8 +957,9 @@ class ConnPoint
             newHead->setChild(child_to_exchange, head);
             
             // ACHTUNG
-            // connection with previous connection point should remain unchanged
-            newHead->children_pointers_snapshot[child_to_exchange] = conn_pointer_snapshot;
+            // the old connection point should necessarily continue 
+            // pointing to it's old value
+            newHead->children_pointers_snapshot[child_to_exchange] = old_connection_pointer;
             
             
             // now head can be updated
@@ -792,8 +970,25 @@ class ConnPoint
             return head;
         }
 
+        
+
 
 };
+
+#ifdef TSX_MEM_POOL
+    template <class NodeType>
+    thread_local memory_pool<SafeNode<NodeType>> ConnPoint<NodeType>::pool(100);
+#endif
+
+#ifdef USER_MEM_POOL
+    template <class NodeType>
+    thread_local memory_pool_tracked<NodeType> ConnPoint<NodeType>::user_node_pool(15000000);
+#endif
+
+#ifdef STATIC_VECTORS_AND_ARRAYS
+    template <class NodeType>
+    thread_local std::vector<SafeNode<NodeType>*> ConnPoint<NodeType>::validation_set(100);
+#endif
 
 
 template <class NodeType>
@@ -806,8 +1001,8 @@ NodeType* find(NodeType* root, int desired_key) {
     return curr;
 }
 
-template <class NodeType>
-ConnPointData<NodeType> find_conn_point(int key, NodeType** root) {
+template <class NodeType, typename nextChildF, typename traversalDoneF>
+ConnPointData<NodeType> find_conn_point_custom(int key, NodeType** root, nextChildF&& nextChild_func, traversalDoneF&& trav_done_func) {
     // give address of root node
     // find the connection point of both remove and insert operations
     // we are looking for the node before the one with key
@@ -822,34 +1017,63 @@ ConnPointData<NodeType> find_conn_point(int key, NodeType** root) {
 
     // will keep the previous node      
     // which will be the connection point
-    NodeType* prev = nullptr;
 
 
     NodeType* curr = orig_head;
 
     // search for node with key
-    for (; curr && !curr->traversalDone(key); prev = curr, curr = curr->getChild(curr->nextChild(key))) {
+    for (; curr && !trav_done_func(curr,key);) {
+         
+        auto next_child = nextChild_func(curr,key);
+
         // search for node with key, adding path to stack and keeping the prev
-        result.path.push(curr,0);                                           // std::cout << curr->getKey() << "->";
+        result.path.push(curr, next_child);    
+        curr = curr->getChild(next_child);                                     
     };
 
-    //std::cout << "find conn returned " << (prev ? prev->getKey(): -1) << std::endl; 
+
+
+    int prev_next_child_index = INSERT_POSITIONS::AT_ROOT;
+
+    NodeType* prev_s = nullptr;
+
+    if (!result.path.Empty()) {
+        auto stack_top =  result.path.pop();
+        prev_s = stack_top.node;
+        prev_next_child_index = stack_top.next_child;
+    }
+
 
     // was a node found
-    result.found = curr && curr->getKey() == key;
+    result.found_ = curr && curr->getKey() == key;
 
     // set prev as the connection point
     // will be null if operation happens at head
-    result.connection_point = prev;
+    result.connection_point_ = prev_s;
 
     // the child to which the pointer to change corresponds
     // should be AT_ROOT if there's no connection_point
-    result.con_ptr.child_index = result.connection_point ? (prev ? prev->nextChild(key): INSERT_POSITIONS::UNDEFINED) : INSERT_POSITIONS::AT_ROOT;
+    result.con_ptr.child_index = prev_next_child_index;
 
     // the original value of the pointer to change
-    result.con_ptr.snapshot = result.connection_point ? curr : orig_head;
+    result.con_ptr.snapshot = result.connection_point_ ? curr : orig_head;
 
     return result;
+}
+
+template <class NodeType>
+inline bool node_trav_done(NodeType* curr,int key) {
+    return curr->traversalDone(key);
+}
+
+template <class NodeType>
+inline int node_next_child(NodeType* curr,int key) {
+    return curr->nextChild(key);
+}
+
+template <class NodeType>
+ConnPointData<NodeType> find_conn_point(int key, NodeType** root) {
+    return find_conn_point_custom(key,root,node_next_child<NodeType>, node_trav_done<NodeType>);
 }
 
 

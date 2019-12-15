@@ -34,7 +34,7 @@ class SearchTree
 
 
 
-const int STACK_DEPTH = 10000;
+const int STACK_DEPTH = 1000;
 class StackOverflowError: public std::exception {
     private:
      const char * err;
@@ -183,46 +183,59 @@ class TreePathStackWithIndex{
         int currentIndex; 
     public:
         //TreePathStack used to traverse tree structures
-        TreePathStackWithIndex() {
-                currentIndex = -1;
+        TreePathStackWithIndex(): stack(std::vector<NodeAndNextPointer<NodeType>>{}), currentIndex(-1) {
                 stack.reserve(STACK_DEPTH);
-
             };
 
 
-        inline NodeAndNextPointer<NodeType> bottom() {
+        NodeAndNextPointer<NodeType> bottom() {
             if (currentIndex == -1) {
                 return NodeAndNextPointer<NodeType>{nullptr,-1};
             }
 
             return stack[0];
         }
+
+        NodeAndNextPointer<NodeType> top() {
+            if (currentIndex == -1) {
+                return NodeAndNextPointer<NodeType>{nullptr,-1};
+            }
+
+            return stack[currentIndex];
+        }
         
 
         //push pushes a node into the stack
         //and stores the index of the next child
-        inline void push(NodeType *node, int index) {
+        void push(NodeType *node, int index) {
             currentIndex++;
 
             if (currentIndex != -1 && static_cast<unsigned long>(currentIndex) > stack.capacity() - 1) {
-                stack.push_back( NodeAndNextPointer<NodeType>{node,index});
-                return;
+                stack.resize((stack.capacity() >> 1) + stack.capacity() + 1);
             }
 
             stack[currentIndex] = NodeAndNextPointer<NodeType>{node,index};
         };
+
         //pop removes an element from the top of the stack
         //and returns the element
         NodeAndNextPointer<NodeType> pop() {
             if (currentIndex < 0) {
-                return std::pair<NodeType*,int>(nullptr,-1);
+                return NodeAndNextPointer<NodeType>{nullptr ,-1};
             } 
 
             return stack[currentIndex--];
-        };
+        }
         //Empty returns true if stack is empty, else false
         bool Empty() {
             return currentIndex == -1;
+        }
+
+        void print_contents() {
+            while (!Empty()) {
+                auto cont = pop();
+                std::cout << cont.node << "    " << cont.next_child << std::endl;
+            }
         }
 
 };

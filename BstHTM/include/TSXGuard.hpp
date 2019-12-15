@@ -14,6 +14,11 @@ namespace TSX {
     static constexpr unsigned char ABORT_GL_TAKEN = 0;
     static constexpr unsigned char USER_OPTION_LOWER_BOUND = 0x01;
 
+    enum RETRY_STRATEGY {
+        STUBBORN,
+        HALF
+    };
+
     bool transaction_pending() {
         return _xtest() > 0;
     }
@@ -62,12 +67,12 @@ namespace TSX {
     };
 
     struct alignas(ALIGNMENT) TSXStats {
-         int tx_starts,
+         long long tx_starts,
             tx_commits,
             tx_aborts,
             tx_lacqs;
 
-        int tx_aborts_per_reason[TX_ABORT_REASONS_END];
+        long long tx_aborts_per_reason[TX_ABORT_REASONS_END];
 
         TSXStats(): tx_starts(0), tx_commits(0), tx_aborts(0), tx_lacqs(0) {
             for (int i = 0; i < TX_ABORT_REASONS_END; i++) {
@@ -90,6 +95,50 @@ namespace TSX {
 
         }
 
+        void print_lite_stats() {
+            double aborts_per_start = (1.0*tx_aborts) / (tx_starts);
+            double confl_pc = (100.0*tx_aborts_per_reason[0]) / (tx_aborts);
+            double cap_pc = (100.0*tx_aborts_per_reason[1]) / (tx_aborts);
+            double lock_pc = (100.0*tx_aborts_per_reason[3]) / (tx_aborts);
+            double commit_pc = (100.0*tx_commits) / (tx_starts);
+
+            std::cout << "AB/START:" << aborts_per_start << std::endl <<
+            "CONF:" << confl_pc << "%   " << "CAP:" << cap_pc << "%   " << "LOCK:" << lock_pc << "%" << std::endl
+            << "COM/START:" << commit_pc << "%" << std::endl ;
+
+        }
+
+        TSXStats operator+(const TSXStats& rhs ) {
+            TSXStats total_stats;
+            total_stats.tx_starts += rhs.tx_starts;
+            total_stats.tx_commits += rhs.tx_commits;
+            total_stats.tx_aborts += rhs.tx_aborts;
+            total_stats.tx_lacqs += rhs.tx_lacqs;
+            total_stats.tx_aborts_per_reason[0] += rhs.tx_aborts_per_reason[0];
+            total_stats.tx_aborts_per_reason[1] += rhs.tx_aborts_per_reason[1];
+            total_stats.tx_aborts_per_reason[2] += rhs.tx_aborts_per_reason[2];
+            total_stats.tx_aborts_per_reason[3] += rhs.tx_aborts_per_reason[3];
+            total_stats.tx_aborts_per_reason[4] += rhs.tx_aborts_per_reason[4];
+            return total_stats;
+        }
+
+        TSXStats& operator+=(const TSXStats& rhs ) {
+            tx_starts += rhs.tx_starts;
+            tx_commits += rhs.tx_commits;
+            tx_aborts += rhs.tx_aborts;
+            tx_lacqs += rhs.tx_lacqs;
+            tx_aborts_per_reason[0] += rhs.tx_aborts_per_reason[0];
+            tx_aborts_per_reason[1] += rhs.tx_aborts_per_reason[1];
+            tx_aborts_per_reason[2] += rhs.tx_aborts_per_reason[2];
+            tx_aborts_per_reason[3] += rhs.tx_aborts_per_reason[3];
+            tx_aborts_per_reason[4] += rhs.tx_aborts_per_reason[4];
+            return *this;
+        }
+
+
+
+
+
 
     };
 
@@ -98,15 +147,7 @@ namespace TSX {
         TSXStats total_stats;
 
         for (auto i = stats.begin(); i != stats.end(); i++) {
-            total_stats.tx_starts += i->tx_starts;
-            total_stats.tx_commits += i->tx_commits;
-            total_stats.tx_aborts += i->tx_aborts;
-            total_stats.tx_lacqs += i->tx_lacqs;
-            total_stats.tx_aborts_per_reason[0] += i->tx_aborts_per_reason[0];
-            total_stats.tx_aborts_per_reason[1] += i->tx_aborts_per_reason[1];
-            total_stats.tx_aborts_per_reason[2] += i->tx_aborts_per_reason[2];
-            total_stats.tx_aborts_per_reason[3] += i->tx_aborts_per_reason[3];
-            total_stats.tx_aborts_per_reason[4] += i->tx_aborts_per_reason[4];
+            total_stats += *i;
         }
 
         return total_stats;
@@ -130,25 +171,27 @@ namespace TSX {
                                 // used to resume transaction in case of user abort
         bool disabled;
     public:
-        TSXGuard(const int max_tx_retries, SpinLock &mutex, unsigned char &err_status, bool disabled = false): 
+        TSXGuard(const int max_tx_retries, SpinLock &mutex, unsigned char &err_status,  bool disabled = false, RETRY_STRATEGY strat = STUBBORN): 
         max_retries(max_tx_retries),
         spin_lock(mutex),
         has_locked(false),
         user_explicitly_aborted(false),
-        nretries(0),
+        nretries(max_tx_retries),
         disabled(disabled)
         {
             if (!disabled) {
                 while(1) {
-                    ++nretries;
-                    //////////////////
+                    --nretries;
+
                     // try to init transaction
                     unsigned int status = _xbegin();
                     if (status == _XBEGIN_STARTED) {      // tx started
                         if (!spin_lock.isLocked()) return; //successfully started transaction
                         // started txn but someone is executing the txn  section non-speculatively
                         // (acquired the  fall-back lock) -> aborting
-                        _xabort(ABORT_GL_TAKEN); // abort with code 0xff  
+                        _xabort(ABORT_GL_TAKEN); // abort with code 0xff
+                    } else if (strat == HALF && (status & _XABORT_CONFLICT))  {
+                        nretries >>= 1; // half strategy
                     } else if (status & _XABORT_EXPLICIT) {
                         if (_XABORT_CODE(status) == ABORT_GL_TAKEN && !(status & _XABORT_NESTED)) {
                             while (spin_lock.isLocked()) _mm_pause();
@@ -164,7 +207,7 @@ namespace TSX {
                     } 
 
                     // too many retries, take the fall-back lock 
-                    if (nretries >= max_retries) break;
+                    if (!nretries) break;
 
                 }   //end
         fallback_lock:
@@ -224,61 +267,68 @@ namespace TSX {
                                 // used to resume transaction in case of user abort
         TSXStats &_stats;
         bool disabled;
+
     public:
-        TSXGuardWithStats(const int max_tx_retries, SpinLock &mutex, unsigned char &err_status, TSXStats &stats, bool disabled = false):
+        TSXGuardWithStats(const int max_tx_retries, SpinLock &mutex, unsigned char &err_status, TSXStats &stats, bool disabled = false, RETRY_STRATEGY strat = STUBBORN):
         max_retries(max_tx_retries),
         spin_lock(mutex),
         has_locked(false),
         user_explicitly_aborted(false),
-        nretries(0),
+        nretries(max_tx_retries),
         _stats(stats),
         disabled(disabled)
         {
+            
+
             if (!disabled) {
-                while(nretries < max_retries) {
+                while(true) {
 
-                ++nretries;
-                
-                // try to init transaction
-                unsigned int status = _xbegin();
-                if (status == _XBEGIN_STARTED) {   // tx started
-                    _stats.tx_starts++;
-                    if (!spin_lock.isLocked()) return;  //successfully started transaction
+                    --nretries;
                     
-                    // started txn but someone is executing the txn  section non-speculatively 
-                    // (acquired the  fall-back lock) -> aborting
+                    // try to init transaction
+                    unsigned int status = _xbegin();
+                    if (status == _XBEGIN_STARTED) {   // tx started
+                        _stats.tx_starts++;
+                        if (!spin_lock.isLocked()) return;  //successfully started transaction
+                        
+                        // started txn but someone is executing the txn  section non-speculatively 
+                        // (acquired the  fall-back lock) -> aborting
 
-                    _xabort(ABORT_GL_TAKEN); // abort with code 0xff  
-                } else if (status & _XABORT_CAPACITY) {
-                    _stats.tx_aborts++;
-                    _stats.tx_aborts_per_reason[TX_ABORT_CAPACITY]++;
-                } else if (status & _XABORT_CONFLICT) {
-                    _stats.tx_aborts++;
-                    _stats.tx_aborts_per_reason[TX_ABORT_CONFLICT]++;
-                } else if (status & _XABORT_EXPLICIT) {
-                     _stats.tx_aborts++;
-                     _stats.tx_aborts_per_reason[TX_ABORT_EXPLICIT]++;
-                    if (_XABORT_CODE(status) == ABORT_GL_TAKEN && !(status & _XABORT_NESTED)) {
-                        _stats.tx_aborts_per_reason[TX_ABORT_LOCK_TAKEN]++;
-                        while (spin_lock.isLocked());// _mm_pause();
-                    } else if (_XABORT_CODE(status) > USER_OPTION_LOWER_BOUND) {
-                        user_explicitly_aborted = true;
-                        _stats.tx_aborts_per_reason[TX_ABORT_LOCK_TAKEN]++;
-                        err_status = _XABORT_CODE(status);
-                        return;
-                    } else if(!(status & _XABORT_RETRY)) {
-                        _stats.tx_aborts_per_reason[TX_ABORT_REST]++;
-                        // if the system recommends not to retry
-                        // go to the fallback immediately
-                        goto fallback_lock; 
-                    } else {
-                        _stats.tx_aborts_per_reason[TX_ABORT_REST]++;
-                    }   
-                }
-                
-                 
-                // too many retries, take the fall-back lock 
-                if (nretries >= max_retries) break;
+                        _xabort(ABORT_GL_TAKEN); // abort with code 0xff  
+                    } else if (status & _XABORT_CAPACITY) {
+                        _stats.tx_aborts++;
+                        _stats.tx_aborts_per_reason[TX_ABORT_CAPACITY]++;
+                    } else if (status & _XABORT_CONFLICT) {
+                        _stats.tx_aborts++;
+                        _stats.tx_aborts_per_reason[TX_ABORT_CONFLICT]++;
+
+                        if (strat == HALF) {
+                            nretries >>= 1;
+                        }
+                    } else if (status & _XABORT_EXPLICIT) {
+                        _stats.tx_aborts++;
+                        _stats.tx_aborts_per_reason[TX_ABORT_EXPLICIT]++;
+                        if (_XABORT_CODE(status) == ABORT_GL_TAKEN && !(status & _XABORT_NESTED)) {
+                            _stats.tx_aborts_per_reason[TX_ABORT_LOCK_TAKEN]++;
+                            while (spin_lock.isLocked()) _mm_pause();
+                        } else if (_XABORT_CODE(status) > USER_OPTION_LOWER_BOUND) {
+                            user_explicitly_aborted = true;
+                            _stats.tx_aborts_per_reason[TX_ABORT_LOCK_TAKEN]++;
+                            err_status = _XABORT_CODE(status);
+                            return;
+                        } else if(!(status & _XABORT_RETRY)) {
+                            _stats.tx_aborts_per_reason[TX_ABORT_REST]++;
+                            // if the system recommends not to retry
+                            // go to the fallback immediately
+                            goto fallback_lock; 
+                        } else {
+                            _stats.tx_aborts_per_reason[TX_ABORT_REST]++;
+                        }   
+                    }
+                    
+                    
+                    // too many retries, take the fall-back lock 
+                    if (!nretries) break;
 
             }   //end
     fallback_lock:
@@ -314,11 +364,12 @@ namespace TSX {
 
         ~TSXGuardWithStats() {
             if (!user_explicitly_aborted && !disabled) {
+                
                 // no abort code
                 if (has_locked && spin_lock.isLocked()) {
                     spin_lock.unlock();
                 } else {
-                    _stats.tx_commits++;
+                    _stats.tx_commits++; 
                     _xend();
                 }
             }

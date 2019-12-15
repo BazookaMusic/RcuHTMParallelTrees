@@ -1,0 +1,1 @@
+scp -i ~/.ssh/id_rsa ./bst_test sdrag@scirouter.cslab.ece.ntua.gr:/home/users/sdrag/thesis

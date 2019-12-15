@@ -1,15 +1,20 @@
 #ifndef INCLUDE_BST_HPP
 #define INCLUDE_BST_HPP
 
+#define USER_NODE_POOL USER_MEM_POOL
+
 
 #include <cassert>
+#include <limits>
+#include <tuple>
 #include "SafeTree.hpp"
 
 
-TSX::TSXStats stats[20];
+
+TSX::TSXStats stats[100];
 
 template <class ValueType>
-class BSTNode {
+class alignas(64) BSTNode {
     private:
         int key;
         ValueType value; 
@@ -77,6 +82,29 @@ class BST {
         TSX::SpinLock &_lock;
         using TreeNode = BSTNode<ValueType>;
 
+        static int count_nodes(TreeNode* node) {
+            if (!node) {
+                return 0;
+            }
+
+            return 1 + count_nodes(node->getChild(0)) + count_nodes(node->getChild(1));
+        }
+
+
+        void node_copy(BSTNode<ValueType>* curr, BSTNode<ValueType>* copy_curr = nullptr) {
+            if (!curr) return;
+
+            if (!copy_curr) {
+                copy_curr = new BSTNode<ValueType>*(curr);
+            }
+
+            copy_curr->setChild(0, curr->getChild(0));
+            copy_curr->setChild(1, curr->getChild(1));
+
+            node_copy(curr->getChild(0), copy_curr->getChild(0));
+            node_copy(curr->getChild(1), copy_curr->getChild(1));
+        }
+
         void print_contents(BSTNode<ValueType>* root) {
             if (!root) {
                 return;
@@ -118,11 +146,74 @@ class BST {
             return  left_branch_length > right_branch_length? 1 + left_branch_length: 
                     1 + right_branch_length;
         }
+        
+        void averageBranchHelper(BSTNode<ValueType>* root,int& total_leaves, int& total_length, int curr_branch_length = 1) {
+            if (!root) {
+                return;
+            }
+
+            if (!root->getChild(0) && !root->getChild(1)) {
+                total_leaves += 1;
+                total_length += curr_branch_length;
+            }
+            
+            averageBranchHelper(root->getChild(0), total_leaves, total_length,  curr_branch_length + 1);
+            averageBranchHelper(root->getChild(1), total_leaves, total_length,  curr_branch_length + 1);
+        }
+
+        int averageBranchLength(BSTNode<ValueType>* root) {
+            int total_leaves = 0;
+            int total_length = 0;
+
+            averageBranchHelper(root,total_leaves,total_length);
+
+            return total_leaves ? total_length / total_leaves: -1;
+        }
+
+        bool isBstHelper(TreeNode* node,int min, int max) {
+            if (!node) {
+                return true;
+            }
+
+            auto nodekey = node->getKey();
+
+            if ( nodekey < min || nodekey > max) {
+                return false;
+            }
+
+            return isBstHelper(node->getChild(0), min, nodekey) && isBstHelper(node->getChild(1), nodekey, max);
+        }
+
+        void rec_delete(TreeNode* node) {
+            if (!node) return;
+
+            rec_delete(node->getChild(0));
+            rec_delete(node->getChild(1));
+
+            delete node;
+        }
 
 
     public:
 
-    BST(TreeNode* root, TSX::SpinLock &lock): root(root), _lock(lock){}
+    BST(TreeNode* root, TSX::SpinLock &lock): root(root), _lock(lock){
+        #ifdef USER_NODE_POOL
+            ConnPoint<TreeNode>::init_node_pool();
+        #endif
+    }
+    ~BST() {
+        #ifndef USER_NODE_POOL
+            rec_delete(root);
+        #endif
+
+        #ifdef USER_NODE_POOL
+            ConnPoint<TreeNode>::reset_node_pool();
+        #endif
+    }
+
+    int size() {
+        return count_nodes(root);
+    }
 
     BSTNode<ValueType>* getRoot() {
         return root;
@@ -132,22 +223,22 @@ class BST {
         root = node;
     }
 
+    bool isSorted() {
+        if (!root) {
+            return true;
+        }
+
+        return isBstHelper(root,std::numeric_limits<int>::min(),std::numeric_limits<int>::max());
+    }
+
 
     Result<ValueType> lookup(int desired_key) {
         Result<ValueType> res;
-        res.found = false;
-
-        auto curr = root;
-
-        for (; curr; curr = desired_key <= curr->getKey()? curr->getChild(0): curr->getChild(1)) {
-            if (curr->getKey() == desired_key) {
-                res.found = true;
-                res.val = curr->getValue();
-
-                return res;
-            }
-        }
-
+        auto node = find<TreeNode>(root,desired_key);
+        
+        res.found = node != nullptr;
+        if (res.found) res.val = node->getValue();
+        
         return res;
     }
 
@@ -156,30 +247,30 @@ class BST {
         return conn_point_data.con_ptr.child_index;
     }
 
+    const int hard_retries = 5;
+    const int soft_retries = 100;
+
     bool insert(int key, ValueType value, int t_id) {
         bool success = false;
-        int retries = 100;
+        int retries = hard_retries;
 
         while(!success) {
-            Transaction t(retries,_lock, stats[t_id]);
+            Transaction t(retries,_lock, stats[t_id],soft_retries);
 
             auto conn_point_data = find_conn_point<TreeNode>(key,&root);
 
-            if (conn_point_data.found) {
+            if (conn_point_data.found()) {
                 return false;
             }
 
             ConnPoint<TreeNode> conn(conn_point_data, success, t);
-
-            // insert at root
-            if (!conn_point_data.connection_point) {
-                auto new_root = conn.create_safe(new TreeNode(key,value,nullptr,nullptr));
-                conn.setRoot(new_root);
-            } else {    // insert at proper position
+            #ifdef USER_NODE_POOL
+                auto node_to_be_inserted = conn.create_safe(ConnPoint<TreeNode>::create_new_node(key,value,nullptr,nullptr));
+            #else
                 auto node_to_be_inserted = conn.create_safe(new BSTNode<ValueType>(key,value,nullptr,nullptr));
-                conn.setRoot(node_to_be_inserted);
-            }
-
+            #endif
+            conn.setRoot(node_to_be_inserted);
+            
         }
 
         return true;
@@ -187,14 +278,14 @@ class BST {
 
     bool remove(int key, int t_id) {
         bool success = false;
-        int retries = 10;
+        int retries = hard_retries;
 
         while(!success) {
-            Transaction t(retries,_lock, stats[t_id]);
+            Transaction t(retries,_lock, stats[t_id],soft_retries);
 
             auto conn_point_data = find_conn_point<TreeNode>(key,&root);
 
-            if (!conn_point_data.found) {
+            if (!conn_point_data.found()) {
                 return false;
             }
 
@@ -270,6 +361,15 @@ class BST {
         std::cout << "Longest Branch is: " << longest_branch(root) << std::endl;
     }
 
+    void longest_branch() {
+        std::cout << "Longest branch is: " << longest_branch(root) << std::endl;
+    }
+
+    void average_branch() {
+        std::cout << "Average branch is: " << averageBranchLength(root) << std::endl;
+    }
+
+
     void print_sorted() {
         print_sorted_contents(root);
         std::cout << std::endl;
@@ -283,10 +383,22 @@ class BST {
     }
 
     void stat_report(int n_threads) {
+        TSX::TSXStats t_stats;
         for (int i = 0; i < n_threads; i++) {
-            std::cout  << std::endl << "THREAD " << i << std::endl << std::endl;
-            stats[i].print_stats();
+            t_stats += stats[i];
         }
+        std::cout << std::endl << std::endl;
+        t_stats.print_stats();
+        std::cout << std::endl << std::endl;
+    }
+
+    void lite_stat(int n_threads) {
+        TSX::TSXStats total_stats;
+        for (int i = 0; i < n_threads; i++) {
+            total_stats += stats[i];
+        }
+
+        total_stats.print_lite_stats();
     }
 };
 

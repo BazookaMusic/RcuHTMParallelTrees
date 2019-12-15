@@ -1,14 +1,23 @@
 #include <iostream>
 #include <array>
 #include <thread>
+#include <cstdlib>
+#include <random>
+#include <chrono>
+#include <atomic>
 
 #include "../include/bst.hpp"
 #include "../include/catch.hpp"
 #include "../include/TSXGuard.hpp"
+#include "../include/test_bench.hpp"
 
-constexpr static int THREADS = 4;
+
+const static int THREADS = std::thread::hardware_concurrency();
 constexpr static int OPERATION_MULTIPLIER = 1000000;
-TSX::SpinLock lock{};
+
+using TestBenchType = TestBench<BST<int>>;
+
+TSX::SpinLock& lock = TestBenchType::global_lock;
 
 TEST_CASE("BST Init Test","[init]") {
     BST<int> someMap(nullptr, lock);
@@ -21,19 +30,6 @@ void insert(int i, BST<int>& map, int t_id) {
     }
 }
 
-
-
-// make a balanced tree
-void binary_insert_map(int start,int end, BST<int>& map) {
-    if (start > end) return;
-
-    int mid = (start + end) / 2;
-
-    map.insert(mid,1,0);
-
-    binary_insert_map(start,mid-1,map);
-    binary_insert_map(mid+1,end,map);
-}
 
 // add values for balanced tree to vector
 void binary_vec(int start,int end, std::vector<int>& vec) {
@@ -95,7 +91,7 @@ TEST_CASE("BST Insert Test","[insert]") {
         }
 
         SECTION("too many inserts") {
-            binary_insert_map(0,THREADS*OPERATION_MULTIPLIER - 1,someMap);
+            TestBenchType::binary_insert_map(0,THREADS*OPERATION_MULTIPLIER - 1,someMap);
 
             for (int i = 0; i < THREADS*OPERATION_MULTIPLIER; i++ ) {
                 if (!someMap.lookup(i).found) {
@@ -136,17 +132,24 @@ TEST_CASE("BST Multithreaded Insert Test","[mt_insert]") {
                     std::cout << "NOT " << i << std::endl;
                     REQUIRE(someMap.lookup(i).found);
                 } 
-            }       
+            }
+
+            REQUIRE(someMap.isSorted());       
     }
+
+    
 }
 
 
 
-void even_remove(int i, BST<int>& map, int t_id) {
-    for (int j = i * OPERATION_MULTIPLIER; j < (i+1)*OPERATION_MULTIPLIER; j++) {
-        if ((j % 2) == 0) {
-            map.remove(j,t_id);
-        }
+void even_remove( BST<int>& map, int t_id) {
+    const auto start = t_id * OPERATION_MULTIPLIER;
+    for (int k = 0; k < OPERATION_MULTIPLIER; k++) {
+            auto index = start + k;
+            if (index % 2 == 0) {
+                map.remove(index,t_id);
+                //REQUIRE(!map.lookup(index).found);
+            }
     }
 }
 
@@ -213,7 +216,7 @@ TEST_CASE("BST Remove Test","[remove]") {
     }
 
     SECTION("batch remove") {
-        binary_insert_map(0, THREADS*OPERATION_MULTIPLIER - 1,someMap);
+        TestBenchType::binary_insert_map(0, THREADS*OPERATION_MULTIPLIER - 1,someMap);
 
         for (int i = 0; i < THREADS*OPERATION_MULTIPLIER; i++) {
             if ((i % 2) == 0) {
@@ -240,17 +243,17 @@ TEST_CASE("BST MULTITHREADED Remove Test","[remove_mt]") {
         std::cout << "MULTITHREADED Remove Test" << std::endl;
     }
 
-    BST<int> someMap(nullptr, lock);
+    
     std::thread threads[THREADS];
     
 
     SECTION("mt remove") {
         for (int j = 0; j < 5; j++) {
-            binary_insert_map(0, THREADS*OPERATION_MULTIPLIER - 1,someMap);
-           // someMap.print();
+            BST<int> someMap(nullptr, lock);
+            TestBenchType::binary_insert_map(0, THREADS*OPERATION_MULTIPLIER - 1,someMap);
 
             for (int i = 0; i < THREADS; i++) {
-                threads[i] = std::thread(even_remove, THREADS-i-1 , std::ref(someMap), i);
+                threads[i] = std::thread(even_remove, std::ref(someMap), i);
             }
 
             for (int i = 0; i < THREADS; i++) {
@@ -268,20 +271,63 @@ TEST_CASE("BST MULTITHREADED Remove Test","[remove_mt]") {
                 }
             }
 
-        }
+            REQUIRE(someMap.isSorted());
 
-        someMap.stat_report(THREADS);
+        }
         
     }
 
+}
 
 
+TEST_CASE("THROUGHPUT TESTS","[tp]") {
+    const std::size_t RANGE_OF_KEYS = 2*OPERATION_MULTIPLIER; // RANGE IS 1 TO RANGE_OF_KEYS
+   
+
+    srand(time(NULL));
 
 
+    SECTION("50% lookups") {
+        TestBenchType::experiment exp(25,25,50);
+        TestBenchType::test(exp, RANGE_OF_KEYS);
+    }
+
+    SECTION("80% lookups") {
+        TestBenchType::experiment exp(10,10,80);
+        TestBenchType::test(exp, RANGE_OF_KEYS);
+    }
+
+    SECTION("100% lookups") {
+        TestBenchType::experiment exp(0,0,100);
+        TestBenchType::test(exp, RANGE_OF_KEYS);
+    }
 
 
+    SECTION("50-50 Insert Remove ") {
+        TestBenchType::experiment exp(50,50,0);
+        TestBenchType::test(exp, RANGE_OF_KEYS);  
+    }
+
+    SECTION("Totally random access") {
+        TestBenchType::experiment exp(33,33,34);
+        TestBenchType::test(exp, RANGE_OF_KEYS);
+    }
+
+
+    //SECTION("20-80 Insert Remove ") {
+    //     TestBenchType::experiment exp(20,80,0);
+    //     TestBenchType::test(exp, RANGE_OF_KEYS);
+    // }
+
+    // SECTION("80-20 Insert Remove ") {
+    //     TestBenchType::experiment exp(80,20,0);
+    //     TestBenchType::test(exp, RANGE_OF_KEYS);
+    // }
 
 }
+
+
+
 
 
 
