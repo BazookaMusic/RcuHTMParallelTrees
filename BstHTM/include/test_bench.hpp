@@ -13,6 +13,9 @@
 #include "../include/catch.hpp"
 #include "../include/TSXGuard.hpp"
 
+static std::atomic<long long> insert_sum;
+static std::atomic<long long> rem_sum;
+
 template <class MapType>
 class TestBench {
     public:
@@ -151,6 +154,11 @@ class TestBench {
 
                     REQUIRE(aMap.size() == RANGE_OF_KEYS/2);
 
+                    insert_sum = 0;
+                    rem_sum = 0;
+
+                    long long start_sum = aMap.key_sum();
+
                     run = false;
 
                     for (int i = 0; i < max_threads; i++) {
@@ -212,6 +220,7 @@ class TestBench {
                     REQUIRE(aMap.isSorted());
                     aMap.longest_branch();
                     aMap.average_branch();
+                    REQUIRE((start_sum + insert_sum - rem_sum) == aMap.key_sum());
             }
         }
 
@@ -234,13 +243,15 @@ class TestBench {
                 int key = intRand(0, range, t_id);
 
                 if (rand_n <= ins_freq && ins_freq > 0) {
-                    if (!map.insert(key,1, t_id)) {
+                    if (map.insert(key,1, t_id)) {
                         //std::cout << "I:" << key << std::endl;
                         //++t_op.light_ops_ins;
+                        insert_sum += key;
                         }
                     ++t_op.i_ops;
                 } else if (rand_n <= ins_freq + rem_freq && rem_freq > 0) {
-                    if (!map.remove(key, t_id)) {
+                    if (map.remove(key, t_id)) {
+                        rem_sum += key;
                         //std::cout << "R:" << key << std::endl;
                         //++t_op.light_ops_rems;
                         }
