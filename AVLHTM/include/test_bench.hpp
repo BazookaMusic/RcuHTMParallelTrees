@@ -13,8 +13,15 @@
 #include "../include/catch.hpp"
 #include "../include/TSXGuard.hpp"
 
-static std::atomic<long long> insert_sum;
-static std::atomic<long long> rem_sum;
+
+std::chrono::system_clock::rep time_since_epoch(){
+    static_assert(
+        std::is_integral<std::chrono::system_clock::rep>::value,
+        "Representation of ticks isn't an integral value."
+    );
+    auto now = std::chrono::system_clock::now().time_since_epoch();
+    return std::chrono::duration_cast<std::chrono::microseconds>(now).count();
+}
 
 template <class MapType>
 class TestBench {
@@ -33,9 +40,12 @@ class TestBench {
             std::size_t l_ops;
             std::size_t light_ops_ins;
             std::size_t light_ops_rems;
+            std::size_t sum_inserts;
+            std::size_t sum_removes;
 
             void reset() {
                 n_ops = i_ops = r_ops = l_ops = 0;
+                sum_inserts = sum_removes = 0;
             }
         };
 
@@ -139,46 +149,38 @@ class TestBench {
        
 
         // perform a test using the given operations
-        static void test(experiment exp, const std::size_t RANGE_OF_KEYS, int start_threads = 1) {
+        static void test(experiment exp,int maximum_thread_amount, const std::size_t RANGE_OF_KEYS, int start_threads = 1, int test_thread_step = 1) {
 
-            for (int i = 0; i < THREADS; i++) {
+            for (int i = 0; i < maximum_thread_amount; i++) {
                 thread_stats[i].reset();
             }
 
             static std::atomic<bool> run;
             run = true;
             
-            for (int max_threads = start_threads; max_threads <= THREADS; max_threads++) {
+            for (int max_threads = start_threads; max_threads <= maximum_thread_amount; max_threads += test_thread_step) {
                     MapType aMap(nullptr,global_lock);
                     binary_insert_map_random(0,RANGE_OF_KEYS,RANGE_OF_KEYS/2, aMap); // insert even numbers only
 
                     REQUIRE(aMap.size() == RANGE_OF_KEYS/2);
 
-                    insert_sum = 0;
-                    rem_sum = 0;
+                    std::size_t insert_sum = 0;
+                    std::size_t rem_sum = 0;
 
                     long long start_sum = aMap.key_sum();
 
                     run = false;
 
                     for (int i = 0; i < max_threads; i++) {
-                        thread_stats[i].n_ops = 0;
-                        thread_stats[i].i_ops = 0;
-                        thread_stats[i].r_ops = 0;
-                        thread_stats[i].l_ops = 0;
-
-                        thread_stats[i].light_ops_ins = 0;
-                        thread_stats[i].light_ops_rems = 0;
+                        thread_stats[i].reset();
                     }
 
                     for (int i = 0; i < max_threads; i++) {
-                            threads[i] = std::thread(rand_op, std::ref(run), std::ref(aMap), RANGE_OF_KEYS, i, std::ref(thread_stats[i]), 33,33,34);
+                            threads[i] = std::thread(rand_op, std::ref(run), std::ref(aMap), RANGE_OF_KEYS, i, std::ref(thread_stats[i]), exp.inserts,exp.removes,exp.lookups);
                     }
 
                     // Create a cpu_set_t object representing a set of CPUs. Clear it and mark
                     // only CPU i as set.
-
-
                     for (int i = 0; i < max_threads; i++) {
                         cpu_set_t cpuset;
                         CPU_ZERO(&cpuset);
@@ -189,6 +191,7 @@ class TestBench {
                             std::cerr << "Error calling pthread_setaffinity_np: " << rc << "\n";
                         }
                     }
+
 
                     run = true;
 
@@ -203,7 +206,7 @@ class TestBench {
                     }
 
                     op_stats(thread_stats,max_threads,exp.inserts,exp.removes,exp.lookups);
-                    aMap.lite_stat(max_threads);
+                    aMap.lite_stat(max_threads, sum_ops);
 
                     for (int i = 0; i < max_threads; i++) {
                             threads[i].join();
@@ -220,12 +223,21 @@ class TestBench {
                     REQUIRE(aMap.isSorted());
                     aMap.longest_branch();
                     aMap.average_branch();
+
+                    for (int i = 0; i < max_threads; i++) {
+                        insert_sum += thread_stats[i].sum_inserts;
+                        rem_sum += thread_stats[i].sum_removes;
+                    }
+
                     REQUIRE((start_sum + insert_sum - rem_sum) == aMap.key_sum());
             }
         }
 
+       
+
         static inline int intRand(const int & min, const int & max, const int t_id) {
-            static thread_local std::mt19937 generator(t_id);
+            thread_local int dummy_address;
+            thread_local std::mt19937 generator((unsigned long)(&dummy_address) ^ (unsigned long)(t_id * 123456789));
             std::uniform_int_distribution<int> distribution(min,max);
             return distribution(generator);
         }
@@ -244,21 +256,20 @@ class TestBench {
 
                 if (rand_n <= ins_freq && ins_freq > 0) {
                     if (map.insert(key,1, t_id)) {
-                        //std::cout << "I:" << key << std::endl;
-                        //++t_op.light_ops_ins;
-                        insert_sum += key;
-                        }
+                        t_op.sum_inserts += key;
+                    } else {
+                            ++t_op.light_ops_ins;
+                    }
                     ++t_op.i_ops;
                 } else if (rand_n <= ins_freq + rem_freq && rem_freq > 0) {
                     if (map.remove(key, t_id)) {
-                        rem_sum += key;
-                        //std::cout << "R:" << key << std::endl;
-                        //++t_op.light_ops_rems;
-                        }
-                    //++t_op.r_ops;
+                         t_op.sum_removes += key;
+                    } else {
+                        ++t_op.light_ops_rems;
+                    }
+                    ++t_op.r_ops;
                 } else if (look_freq > 0) {
                     map.lookup(key);
-                    //++t_op.l_ops;
                 }
 
                 ++t_op.n_ops;
@@ -288,6 +299,7 @@ class TestBench {
 
 
             std::cout << "THREADS: " << threads << " I: " << ins_freq << " R: " << rem_freq << " L: " << look_freq << " MOPS: " << M_OPS << std::endl;
+            std::cout << "LOPS INS: " << (l_op_sum_ins*100.0) / sumi << "LOPS REMS: " << (l_op_sum_rems*100.0) / sumr << std::endl;
         }
 
 };

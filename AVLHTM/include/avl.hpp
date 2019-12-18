@@ -11,7 +11,7 @@
 
 
 
-TSX::TSXStats stats[20];
+TSX::TSXStats stats[100];
 
 template <class ValueType>
 class AVLTree;
@@ -25,6 +25,8 @@ class alignas(64) AVLNode {
         ValueType value; 
         AVLNode* children[2];
         int height;
+
+
 
         using SafeAVLNode = SafeNode<AVLNode<ValueType>>;
 
@@ -206,8 +208,18 @@ class AVLTree {
         AVLNode<ValueType>* root;
         TSX::SpinLock &_lock;
         using TreeNode = AVLNode<ValueType>;
+        const int trans_retries = 20;
+        
 
         // helpers
+
+        static long long key_sum_helper(TreeNode* node) {
+            if (!node) {
+                return 0;
+            } 
+
+            return node->getKey() + key_sum_helper(node->getChild(0)) + key_sum_helper(node->getChild(1));
+        }
 
         static int count_nodes(TreeNode* node) {
             if (!node) {
@@ -369,11 +381,12 @@ class AVLTree {
         }
 
         bool insert_impl(const int k, ValueType val, int t_id) {
+            
             bool success = false;
-            int retries = hard_retries;
+            int retries = trans_retries;
 
             while(!success) {
-                Transaction t(retries,_lock, stats[t_id],soft_retries);
+                Transaction t(retries,_lock, stats[t_id]);
 
                 /* FIND PHASE */
 
@@ -396,7 +409,7 @@ class AVLTree {
                 #ifdef USER_NODE_POOL
                     auto node_to_be_inserted = conn.create_safe(ConnPoint<TreeNode>::create_new_node(k,val,nullptr,nullptr));
                 #else
-                    auto node_to_be_inserted = conn.create_safe(new AVLNode<ValueType>(key,val,nullptr,nullptr));
+                    auto node_to_be_inserted = conn.create_safe(new AVLNode<ValueType>(k,val,nullptr,nullptr));
                 #endif
 
 
@@ -435,6 +448,172 @@ class AVLTree {
         }
 
 
+    SafeNode<TreeNode>* rebalance_rem(SafeNode<TreeNode>* n, bool& rotation_happened) {
+        auto n_value = n->safeRef();
+
+		// calculate node height
+        // can peek children from a safeRef
+        // could also use n->peekChild
+		n_value->height = TreeNode::max_height(n_value->getL(), n_value->getR()) + 1;
+
+		// calculate node's balance
+		int balance = TreeNode::node_balance(n_value);
+        rotation_happened = true;
+		if (balance > 1 && TreeNode::node_balance(n_value->getL()) >= 0) {  // right rotate
+			n = TreeNode::right_rotate(n);
+		} else if (balance < -1 && TreeNode::node_balance(n_value->getR()) <= 0) { //left rotate
+			n = TreeNode::left_rotate(n);
+	  	} else if (balance > 1 && TreeNode::node_balance(n_value->getL()) < 0) { // left right rotate
+			n->setChild(0, TreeNode::left_rotate(n->getChild(0)));
+			n_value->height = TreeNode::max_height(n_value->getL(), n_value->getR()) + 1;
+			n = TreeNode::right_rotate(n);
+		} else if (balance < -1 && TreeNode::node_balance(n_value->getR()) > 0 ) { // right Left Rotate
+			n->setChild(1, TreeNode::right_rotate(n->getChild(1)));
+			n_value->height = TreeNode::max_height(n_value->getL(), n_value->getR()) + 1;
+			n = TreeNode::left_rotate(n);
+		} else {
+            rotation_happened = false;
+        }
+
+        return n;
+    }
+
+    SafeNode<TreeNode>* rebalance_rem(SafeNode<TreeNode>* n) {
+        auto r_h = false;
+        return rebalance_rem(n, r_h);
+    }
+
+
+
+    bool remove_impl(const int k, const int t_id) {
+        bool success = false;
+        int retries = trans_retries;
+
+        while(!success) {
+            Transaction t(retries,_lock, stats[t_id]);
+
+            /* FIND PHASE */
+
+                
+            auto conn_point_data = find_conn_point<TreeNode>(k,&root);
+
+
+            if (!conn_point_data.found()) {
+                return false;
+            }
+
+
+            /* FIND PHASE END */
+
+            ConnPoint<TreeNode> conn(conn_point_data, success, t);
+
+            /* REMOVE */
+
+            auto node_to_be_deleted = conn.getRoot();
+
+            // just read them to see if they exist
+            auto l_child = node_to_be_deleted->peekChild(0);
+            auto r_child = node_to_be_deleted->peekChild(1);
+
+
+            // one or no children, at point of insertion
+            if (!l_child && !r_child) {
+                conn.setRoot(nullptr);
+                node_to_be_deleted = nullptr;
+            }
+            else if (!l_child || !r_child) {
+                auto temp = l_child ? node_to_be_deleted->getChild(0): node_to_be_deleted->getChild(1);
+
+                // just set it as new root
+                // of copied tree, if it exists
+                node_to_be_deleted = nullptr;
+                conn.setRoot(temp);
+            } else {
+                // search for smallest of the right subtree
+
+                NodeStack<SafeNode<TreeNode>> del_stack;
+
+                auto smallest = node_to_be_deleted->getChild(1);
+
+                while (smallest->getChild(0)) {
+                    del_stack.push(smallest);
+                    smallest = smallest->getChild(0);
+                }
+
+                auto node_to_be_deleted_values = node_to_be_deleted->safeRef();
+                auto smallest_ref = smallest->safeRef();
+
+                node_to_be_deleted_values->setKey(smallest_ref->getKey());
+                node_to_be_deleted_values->setValue(smallest_ref->getValue());
+
+                // directly below node
+                // at its right
+                // delete and set its right child as the next child of
+                // the proper node
+                if (del_stack.Empty()) {
+                    // std::cout << "FIRST" << std::endl;
+                    node_to_be_deleted->setChild(1, conn.create_safe(smallest_ref->getChild(1)));
+                } else {
+                    //std::cout << "second" << std::endl;
+                    auto parent_of_smallest = del_stack.pop();
+                    //std::cout << "parent of smallest " << parent_of_smallest << std::endl;
+                    //std::cout << "smallest " << smallest << std::endl;
+                    // delete node which was removed
+                    parent_of_smallest->setChild(0, conn.create_safe(smallest_ref->getChild(1)));
+
+                    // rebalance its parent
+                    auto new_child = rebalance_rem(parent_of_smallest);
+
+                    // while there is a path to 
+                    // the node to be deleted
+                    while(!del_stack.Empty()) {
+                        // remove from path
+                        auto temp_child = del_stack.pop();
+                        // connect already rebalanced
+                        temp_child->setChild(0, new_child);
+                        // create new rebalanced
+                        new_child = rebalance_rem(temp_child);
+                    }
+
+                    // finally add as child of node to be deleted
+                    node_to_be_deleted->setChild(1, new_child);
+                }
+
+                // std::cout << "right subtree " << node_to_be_deleted->getChild(1) << std::endl;
+                // std::cout << "right subtree " << node_to_be_deleted << std::endl;
+            }
+
+            // tree is now balanced up to the right
+            // subtree of the new node
+
+            // now rebalance the root of the copied tree
+            if (node_to_be_deleted) {
+                conn.setRoot(rebalance_rem(node_to_be_deleted));
+            }
+
+            int height_old;
+
+            bool rotation_happened = false;
+            // now rebalance upwards
+            for (SafeNode<TreeNode>* n = conn.pop_path(); n != nullptr; n = conn.pop_path()) {
+                auto n_values = n->safeRef();
+                height_old = n_values->height;
+
+                n = rebalance_rem(n, rotation_happened);
+
+                conn.setRoot(n);
+
+                if (height_old == n_values->height && !rotation_happened) {
+                    break;
+                } 
+            }
+        }
+
+        return true;
+    }
+
+
+
 
     public:
 
@@ -469,6 +648,10 @@ class AVLTree {
         root = node;
     }
 
+    long long key_sum() {
+        return key_sum_helper(root);
+    }
+
     bool isSorted() {
         if (!root) {
             return true;
@@ -497,93 +680,10 @@ class AVLTree {
         return conn_point_data.con_ptr.child_index;
     }
 
-    const int hard_retries = 5;
-    const int soft_retries = 100;
 
     bool remove(int k, int t_id) {
-        (void)k;
-        (void)t_id;
-        return true;
+        return remove_impl(k,t_id);
     }
-
-
-    // bool remove(int key, int t_id) {
-    //     bool success = false;
-    //     int retries = hard_retries;
-
-    //     while(!success) {
-    //         Transaction t(retries,_lock, stats[t_id],soft_retries);
-
-    //         auto conn_point_data = find_conn_point<TreeNode>(key,&root);
-
-    //         if (!conn_point_data.found()) {
-    //             return false;
-    //         }
-
-    //         ConnPoint<TreeNode> conn(conn_point_data, success, t);
-
-    //         // the connection point is above the
-    //         // node which will be deleted
-
-    //         // thus the node to be deleted will be
-    //         // the root of the copied tree
-    //         auto node_to_be_deleted = conn.getRoot();
-
-    //         // read only, to see if they exist
-    //         auto its_left_child = node_to_be_deleted->peekChild(0); 
-    //         auto its_right_child = node_to_be_deleted->peekChild(1);
-
-    //         if (!its_right_child && !its_left_child) {
-    //             conn.setRoot(nullptr);
-    //         } else if (!its_right_child) {
-    //             // get left child and replace node to be deleted with it
-    //             auto left_child = node_to_be_deleted->getChild(0);
-    //             conn.setRoot(left_child);
-    //         } else {
-    //             // get right child and search for the lowest leaf
-    //             // going left
-    //             SafeNode<TreeNode>* prev = nullptr;
-    //             auto curr = node_to_be_deleted->getChild(1);
-    //             for (; curr && curr->getChild(0); prev = curr, curr = curr->getChild(0));
-
-    //             auto node_to_replace_root = curr;
-
-
-               
-    //             // to modify a node's internals we need a safe reference
-    //             // that causes a copy of the node
-    //             TreeNode* node_to_be_deleted_copy = node_to_be_deleted->safeRef();
-    //             // no need to copy node we will be removing
-    //             // just look at the original to get its key and value
-    //             const TreeNode* node_to_replace_view = node_to_replace_root->peekOriginal();
-
-    //             auto new_key = node_to_replace_view->key;
-    //             auto new_value = node_to_replace_view->getValue();
-
-    //             node_to_be_deleted_copy->setKey(new_key);
-    //             node_to_be_deleted_copy->setValue(new_value);
-
-    //             // new node is fine, now
-    //             // remove old node
-
-    //             // to remove it, its right child should take its place
-
-    //             // get the right child
-    //             // and wrap it to be able to
-    //             // insert it into the copied tree
-    //             auto right_child = conn.create_safe(node_to_replace_root->peekChild(1));
-    //             if (prev) {
-    //                 prev->setChild(0,right_child);
-    //             } else {
-    //                 node_to_be_deleted->setChild(1,right_child);
-    //             }
-                
-    //         }
-
-    //     }
-
-    //     return true;
-    // }
 
 
     void print() {
@@ -623,14 +723,21 @@ class AVLTree {
         std::cout << std::endl << std::endl;
     }
 
-    void lite_stat(int n_threads) {
+
+    void lite_stat(int n_threads, long long n_ops = -1) {
         TSX::TSXStats total_stats;
         for (int i = 0; i < n_threads; i++) {
             total_stats += stats[i];
         }
 
+        if (n_ops > 0) {
+            std::cout << std::endl;
+            std::cout << "ABORTS/OP: " << (total_stats.tx_aborts * 100.0)/(n_ops) << "%" << std::endl;
+        }
         total_stats.print_lite_stats();
     }
+
+
 };
 
 

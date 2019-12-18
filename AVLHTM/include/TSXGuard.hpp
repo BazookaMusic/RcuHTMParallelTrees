@@ -29,18 +29,18 @@ namespace TSX {
                 UNLOCKED = false,
                 LOCKED = true
             };
-            std::atomic<bool> spin_lock;
+            std::atomic<bool> spin_lock_;
         public:
-            SpinLock(): spin_lock(false) {}
+            SpinLock(): spin_lock_(false) {}
 
             void lock() noexcept{
 
 
                 for (;;) {
                     // test
-                    while (spin_lock.load(std::memory_order_relaxed) == LOCKED) _mm_pause();
+                    while (spin_lock_.load(std::memory_order_relaxed) == LOCKED) _mm_pause();
 
-                    if (!spin_lock.exchange(LOCKED)) {
+                    if (!spin_lock_.exchange(LOCKED)) {
                         break;
                     }
 
@@ -48,11 +48,11 @@ namespace TSX {
             }
 
             void unlock() noexcept{
-                spin_lock.store(false);
+                spin_lock_.store(false);
             }
 
             bool isLocked() noexcept {
-                return spin_lock.load(std::memory_order_relaxed);
+                return spin_lock_.load(std::memory_order_relaxed);
             }
 
     };
@@ -101,10 +101,13 @@ namespace TSX {
             double cap_pc = (100.0*tx_aborts_per_reason[1]) / (tx_aborts);
             double lock_pc = (100.0*tx_aborts_per_reason[3]) / (tx_aborts);
             double commit_pc = (100.0*tx_commits) / (tx_starts);
-
-            std::cout << "AB/START:" << aborts_per_start << std::endl <<
-            "CONF:" << confl_pc << "%   " << "CAP:" << cap_pc << "%   " << "LOCK:" << lock_pc << "%" << std::endl
-            << "COM/START:" << commit_pc << "%" << std::endl ;
+            double explicit_pc = (100 * tx_aborts_per_reason[2]) / (tx_aborts);
+            
+            std::cout << "ABORTS: " << tx_aborts / 1000000.0 << "M" << std::endl <<
+            "AB/START:" << aborts_per_start << std::endl <<
+            "CONF:" << confl_pc << "%   " << "CAP:" << cap_pc << "%   " << "LOCK:" << lock_pc << "%" <<
+            "EXPL: " << explicit_pc << "%" << std::endl <<
+            "COM/START:" << commit_pc << "%" << std::endl ;
 
         }
 
@@ -163,7 +166,7 @@ namespace TSX {
     protected:
        
         const int max_retries;  // how many retries before lock acquire
-        SpinLock &spin_lock;    // fallback
+        SpinLock &spin_lock_;    // fallback
         bool has_locked;        // avoid checking global lock if haven't locked
         bool user_explicitly_aborted;   // explicit user aborts mean that lock is not taken and
                                         // transaction not pending
@@ -173,7 +176,7 @@ namespace TSX {
     public:
         TSXGuard(const int max_tx_retries, SpinLock &mutex, unsigned char &err_status,  bool disabled = false, RETRY_STRATEGY strat = STUBBORN): 
         max_retries(max_tx_retries),
-        spin_lock(mutex),
+        spin_lock_(mutex),
         has_locked(false),
         user_explicitly_aborted(false),
         nretries(max_tx_retries),
@@ -186,7 +189,7 @@ namespace TSX {
                     // try to init transaction
                     unsigned int status = _xbegin();
                     if (status == _XBEGIN_STARTED) {      // tx started
-                        if (!spin_lock.isLocked()) return; //successfully started transaction
+                        if (!spin_lock_.isLocked()) return; //successfully started transaction
                         // started txn but someone is executing the txn  section non-speculatively
                         // (acquired the  fall-back lock) -> aborting
                         _xabort(ABORT_GL_TAKEN); // abort with code 0xff
@@ -194,7 +197,7 @@ namespace TSX {
                         nretries >>= 1; // half strategy
                     } else if (status & _XABORT_EXPLICIT) {
                         if (_XABORT_CODE(status) == ABORT_GL_TAKEN && !(status & _XABORT_NESTED)) {
-                            while (spin_lock.isLocked()) _mm_pause();
+                            while (spin_lock_.isLocked()) _mm_pause();
                         } else if (_XABORT_CODE(status) > USER_OPTION_LOWER_BOUND) {
                             user_explicitly_aborted = true;
                             err_status = _XABORT_CODE(status);
@@ -212,7 +215,7 @@ namespace TSX {
                 }   //end
         fallback_lock:
                     has_locked = true;
-                    spin_lock.lock();
+                    spin_lock_.lock();
 
             } 
         }
@@ -245,8 +248,8 @@ namespace TSX {
         ~TSXGuard() {
             if (!user_explicitly_aborted && !disabled) {
                 // no abort code
-                if (has_locked && spin_lock.isLocked()) {
-                    spin_lock.unlock();
+                if (has_locked && spin_lock_.isLocked()) {
+                    spin_lock_.unlock();
                 } else {
                     _xend();
                 }
@@ -259,7 +262,7 @@ namespace TSX {
     class TSXGuardWithStats {
     private:
         const int max_retries;  // how many retries before lock acquire
-        SpinLock &spin_lock;    // fallback
+        SpinLock &spin_lock_;    // fallback
         bool has_locked;        // avoid checking global lock if haven't locked
         bool user_explicitly_aborted;   // explicit user aborts mean that lock is not taken and
                                         // transaction not pending
@@ -271,7 +274,7 @@ namespace TSX {
     public:
         TSXGuardWithStats(const int max_tx_retries, SpinLock &mutex, unsigned char &err_status, TSXStats &stats, bool disabled = false, RETRY_STRATEGY strat = STUBBORN):
         max_retries(max_tx_retries),
-        spin_lock(mutex),
+        spin_lock_(mutex),
         has_locked(false),
         user_explicitly_aborted(false),
         nretries(max_tx_retries),
@@ -289,7 +292,7 @@ namespace TSX {
                     unsigned int status = _xbegin();
                     if (status == _XBEGIN_STARTED) {   // tx started
                         _stats.tx_starts++;
-                        if (!spin_lock.isLocked()) return;  //successfully started transaction
+                        if (!spin_lock_.isLocked()) return;  //successfully started transaction
                         
                         // started txn but someone is executing the txn  section non-speculatively 
                         // (acquired the  fall-back lock) -> aborting
@@ -310,7 +313,7 @@ namespace TSX {
                         _stats.tx_aborts_per_reason[TX_ABORT_EXPLICIT]++;
                         if (_XABORT_CODE(status) == ABORT_GL_TAKEN && !(status & _XABORT_NESTED)) {
                             _stats.tx_aborts_per_reason[TX_ABORT_LOCK_TAKEN]++;
-                            while (spin_lock.isLocked()) _mm_pause();
+                            while (spin_lock_.isLocked()) _mm_pause();
                         } else if (_XABORT_CODE(status) > USER_OPTION_LOWER_BOUND) {
                             user_explicitly_aborted = true;
                             _stats.tx_aborts_per_reason[TX_ABORT_LOCK_TAKEN]++;
@@ -334,7 +337,7 @@ namespace TSX {
     fallback_lock:
                 _stats.tx_lacqs++;
                 has_locked = true;
-                spin_lock.lock();
+                spin_lock_.lock();
             }
             
         }
@@ -366,8 +369,8 @@ namespace TSX {
             if (!user_explicitly_aborted && !disabled) {
                 
                 // no abort code
-                if (has_locked && spin_lock.isLocked()) {
-                    spin_lock.unlock();
+                if (has_locked && spin_lock_.isLocked()) {
+                    spin_lock_.unlock();
                 } else {
                     _stats.tx_commits++; 
                     _xend();
@@ -377,6 +380,112 @@ namespace TSX {
         }     
         
     };
+
+    
+    class TSXTransOnlyGuard {
+    private:
+        int& retries_;  // how many retries before lock acquire
+        SpinLock &spin_lock_;    // fallback
+        bool user_explicitly_aborted;   // explicit user aborts mean that lock is not taken and
+                                        // transaction not pending
+        bool validation_failure;
+        TSXStats &_stats;
+        bool disabled;
+
+    public:
+        TSXTransOnlyGuard(int& retries, SpinLock &mutex, unsigned char &err_status, TSXStats &stats, bool disabled = false, RETRY_STRATEGY strat = STUBBORN):
+        retries_(retries),
+        spin_lock_(mutex),
+        user_explicitly_aborted(false),
+        validation_failure(false),
+        _stats(stats),
+        disabled(disabled)
+        {
+            
+
+            if (!disabled) {
+                while(retries_) {
+
+                    retries_--;
+                    
+                    // try to init transaction
+                    unsigned int status = _xbegin();
+                    if (status == _XBEGIN_STARTED) {   // tx started
+                        _stats.tx_starts++;
+                        if (!spin_lock_.isLocked()) return;  //successfully started transaction
+                        
+                        // started txn but someone is executing the txn  section non-speculatively 
+                        // (acquired the  fall-back lock) -> aborting
+
+                        _xabort(ABORT_GL_TAKEN); // abort with code 0xff  
+                    } else if (status & _XABORT_CAPACITY) {
+                        _stats.tx_aborts++;
+                        _stats.tx_aborts_per_reason[TX_ABORT_CAPACITY]++;
+                    } else if (status & _XABORT_CONFLICT) {
+                        _stats.tx_aborts++;
+                        _stats.tx_aborts_per_reason[TX_ABORT_CONFLICT]++;
+
+                        if (strat == HALF) {
+                            retries_ >>= 1;
+                        }
+                    } else if (status & _XABORT_EXPLICIT) {
+                        _stats.tx_aborts++;
+                        _stats.tx_aborts_per_reason[TX_ABORT_EXPLICIT]++;
+                        if (_XABORT_CODE(status) == ABORT_GL_TAKEN && !(status & _XABORT_NESTED)) {
+                            _stats.tx_aborts_per_reason[TX_ABORT_LOCK_TAKEN]++;
+                            while (spin_lock_.isLocked()) _mm_pause();
+                        } else if (_XABORT_CODE(status) > USER_OPTION_LOWER_BOUND) {
+                            user_explicitly_aborted = true;
+                            err_status = _XABORT_CODE(status);
+                            return;
+                        } else if(!(status & _XABORT_RETRY)) {
+                            _stats.tx_aborts_per_reason[TX_ABORT_REST]++;
+                            // if the system recommends not to retry
+                            // go to the fallback immediately
+                            goto HARD_ABORT; 
+                        } else {
+                            _stats.tx_aborts_per_reason[TX_ABORT_REST]++;
+                        }   
+                    }
+                    
+                    
+                    // too many retries_, take the fall-back lock 
+                    if (!retries_) break;
+
+            }   //end
+    HARD_ABORT:
+                // after too many aborts
+                // just restart from scratch
+                // by using the transaction
+                //std::cout << "should lock" << std::endl;
+                retries_ = 0;
+                validation_failure = true;
+                err_status = ABORT_VALIDATION_FAILURE;
+                return;
+            }
+            
+        }
+
+
+        // abort: aborts current transaction.
+        // Takes the error code as a template
+        // parameter.
+        template <unsigned char imm>
+        static void abort() {
+            static_assert(imm > USER_OPTION_LOWER_BOUND, 
+            "User aborts should be larger than USER_OPTION_LOWER_BOUND, as lower numbers are reserved");
+            _xabort(imm);
+        }
+
+        ~TSXTransOnlyGuard() {
+            if (!user_explicitly_aborted && !disabled && !validation_failure) {
+                    _stats.tx_commits++; 
+                    _xend();
+                }
+            }   
+        
+    };
+
 
 
 };

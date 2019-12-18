@@ -44,13 +44,13 @@ static constexpr int MAX_THREADS = 100;
  8.     int nextChild(int key): return index of next child to search for key
 */
 
-static constexpr unsigned char VALIDATION_FAILED = 0xee;
+static constexpr unsigned char VALIDATION_FAILED = TSX::ABORT_VALIDATION_FAILURE;
 
 template <class NodeType>
 class ConnPoint;
 
 template <class NodeType>
-class alignas(16) SafeNode
+class SafeNode
 {
     friend class ConnPoint<NodeType>;
     private:
@@ -388,44 +388,49 @@ struct ConnPointData {
 
 class Transaction {
     private:
-        int retries;
-        TSX::SpinLock &lock;
-        int non_explicit_retries;
-        TSX::TSXStats &stats;
+        int& retries_;
+        TSX::SpinLock &lock_;
+        TSX::TSXStats &stats_;
+        bool has_locked_;
 
     public:
-        Transaction(int &retries,TSX::SpinLock &global_lock, TSX::TSXStats &stats, int non_explicit_retries = 20): 
-        retries(retries), 
-        lock(global_lock), 
-        non_explicit_retries(non_explicit_retries), 
-        stats(stats) {
+        Transaction(int &retries,TSX::SpinLock &global_lock, TSX::TSXStats &stats): 
+        retries_(retries), 
+        lock_(global_lock), 
+        stats_(stats),
+        has_locked_(false) {
             if (retries == 0) {
-                lock.lock();
+                lock_.lock();
+                has_locked_ = true;
             }
+
         }
 
         bool go_to_fallback() {
-            return retries == 0;
+            return retries_ == 0;
         }
 
-        int get_non_explicit_retries() {
-            return non_explicit_retries;
-        }
 
         TSX::SpinLock& get_lock() {
-            return lock;
+            return lock_;
+        }
+
+        bool has_locked() {
+            return has_locked_;
         }
 
         TSX::TSXStats& get_stats() {
-            return stats;
+            return stats_;
+        }
+
+        int& get_retries() {
+            return retries_;
         }
 
         ~Transaction() {
-            if (go_to_fallback()) {
-                lock.unlock();
+            if (has_locked_) {
+                lock_.unlock();
             }
-
-            retries--;
         }
 };
 
@@ -596,10 +601,9 @@ class ConnPoint
         // using tsx if lock is already locked
         bool already_locked;
         
-        // parameter for the TSXGuard
-        // how many times should non explicit 
-        // aborts cause a retry
-        int non_explicit_retries;
+        // transactional retries before
+        // acquiring fallback lock
+        int& trans_retries;
 
         using SafeNodeType = SafeNode<NodeType>;
 
@@ -656,8 +660,8 @@ class ConnPoint
         _stats(t.get_stats()),
         head(nullptr),
         tree_was_modified(false),
-        already_locked(t.go_to_fallback()),
-        non_explicit_retries(t.get_non_explicit_retries())
+        already_locked(t.has_locked()),
+        trans_retries(t.get_retries())
         {
             #ifdef TSX_MEM_POOL
                 pool.reset();
@@ -733,8 +737,7 @@ class ConnPoint
         bool connect_atomically() noexcept {
             unsigned char err_status = 0;
             
-            TSX::TSXGuardWithStats guard(non_explicit_retries,_lock,err_status,_stats, already_locked, TSX::STUBBORN);
-
+            TSX::TSXTransOnlyGuard guard(trans_retries,_lock,err_status,_stats, already_locked, TSX::STUBBORN);
 
             if (err_status != VALIDATION_FAILED) {
 
@@ -808,7 +811,7 @@ class ConnPoint
 
         // get head
         SafeNode<NodeType>* getRoot() {
-            if (!head) {
+            if (!tree_was_modified && !head) {
                 tree_was_modified = true;
                 head = wrap_safe(conn_pointer_snapshot);
                 head->safeRef();

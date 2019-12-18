@@ -121,14 +121,25 @@ Infinite stack
 for when path size is not enough 
 
 */
+
 template <class NodeType>
 class NodeStack{
- private:
-        std::deque<NodeType*> stack;
+    private:
+        std::vector<NodeType*> stack;
         int currentIndex; 
- public:
+        
+
+    public:
         //TreePathStack used to traverse tree structures
-        NodeStack(): currentIndex(-1) {};
+        NodeStack(): stack(std::vector<NodeType*>()), currentIndex(-1) {
+                stack.reserve(STACK_DEPTH);
+            };
+
+        void clear() {
+            stack.clear();
+            stack.reserve(STACK_DEPTH);
+            currentIndex = -1;
+        }
         
 
         NodeType* bottom() {
@@ -138,12 +149,29 @@ class NodeStack{
 
             return stack[0];
         }
+
+        NodeType* top() {
+            if (currentIndex == -1) {
+                return nullptr;
+            }
+
+            return stack[currentIndex];
+        }
         
 
         //push pushes a node into the stack
+        //and stores the index of the next child
         void push(NodeType *node) {
-            stack[++currentIndex] = node;
+            currentIndex++;
+
+            if (currentIndex + 1 > (int)(stack.capacity())) {
+                stack.emplace_back(node);
+            } else {
+                stack[currentIndex] = node;
+            }
+     
         };
+
         //pop removes an element from the top of the stack
         //and returns the element
         NodeType* pop() {
@@ -152,21 +180,18 @@ class NodeStack{
             } 
 
             return stack[currentIndex--];
-        };
-        //peek returns a reference to the top
-        //of the stack
-        NodeType* peek() {
-            if (currentIndex < 0) {
-                return nullptr;
-            } 
-
-            return stack[currentIndex];
-        };
-
+        }
         //Empty returns true if stack is empty, else false
         bool Empty() {
             return currentIndex == -1;
-        };
+        }
+
+        void print_contents() {
+            while (!Empty()) {
+                auto cont = pop();
+                std::cout << cont << std::endl;
+            }
+        }
 
 };
 
