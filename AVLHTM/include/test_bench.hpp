@@ -2,6 +2,8 @@
     #define TEST_BENCH_HPP
 
 
+
+
 #include <iostream>
 #include <array>
 #include <thread>
@@ -179,6 +181,8 @@ class TestBench {
                             threads[i] = std::thread(rand_op, std::ref(run), std::ref(aMap), RANGE_OF_KEYS, i, std::ref(thread_stats[i]), exp.inserts,exp.removes,exp.lookups);
                     }
 
+
+                    #ifndef HACI3COMP
                     // Create a cpu_set_t object representing a set of CPUs. Clear it and mark
                     // only CPU i as set.
                     for (int i = 0; i < max_threads; i++) {
@@ -191,6 +195,32 @@ class TestBench {
                             std::cerr << "Error calling pthread_setaffinity_np: " << rc << "\n";
                         }
                     }
+                    #else
+                    for (int i = 0; i < max_threads/2; i++) {
+                        cpu_set_t cpuset;
+                        CPU_ZERO(&cpuset);
+                        CPU_SET(i, &cpuset);
+                        int rc = pthread_setaffinity_np(threads[i].native_handle(),
+                                        sizeof(cpu_set_t), &cpuset);
+                        if (rc != 0) {
+                            std::cerr << "Error calling pthread_setaffinity_np: " << rc << "\n";
+                        }
+                    }
+
+                    for (int i = max_threads/2; i < max_threads; i++) {
+                        cpu_set_t cpuset;
+                        CPU_ZERO(&cpuset);
+                        CPU_SET(28 + i - max_threads/2, &cpuset);
+                        int rc = pthread_setaffinity_np(threads[i].native_handle(),
+                                        sizeof(cpu_set_t), &cpuset);
+                        if (rc != 0) {
+                            std::cerr << "Error calling pthread_setaffinity_np: " << rc << "\n";
+                        }
+                    }
+
+                    #endif
+
+
 
 
                     run = true;

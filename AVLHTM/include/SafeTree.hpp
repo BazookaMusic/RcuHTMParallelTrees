@@ -8,6 +8,9 @@
         #define RCU_HTM_MAX_THREADS 100
     #endif
 
+   // #define EARLY_ABORT
+   //#define EARLY_ABORT_ON_COPY
+
     
 
 
@@ -44,7 +47,38 @@ static constexpr int MAX_THREADS = 100;
  8.     int nextChild(int key): return index of next child to search for key
 */
 
+// used by all ConnectionPoint class instances to signal
+// if a transaction succeeded or failed
+thread_local bool __thread_transaction_success_flag__ = false;
+#ifdef EARLY_ABORT
+    #define TM_SAFE_OPERATION_START \
+    __thread_transaction_success_flag__ = false;\
+    while(!__thread_transaction_success_flag__) { \
+    try {\
+
+    #define TM_SAFE_OPERATION_END \
+    }catch (const ValidationAbortException& e) {\
+        __thread_transaction_success_flag__ = false;\
+    }\
+    }
+
+#else
+    #define TM_SAFE_OPERATION_START \
+    __thread_transaction_success_flag__ = false;\
+    while(!__thread_transaction_success_flag__) \
+
+
+    #define TM_SAFE_OPERATION_END
+#endif
+
+
+
+
+
+
 static constexpr unsigned char VALIDATION_FAILED = TSX::ABORT_VALIDATION_FAILURE;
+
+class ValidationAbortException: std::exception{};   
 
 template <class NodeType>
 class ConnPoint;
@@ -109,6 +143,13 @@ class SafeNode
 
 
             for (int i = 0; i < NodeType::maxChildren(); i++) {
+                #ifdef EARLY_ABORT_ON_COPY
+                    if (children_pointers_snapshot[i] != original->getChild(i)) {
+                        conn_point. validation_abort();
+                        throw ValidationAbortException();
+                    }
+                #endif
+
                 copy->setChild(i,children_pointers_snapshot[i]);
             }
         }
@@ -185,10 +226,10 @@ class SafeNode
             return original;
         }
 
-        // safeRef: get reference to safe copy of node,
+        // rwRef: get reference to safe copy of node,
         // can be modified freely
         // as only one thread has access to it
-        NodeType* safeRef() {
+        NodeType* rwRef() {
             if (node_from_orig_tree && copy == original) {
                 make_copy();
             }
@@ -197,7 +238,7 @@ class SafeNode
         }
 
         // returns a reference safe for reading
-        const NodeType* readRef() const {
+        const NodeType* rRef() const {
             return copy;
         }
 
@@ -252,7 +293,7 @@ class SafeNode
             if (original_child) {
                 new_safe = node_from_orig_tree? conn_point.wrap_safe(original_child): conn_point.create_safe(original_child);
                 children[child_pos] = new_safe;
-                copy->setChild(child_pos, new_safe->safeRef());
+                copy->setChild(child_pos, new_safe->rwRef());
             }
            
 
@@ -296,7 +337,7 @@ class SafeNode
         }
 
         int getKey() const {
-            return readRef()->getKey();
+            return rRef()->getKey();
         }
 
 
@@ -605,6 +646,11 @@ class ConnPoint
         // acquiring fallback lock
         int& trans_retries;
 
+        // set to true if operation
+        // throws a validation error
+        bool validation_aborted;
+        
+
         using SafeNodeType = SafeNode<NodeType>;
 
 
@@ -648,8 +694,8 @@ class ConnPoint
         ConnPoint& operator=(const ConnPoint&) = delete;
         ConnPoint(const ConnPoint&) = delete;
 
-        ConnPoint(ConnPointData<NodeType>& data, bool& connected_successfully, Transaction& t):
-        connect_success(connected_successfully),
+        ConnPoint(ConnPointData<NodeType>& data, Transaction& t):
+        connect_success(__thread_transaction_success_flag__),
         connection_point(data.connection_point_), connection_pointer(nullptr),
         _root(data.root_of_structure),
         conn_pointer_snapshot(data.con_ptr.snapshot),
@@ -661,7 +707,8 @@ class ConnPoint
         head(nullptr),
         tree_was_modified(false),
         already_locked(t.has_locked()),
-        trans_retries(t.get_retries())
+        trans_retries(t.get_retries()),
+        validation_aborted(false)
         {
             #ifdef TSX_MEM_POOL
                 pool.reset();
@@ -727,14 +774,24 @@ class ConnPoint
             auto a = getRoot();
 
             while (a && a->getChild(1)) {
-                std::cout << a->safeRef() << std::endl;
+                std::cout << a->rwRef() << std::endl;
                 a = a->getChild(1);
             }
+        }
+
+        void validation_abort() {
+            validation_aborted = true;
+            trans_retries--;
         }
 
 
 
         bool connect_atomically() noexcept {
+
+            if (validation_aborted) {
+                return false;
+            }
+
             unsigned char err_status = 0;
             
             TSX::TSXTransOnlyGuard guard(trans_retries,_lock,err_status,_stats, already_locked, TSX::STUBBORN);
@@ -814,7 +871,7 @@ class ConnPoint
             if (!tree_was_modified && !head) {
                 tree_was_modified = true;
                 head = wrap_safe(conn_pointer_snapshot);
-                head->safeRef();
+                head->rwRef();
             }
             return head;
         }
@@ -962,11 +1019,18 @@ class ConnPoint
             newHead->setChild(child_to_exchange, head);
 
             //std::cout << newHead->getKey() << "'s child " << child_to_exchange << " " << newHead->getChild(child_to_exchange)->getKey() << std::endl;
-            //if (newHead->getChild(1)) std::cout << "child is " << newHead->safeRef()->getChild(1)->getKey() << std::endl;
+            //if (newHead->getChild(1)) std::cout << "child is " << newHead->rwRef()->getChild(1)->getKey() << std::endl;
             
             // ACHTUNG
             // the old connection point should necessarily continue 
             // pointing to it's old value
+            #ifdef EARLY_ABORT
+                if (newHead->original->getChild(child_to_exchange) != old_conn_pointer_snapshot) {
+                    validation_abort();
+                    throw ValidationAbortException();
+                }
+            #endif
+
             newHead->children_pointers_snapshot[child_to_exchange] = old_conn_pointer_snapshot;
             
             

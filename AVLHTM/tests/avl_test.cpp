@@ -11,9 +11,12 @@
 #include "../include/TSXGuard.hpp"
 #include "../include/test_bench.hpp"
 
-
+#ifndef HACI3COMP
 const static int THREADS = std::thread::hardware_concurrency();
-constexpr static int OPERATION_MULTIPLIER = 500000;
+#else
+const static int THREADS = 28;
+#endif
+constexpr static int OPERATION_MULTIPLIER = 1000000;
 
 using TestBenchType = TestBench<AVLTree<int>>;
 
@@ -28,6 +31,15 @@ TEST_CASE("AVLTree Init Test","[init]") {
 void insert(int i, AVLTree<int>& map, int t_id) {
     for (int j = i * OPERATION_MULTIPLIER; j < (i+1)*OPERATION_MULTIPLIER; j++) {
          map.insert(j,1,t_id);
+    }
+}
+
+
+void even_remove(AVLTree<int>& map, int i) {
+    for (int j = i * OPERATION_MULTIPLIER; j < (i+1)*OPERATION_MULTIPLIER; j++) {
+        if (j % 2 == 0) {
+            map.remove(j,i);
+        }
     }
 }
 
@@ -84,9 +96,9 @@ TEST_CASE("AVLTree Insert Test","[insert]") {
          SECTION("inserts all work together") {
             REQUIRE_NOTHROW(someMap.insert(4,1,0));
             REQUIRE(someMap.lookup(4).found);
-            someMap.print();
+            //someMap.print();
             REQUIRE_NOTHROW(someMap.insert(5,1,0));
-            someMap.print();
+            //someMap.print();
             REQUIRE(someMap.lookup(5).found);
             REQUIRE_NOTHROW(someMap.insert(6,1,0));
             REQUIRE(someMap.lookup(6).found);
@@ -155,129 +167,126 @@ TEST_CASE("AVLTree Multithreaded Insert Test","[mt_insert]") {
 
 
 
-// TEST_CASE("AVLTree Remove Test","[remove]") {
-//     SECTION("INTRO") {
-//         std::cout << "SINGLE THREADED REMOVE" << std::endl;
-//     }
+TEST_CASE("AVLTree Remove Test","[remove]") {
+    SECTION("INTRO") {
+        std::cout << "SINGLE THREADED REMOVE" << std::endl;
+    }
     
-//     AVLTree<int> someMap(nullptr, lock);
+    AVLTree<int> someMap(nullptr, lock);
 
-//     SECTION("root remove") {
-//         someMap.insert(1,1,0);
+    SECTION("root remove") {
+        someMap.insert(1,1,0);
 
-//         REQUIRE(someMap.lookup(1).found);
+        REQUIRE(someMap.lookup(1).found);
 
-//         someMap.remove(1,0);
+        REQUIRE(someMap.remove(1,0));
 
-//         REQUIRE(!someMap.lookup(1).found);
+        REQUIRE(!someMap.lookup(1).found);
         
-//     }
+    }
 
-//     SECTION("leaf tree remove") {
-//         someMap.insert(1,1,0);
-//         someMap.insert(2,1,0);
-//         someMap.insert(3,1,0);
-
-        
-
-//         someMap.remove(1,0);
-
-//         REQUIRE(!someMap.lookup(1).found);
-//         REQUIRE(someMap.lookup(2).found);
-//         REQUIRE(someMap.lookup(3).found);
-//     }
-
-//     SECTION("remove by replacing leftest subtree") {
-//         someMap.insert(6,1,0);
-//         someMap.insert(3,1,0);
-//         someMap.insert(9,1,0);
-//         someMap.insert(7,1,0);
-//         someMap.insert(10,1,0);
-
-
-//         //someMap.print();
+    SECTION("leaf tree remove") {
+        someMap.insert(1,1,0);
+        someMap.insert(2,1,0);
+        someMap.insert(3,1,0);
 
         
 
-//         someMap.remove(6,0);
+        someMap.remove(1,0);
 
-//         //std::cout << "7 IS "<< someMap.getRoot()->getChild(1)->getChild(0) << std::endl;
+        REQUIRE(!someMap.lookup(1).found);
+        REQUIRE(someMap.lookup(2).found);
+        REQUIRE(someMap.lookup(3).found);
+    }
+
+    SECTION("remove by replacing leftest subtree") {
+        someMap.insert(6,1,0);
+        someMap.insert(3,1,0);
+        someMap.insert(9,1,0);
+        someMap.insert(7,1,0);
+        someMap.insert(10,1,0);
+        someMap.insert(1,1,0);
+        someMap.insert(4,1,0);
+        someMap.insert(8,1,0);
+
         
-//         //someMap.print();
 
-//         REQUIRE(!someMap.lookup(6).found);
-//         REQUIRE(someMap.lookup(3).found);
-//         REQUIRE(someMap.lookup(9).found);
-//         REQUIRE(someMap.lookup(7).found);
-//         REQUIRE(someMap.lookup(10).found);
+        someMap.remove(6,0);
 
+        REQUIRE(!someMap.lookup(6).found);
+        REQUIRE(someMap.lookup(3).found);
+        REQUIRE(someMap.lookup(9).found);
+        REQUIRE(someMap.lookup(7).found);
+        REQUIRE(someMap.lookup(10).found);
+        REQUIRE(someMap.lookup(1).found);
+        REQUIRE(someMap.lookup(4).found);
+        REQUIRE(someMap.lookup(8).found);
 
+    }
 
-//     }
-
-//     SECTION("batch remove") {
-//         TestBenchType::binary_insert_map(0, THREADS*OPERATION_MULTIPLIER - 1,someMap);
-
-//         for (int i = 0; i < THREADS*OPERATION_MULTIPLIER; i++) {
-//             if ((i % 2) == 0) {
-//                 someMap.remove(i,0);
-//                 REQUIRE(!someMap.lookup(i).found);
-//             } else {
-//                 REQUIRE(someMap.lookup(i).found);
-//             }
+    SECTION("batch remove") {
+        TestBenchType::binary_insert_map(0, THREADS*OPERATION_MULTIPLIER - 1,someMap);
+        //someMap.print();
+        for (int i = 0; i < THREADS*OPERATION_MULTIPLIER; i++) {
+            if ((i % 2) == 0) {
+                someMap.remove(i,0);
+                if (someMap.lookup(i).found) {
+                    std::cout << "SHOULDNT " << i << std::endl;
+                    someMap.print();
+                }
+                REQUIRE(!someMap.lookup(i).found);
+            } else {
+                REQUIRE(someMap.lookup(i).found);
+            }
             
-//         }
-
-
-        
-
-//     }      
-// }
+        }
+     }
+    
+}
 
 
 
 
 
-// TEST_CASE("AVLTree MULTITHREADED Remove Test","[remove_mt]") {
-//     SECTION("intro") {
-//         std::cout << "MULTITHREADED Remove Test" << std::endl;
-//     }
+TEST_CASE("AVLTree MULTITHREADED Remove Test","[remove_mt]") {
+    SECTION("intro") {
+        std::cout << "MULTITHREADED Remove Test" << std::endl;
+    }
 
     
-//     std::thread threads[THREADS];
+    std::thread threads[THREADS];
     
 
-//     SECTION("mt remove") {
-//         for (int j = 0; j < 5; j++) {
-//             AVLTree<int> someMap(nullptr, lock);
-//             TestBenchType::binary_insert_map(0, THREADS*OPERATION_MULTIPLIER - 1,someMap);
+    SECTION("mt remove") {
+        for (int j = 0; j < 10; j++) {
+            AVLTree<int> someMap(nullptr, lock);
+            TestBenchType::binary_insert_map(0, THREADS*OPERATION_MULTIPLIER - 1,someMap);
 
-//             for (int i = 0; i < THREADS; i++) {
-//                 threads[i] = std::thread(even_remove, std::ref(someMap), i);
-//             }
+            for (int i = 0; i < THREADS; i++) {
+                threads[i] = std::thread(even_remove, std::ref(someMap), i);
+            }
 
-//             for (int i = 0; i < THREADS; i++) {
-//                 threads[i].join();
-//             }
+            for (int i = 0; i < THREADS; i++) {
+                threads[i].join();
+            }
 
-//             for (int i = 0; i < THREADS*OPERATION_MULTIPLIER; i++) {
-//                 if (i % 2 == 0) {
-//                     REQUIRE(!someMap.lookup(i).found);
-//                 } else {
-//                     if (!someMap.lookup(i).found) {
-//                         std::cerr << "MISSING " << i << std::endl;
-//                         REQUIRE(someMap.lookup(i).found);
-//                     }
-//                 }
-//             }
+            for (int i = 0; i < THREADS*OPERATION_MULTIPLIER; i++) {
+                if (i % 2 == 0) {
+                    REQUIRE(!someMap.lookup(i).found);
+                } else {
+                    if (!someMap.lookup(i).found) {
+                        std::cerr << "MISSING " << i << std::endl;
+                        REQUIRE(someMap.lookup(i).found);
+                    }
+                }
+            }
 
-//             REQUIRE(someMap.isSorted());
+            REQUIRE(someMap.isSorted());
 
-//         }
+        }
         
-//     }
-
-// }
+    }
+}
 
 
 TEST_CASE("THROUGHPUT TESTS","[tp]") {
@@ -287,36 +296,33 @@ TEST_CASE("THROUGHPUT TESTS","[tp]") {
     srand(time(NULL));
 
 
-    // SECTION("Totally random access") {
-    //     TestBenchType::experiment exp(33,33,34);
-    //     TestBenchType::test(exp, RANGE_OF_KEYS);
-    // }
+    SECTION("Totally random access") {
+        TestBenchType::experiment exp(33,33,34);
+        TestBenchType::test(exp,THREADS,RANGE_OF_KEYS,1);
+    }
 
-    // SECTION("80% lookups") {
-    //     TestBenchType::experiment exp(10,10,80);
-    //     TestBenchType::test(exp, RANGE_OF_KEYS);
-    // }
+    SECTION("80% lookups") {
+        TestBenchType::experiment exp(10,10,80);
+        TestBenchType::test(exp,THREADS,RANGE_OF_KEYS,1);
+    }
 
     SECTION("100% lookups") {
         TestBenchType::experiment exp(0,0,100);
-        TestBenchType::test(exp, RANGE_OF_KEYS);
+        TestBenchType::test(exp,THREADS,RANGE_OF_KEYS,1);
     }
 
 
-    // SECTION("50-50 Insert Remove ") {
-    //     TestBenchType::experiment exp(50,50,0);
-    //     TestBenchType::test(exp, RANGE_OF_KEYS);  
-    // }
+    SECTION("50-50 Insert Remove ") {
+        TestBenchType::experiment exp(50,50,0);
+        TestBenchType::test(exp,THREADS,RANGE_OF_KEYS,1);  
+    }
 
-    // SECTION("20-80 Insert Remove ") {
-    //     TestBenchType::experiment exp(20,80,0);
-    //     TestBenchType::test(exp, RANGE_OF_KEYS);
-    // }
+    SECTION("50% lookups") {
+        TestBenchType::experiment exp(25,25,50);
+        TestBenchType::test(exp,THREADS,RANGE_OF_KEYS,1);
+    }
 
-    // SECTION("80-20 Insert Remove ") {
-    //     TestBenchType::experiment exp(80,20,0);
-    //     TestBenchType::test(exp, RANGE_OF_KEYS);
-    //}
+
 
 }
 

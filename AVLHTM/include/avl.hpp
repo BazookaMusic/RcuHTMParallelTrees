@@ -80,8 +80,8 @@ class alignas(64) AVLNode {
             z->setChild(0,T2);
 
             // copy to change
-            auto z_safe = z->safeRef();
-            auto newRoot_safe = newRoot->safeRef();
+            auto z_safe = z->rwRef();
+            auto newRoot_safe = newRoot->rwRef();
 
             z_safe->height = max_height(z_safe->getL(), z_safe->getR()) + 1;
             newRoot_safe->height = max_height(newRoot_safe->getChild(0), newRoot_safe->getChild(1)) + 1;
@@ -108,8 +108,8 @@ class alignas(64) AVLNode {
             newRoot->setChild(0, z);
             z->setChild(1,temp);
 
-            auto z_safe = z->safeRef();
-            auto newRoot_safe = newRoot->safeRef();
+            auto z_safe = z->rwRef();
+            auto newRoot_safe = newRoot->rwRef();
 
             z_safe->height = max_height(z_safe->getChild(0), z_safe->getChild(1)) + 1;
             newRoot_safe->height = max_height(newRoot_safe->getChild(0), newRoot_safe->getChild(1)) + 1;
@@ -345,7 +345,7 @@ class AVLTree {
 
         SafeNode<TreeNode>* rebalance_ins(SafeNode<TreeNode>* n, int k, bool rotation_happened) {
              // reads and writes are safe
-            auto n_values = n->safeRef();
+            auto n_values = n->rwRef();
 
             // calculate node height
             n_values->height = TreeNode::max_height(n_values->getL(), n_values->getR()) + 1;
@@ -381,27 +381,27 @@ class AVLTree {
         }
 
         bool insert_impl(const int k, ValueType val, int t_id) {
-            
-            bool success = false;
-            int retries = trans_retries;
 
-            while(!success) {
+            int retries = trans_retries;
+            
+            TM_SAFE_OPERATION_START {
+
                 Transaction t(retries,_lock, stats[t_id]);
 
                 /* FIND PHASE */
 
                 
-                auto conn_point_data = find_conn_point<TreeNode>(k,&root);
+                auto conn_point_snapshot = find_conn_point<TreeNode>(k,&root);
 
 
-                if (conn_point_data.found()) {
+                if (conn_point_snapshot.found()) {
                     return false;
                 }
 
 
-                 /* FIND PHASE END */
+                    /* FIND PHASE END */
 
-                ConnPoint<TreeNode> conn(conn_point_data, success, t);
+                ConnPoint<TreeNode> conn(conn_point_snapshot, t);
 
                 /* INSERT */
 
@@ -418,7 +418,7 @@ class AVLTree {
 
 
                 // if not inserting at root
-                if (conn_point_data.connection_point()) {
+                if (conn_point_snapshot.connection_point()) {
                     
                     bool rotation_happened = false;
                     int height_old = 0;
@@ -428,7 +428,7 @@ class AVLTree {
                     
                     // go up path and rebalance
                     for (SafeNode<TreeNode>* n = conn.pop_path(); n != nullptr; n = conn.pop_path()) {
-                        auto n_values = n->safeRef();
+                        auto n_values = n->rwRef();
                         height_old = n_values->height;
 
                         n = rebalance_ins(n, k , rotation_happened);
@@ -441,18 +441,23 @@ class AVLTree {
 
                     }
                 }
-            }
+            } TM_SAFE_OPERATION_END
 
+            // OPERATION END can be omitted if
+            // not using EARLY ABORT COMPILATION FLAGS
+            
+            
+       
             return true;
 
         }
 
 
     SafeNode<TreeNode>* rebalance_rem(SafeNode<TreeNode>* n, bool& rotation_happened) {
-        auto n_value = n->safeRef();
+        auto n_value = n->rwRef();
 
 		// calculate node height
-        // can peek children from a safeRef
+        // can peek children from a rwRef
         // could also use n->peekChild
 		n_value->height = TreeNode::max_height(n_value->getL(), n_value->getR()) + 1;
 
@@ -484,28 +489,27 @@ class AVLTree {
     }
 
 
-
     bool remove_impl(const int k, const int t_id) {
-        bool success = false;
+        
         int retries = trans_retries;
 
-        while(!success) {
+        TM_SAFE_OPERATION_START {
             Transaction t(retries,_lock, stats[t_id]);
 
             /* FIND PHASE */
 
                 
-            auto conn_point_data = find_conn_point<TreeNode>(k,&root);
+            auto conn_point_snapshot = find_conn_point<TreeNode>(k,&root);
 
 
-            if (!conn_point_data.found()) {
+            if (!conn_point_snapshot.found()) {
                 return false;
             }
 
 
             /* FIND PHASE END */
 
-            ConnPoint<TreeNode> conn(conn_point_data, success, t);
+            ConnPoint<TreeNode> conn(conn_point_snapshot, t);
 
             /* REMOVE */
 
@@ -540,8 +544,8 @@ class AVLTree {
                     smallest = smallest->getChild(0);
                 }
 
-                auto node_to_be_deleted_values = node_to_be_deleted->safeRef();
-                auto smallest_ref = smallest->safeRef();
+                auto node_to_be_deleted_values = node_to_be_deleted->rwRef();
+                auto smallest_ref = smallest->rwRef();
 
                 node_to_be_deleted_values->setKey(smallest_ref->getKey());
                 node_to_be_deleted_values->setValue(smallest_ref->getValue());
@@ -579,8 +583,6 @@ class AVLTree {
                     node_to_be_deleted->setChild(1, new_child);
                 }
 
-                // std::cout << "right subtree " << node_to_be_deleted->getChild(1) << std::endl;
-                // std::cout << "right subtree " << node_to_be_deleted << std::endl;
             }
 
             // tree is now balanced up to the right
@@ -596,7 +598,7 @@ class AVLTree {
             bool rotation_happened = false;
             // now rebalance upwards
             for (SafeNode<TreeNode>* n = conn.pop_path(); n != nullptr; n = conn.pop_path()) {
-                auto n_values = n->safeRef();
+                auto n_values = n->rwRef();
                 height_old = n_values->height;
 
                 n = rebalance_rem(n, rotation_happened);
@@ -607,7 +609,7 @@ class AVLTree {
                     break;
                 } 
             }
-        }
+        } TM_SAFE_OPERATION_END
 
         return true;
     }
@@ -676,8 +678,8 @@ class AVLTree {
     }
 
     int find_conn(int desired_key) {
-        auto conn_point_data = find_conn_point<TreeNode>(desired_key,&root);
-        return conn_point_data.con_ptr.child_index;
+        auto conn_point_snapshot = find_conn_point<TreeNode>(desired_key,&root);
+        return conn_point_snapshot.con_ptr.child_index;
     }
 
 
