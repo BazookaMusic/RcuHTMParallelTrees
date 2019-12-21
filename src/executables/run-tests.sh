@@ -1,1 +1,0 @@
-g++ -std=c++0x -pthread -O3 avl_test_main.o ./urcu/urcu.o avl_test.cpp -Wall -Werror -Wextra -o tests && ./tests -r compact 
