@@ -128,7 +128,7 @@ class BST {
 
         // helpers
 
-        static long long key_sum_helper(TreeNode* node) {
+        static std::size_t key_sum_helper(TreeNode* node) {
             if (!node) {
                 return 0;
             } 
@@ -419,7 +419,7 @@ class BST {
         root = node;
     }
 
-    long long key_sum() {
+    std::size_t key_sum() {
         return key_sum_helper(root);
     }
 

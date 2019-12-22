@@ -13,6 +13,26 @@
         #define RCU_HTM_MAX_THREADS 100
     #endif
 
+    // search tree allows the creation
+    // of search trees as defined by the
+    // methods of the user node given
+    // with optimized conflict detection
+    // and a search functions provided
+    // automatically
+    #define SEARCH_TREE 0
+    // general tree allows the creation
+    // of any kind of tree structure
+    // but with an unoptimized
+    // conflict detection mechanism
+    #define GENERAL_TREE 1
+
+    // Set desired tree type
+    #ifndef TREE_TYPE
+        #define TREE_TYPE SEARCH_TREE
+    #endif
+
+
+
     // memory pools for SafeNodes
     #define TSX_MEM_POOL
 
@@ -75,6 +95,7 @@ static constexpr int MAX_THREADS = RCU_HTM_MAX_THREADS;
 // if a transaction succeeded or failed
 thread_local bool __internal__thread_transaction_success_flag__ = false;
 
+// thread safe operation macro definitions
 #ifdef TM_EARLY_ABORT
     #define TM_SAFE_OPERATION_START \
     __internal__thread_transaction_success_flag__ = false;\
@@ -94,6 +115,90 @@ thread_local bool __internal__thread_transaction_success_flag__ = false;
 
 
     #define TM_SAFE_OPERATION_END
+#endif
+
+
+// internal use
+enum INSERT_POSITIONS {AT_ROOT = -1, UNDEFINED = -2};
+
+
+
+#if TREE_TYPE == GENERAL_TREE
+    template <class NodeType>
+    struct ConnPointData;
+
+    // used to implement
+    // lookup functions for the thread safe operations
+    template <class NodeType>
+    class PathTracker {
+        private:
+            // adress of pointer to root of structure
+            NodeType** root_;
+
+            NodeType* current_pos_;
+            int at_level;
+            TreePathStackWithIndex<NodeType> path;
+
+
+        public:
+            // PathTracker: receives adress of pointer to root of structure. 
+            // Tracks a path on the tree to be used for a thread safe operation.
+            explicit PathTracker(NodeType** root): root_(root), current_pos_(*root), at_level(-1) {}
+
+            // getNode: return the node where the
+            // tracker is currently pointing
+            NodeType* getNode() {
+                return current_pos_;
+            }
+
+            // moveToChild: move the tracker to one of
+            // the children of the node it's currently pointing to
+            NodeType* moveToChild(int pos) {
+                ++at_level;
+
+                path.push(current_pos_, pos);
+                current_pos_ = current_pos_->getChild(pos);
+
+                return current_pos_;
+            }
+
+             // moveUp: move the tracker up
+            // n levels on the path it has followed
+            void moveUp(int n_levels = 1) {
+                at_level = at_level >= n_levels ? at_level - n_levels: -1;
+
+                for (int i = 0; at_level >= 0 && i < n_levels - 1; i++) {
+                    path.pop();
+                }
+
+                if (!path.Empty()) {
+                    current_pos_ =  path.pop().node;
+                }   
+            }
+
+            // set previous node in path followed
+            // as connection point. Return ConnPointData
+            // object which allows for a tree
+            // of copies to be constructed.
+            ConnPointData<NodeType> connectHere() {
+
+                ConnPointData<NodeType> conn_point_snapshot;
+
+                bool at_root = at_level == -1;
+                NodeAndNextPointer<NodeType> conn_point_and_next_child = path.pop();
+                conn_point_snapshot.connection_point_ = at_root ? nullptr: conn_point_and_next_child.node;
+
+                path.move_to(conn_point_snapshot.path);
+
+                conn_point_snapshot.root_of_structure = root_;
+
+                conn_point_snapshot.con_ptr.child_index = at_root? INSERT_POSITIONS::AT_ROOT :  conn_point_and_next_child.next_child;
+                conn_point_snapshot.con_ptr.snapshot = current_pos_;
+
+
+                return conn_point_snapshot;
+            }
+    };
 #endif
 
 
@@ -397,7 +502,6 @@ struct NodeData {
     std::array<NodeType*, NodeType::maxChildren()> childrenSnapShot;
 };
 
-enum INSERT_POSITIONS {AT_ROOT = -1, UNDEFINED = -2};
 
 template <class NodeType>
 struct ConnectionPointer {
@@ -429,17 +533,24 @@ struct ConnPointData {
     friend class ConnPoint<T>;
     template <class NodeType>
     friend ConnPointData<NodeType> find_conn_point(int key, NodeType** root);
+    #if TREE_TYPE == GENERAL_TREE
+        friend class PathTracker<T>;
+    #endif
 
     private:
         ConnectionPointer<T> con_ptr;    
         T* connection_point_;
-        bool found_;
+        #if TREE_TYPE == SEARCH_TREE
+            bool found_;
+        #endif
         TreePathStackWithIndex<T> path;
         T** root_of_structure;
     public:
-        bool found() const {
-            return found_;
-        }
+        #if TREE_TYPE == SEARCH_TREE
+            bool found() const {
+                return found_;
+            }
+        #endif
 
         T* connection_point() const {
             return connection_point_;
@@ -677,12 +788,59 @@ class ConnPoint
 
         using SafeNodeType = SafeNode<NodeType>;
 
+        #if TREE_TYPE == GENERAL_TREE
+            // chech if path to connPoint hasn't changed
+            // and if conn_point exists in the tree
+            bool path_unchanged() {
+
+                
+                // modifying at root?
+                if (path_to_conn_point.Empty()) {
+                    return true;
+                }
+
+                // root is unchanged?
+                auto supposed_root = path_to_conn_point.bottom();
+
+                auto to_be_validated = *_root;
+                auto next_child = supposed_root.next_child;
+
+                if (supposed_root.node != to_be_validated) {
+                    return false;
+                }
+
+               
+
+
+                // do the same for the rest of the path to the conn_point
+                NodeType* supposed_next_child = supposed_root.node->getChild(next_child);
+
+                for (int i = 1; i < path_to_conn_point.size(); ++i) {
+                    
+                    if (path_to_conn_point[i].node != supposed_next_child) {
+                        return false;
+                    }
+
+                    to_be_validated = supposed_next_child;
+                    supposed_next_child = to_be_validated->getChild(path_to_conn_point[i].next_child);
+                }
+
+
+                // the last node of the path should be the connection point 
+                return supposed_next_child == connection_point;
+            }
+        #endif
+
 
         
         
         // lookup but returns node, nullptr when not found
         bool connPointConnected() {
-            return find_target_node<NodeType>(*_root, connection_point);
+            #if TREE_TYPE == SEARCH_TREE
+                return find_target_node<NodeType>(*_root, connection_point);
+            #else
+                return path_unchanged();
+            #endif
         }
 
         // wrap_safe: wrap a node in a SafeNode,
@@ -1080,97 +1238,104 @@ class ConnPoint
 
 //---------------------//
 
-// Traverse tree with given root and return the node with
-// the key given. The node will be determined by the traversalDone
-// method and the path taken by the nextChild method. 
-template <class NodeType>
-NodeType* find(NodeType* root, int desired_key) {
-    auto curr = root;
-    for (; curr && !curr->traversalDone(desired_key); curr = curr->getChild(curr->nextChild(desired_key))) {
-    // search for node with key
-    }
+// Search functions come for free, if 
+// building a search tree
 
-    return curr;
-}
+#if TREE_TYPE == SEARCH_TREE
 
-// Traverse tree with given root and find if it contains
-// the target node. The nextChild method determines the
-// path taken
-template <class NodeType>
-bool find_target_node(NodeType* root, NodeType* target) {
-    auto curr = root;
-
-    for (; curr; curr = curr->getChild(curr->nextChild(target))) {
-        if (curr == target) {
-            return true;
+    // Traverse tree with given root and return the node with
+    // the key given. The node will be determined by the traversalDone
+    // method and the path taken by the nextChild method. 
+    template <class NodeType>
+    NodeType* find(NodeType* root, int desired_key) {
+        auto curr = root;
+        for (; curr && !curr->traversalDone(desired_key); curr = curr->getChild(curr->nextChild(desired_key))) {
+        // search for node with key
         }
+
+        return curr;
     }
 
-    return curr == target;
-}
+    // Traverse tree with given root and find if it contains
+    // the target node. The nextChild method determines the
+    // path taken
+    template <class NodeType>
+    bool find_target_node(NodeType* root, NodeType* target) {
+        auto curr = root;
 
-// find_conn_point: traverse tree with given root and return a ConnPointData object for the
-// node with the given key. The node will be determined by the traversalDone
-// method and the path taken by the nextChild method.
-template <class NodeType>
-ConnPointData<NodeType> find_conn_point(int key, NodeType** root) {
-    // give address of root node
-    // find the connection point of both remove and insert operations
-    // we are looking for the node before the one with key
+        for (; curr; curr = curr->getChild(curr->nextChild(target))) {
+            if (curr == target) {
+                return true;
+            }
+        }
 
-    // everything we need to create a conn point
-    ConnPointData<NodeType> result;
-
-    result.root_of_structure = root;
-
-    NodeType* orig_head = *root;  // first step, get snapshot of head 
-                                //(can change during runtime, use only copy)
-
-    // will keep the previous node      
-    // which will be the connection point
-
-
-    NodeType* curr = orig_head;
-
-    // search for node with key
-    for (; curr && !curr->traversalDone(key);) {
-         
-        auto next_child = curr->nextChild(key);
-
-        // search for node with key, adding path to stack and keeping the prev
-        result.path.push(curr, next_child);    
-        curr = curr->getChild(next_child);                                     
-    };
-
-
-
-    int prev_next_child_index = INSERT_POSITIONS::AT_ROOT;
-
-    NodeType* prev_s = nullptr;
-
-    if (!result.path.Empty()) {
-        auto stack_top =  result.path.pop();
-        prev_s = stack_top.node;
-        prev_next_child_index = stack_top.next_child;
+        return curr == target;
     }
 
+    // find_conn_point: traverse tree with given root and return a ConnPointData object for the
+    // node with the given key. The node will be determined by the traversalDone
+    // method and the path taken by the nextChild method.
+    template <class NodeType>
+    ConnPointData<NodeType> find_conn_point(int key, NodeType** root) {
+        // give address of root node
+        // find the connection point of both remove and insert operations
+        // we are looking for the node before the one with key
 
-    // was a node found
-    result.found_ = curr && curr->hasKey(key);
+        // everything we need to create a conn point
+        ConnPointData<NodeType> result;
 
-    // set prev as the connection point
-    // will be null if operation happens at head
-    result.connection_point_ = prev_s;
+        result.root_of_structure = root;
 
-    // the child to which the pointer to change corresponds
-    // should be AT_ROOT if there's no connection_point
-    result.con_ptr.child_index = prev_next_child_index;
+        NodeType* orig_head = *root;  // first step, get snapshot of head 
+                                    //(can change during runtime, use only copy)
 
-    // the original value of the pointer to change
-    result.con_ptr.snapshot = result.connection_point_ ? curr : orig_head;
+        // will keep the previous node      
+        // which will be the connection point
 
-    return result;
-}
+
+        NodeType* curr = orig_head;
+
+        // search for node with key
+        for (; curr && !curr->traversalDone(key);) {
+            
+            auto next_child = curr->nextChild(key);
+
+            // search for node with key, adding path to stack and keeping the prev
+            result.path.push(curr, next_child);    
+            curr = curr->getChild(next_child);                                     
+        };
+
+
+
+        int prev_next_child_index = INSERT_POSITIONS::AT_ROOT;
+
+        NodeType* prev_s = nullptr;
+
+        if (!result.path.Empty()) {
+            auto stack_top =  result.path.pop();
+            prev_s = stack_top.node;
+            prev_next_child_index = stack_top.next_child;
+        }
+
+
+        // was a node found
+        result.found_ = curr && curr->hasKey(key);
+
+        // set prev as the connection point
+        // will be null if operation happens at head
+        result.connection_point_ = prev_s;
+
+        // the child to which the pointer to change corresponds
+        // should be AT_ROOT if there's no connection_point
+        result.con_ptr.child_index = prev_next_child_index;
+
+        // the original value of the pointer to change
+        result.con_ptr.snapshot = result.connection_point_ ? curr : orig_head;
+
+        return result;
+    }
+
+#endif
 
 
 #endif

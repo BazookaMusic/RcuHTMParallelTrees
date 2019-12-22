@@ -169,7 +169,7 @@ class TestBench {
                     std::size_t insert_sum = 0;
                     std::size_t rem_sum = 0;
 
-                    long long start_sum = aMap.key_sum();
+                    std::size_t start_sum = aMap.key_sum();
 
                     run = false;
 
@@ -259,7 +259,7 @@ class TestBench {
                         rem_sum += thread_stats[i].sum_removes;
                     }
 
-                    REQUIRE((start_sum + insert_sum - rem_sum) == aMap.key_sum());
+                    REQUIRE((start_sum + insert_sum - rem_sum) == reinterpret_cast<std::size_t>(aMap.key_sum()));
             }
         }
 

@@ -204,7 +204,6 @@ struct NodeAndNextPointer {
 
 };
 
-
 template <class NodeType>
 class TreePathStackWithIndex{
     private:
@@ -216,10 +215,24 @@ class TreePathStackWithIndex{
         //TreePathStack used to traverse tree structures
         TreePathStackWithIndex(): stack(std::vector<NodeAndNextPointer<NodeType>>()), currentIndex(-1) {
                 stack.reserve(STACK_DEPTH);
-            };
+        };
+
+        void move_to(TreePathStackWithIndex& other_stack) {
+            other_stack.stack.swap(stack);
+            other_stack.currentIndex = currentIndex;
+        }
+
+
+        int size() const {
+            return currentIndex + 1;
+        }
+
+        const NodeAndNextPointer<NodeType>& operator[](int i) {
+            return stack[i];
+        }
         
 
-        NodeAndNextPointer<NodeType> bottom() {
+        NodeAndNextPointer<NodeType> bottom() const {
             if (currentIndex == -1) {
                 return NodeAndNextPointer<NodeType>{nullptr,-1};
             }
@@ -227,7 +240,7 @@ class TreePathStackWithIndex{
             return stack[0];
         }
 
-        NodeAndNextPointer<NodeType> top() {
+        NodeAndNextPointer<NodeType> top() const {
             if (currentIndex == -1) {
                 return NodeAndNextPointer<NodeType>{nullptr,-1};
             }
@@ -265,9 +278,8 @@ class TreePathStackWithIndex{
         }
 
         void print_contents() {
-            while (!Empty()) {
-                auto cont = pop();
-                std::cout << cont.node << "    " << cont.next_child << std::endl;
+            for (int i = 0; i <= currentIndex; ++i)  {
+                std::cout << stack[i].node << "    " << stack[i].next_child << std::endl;
             }
         }
 
