@@ -77,18 +77,19 @@
 
 static constexpr int MAX_THREADS = RCU_HTM_MAX_THREADS;
 
-/* SafeTrees require Nodes with the following methods
- 1.     A bool hasKey(int key) method to return if the node contains a key
- 2.     A copy constructor, copy assignment and destructor (RULE OF THREE)
- 3.     NodeType* getChild(int i)
- 4.     void setChild(int i, NodeType * n)
- 5.     NodeType** getChildPointer(int i): get a pointer to the stored tree pointer
-        (where the i'th child is stored)
- 6.     static constexpr int maxChildren(): max amount of children for each node, 
- 7.     bool traversalDone(int key): returns true if the node with key is the caller, can also
-        consider other factors like if it is a terminal node
- 8.     int nextChild(int target_key): return index of next child when looking for node with target_key
- 9.     int nextChild(NodeType* target): return index of next child when looking for target node
+/*  SafeTrees require Nodes with the following methods for the general tree version
+    1.     A bool hasKey(int key) method to return if the node contains a key
+    2.     A copy constructor, copy assignment and destructor (RULE OF THREE)
+    3.     NodeType* getChild(int i)
+    4.     void setChild(int i, NodeType * n)
+    5.     NodeType** getChildPointer(int i): get a pointer to the stored tree pointer
+            (where the i'th child is stored)
+    The optimized search tree version also requires:
+    6.     static constexpr int maxChildren(): max amount of children for each node, 
+    7.     bool traversalDone(int key): returns true if the node with key is the caller, can also
+            consider other factors like if it is a terminal node
+    8.     int nextChild(int target_key): return index of next child when looking for node with target_key
+    9.     int nextChild(NodeType* target): return index of next child when looking for target node
 */
 
 // used by all ConnectionPoint class instances to signal
@@ -208,7 +209,9 @@ enum INSERT_POSITIONS {AT_ROOT = -1, UNDEFINED = -2};
 
 static constexpr unsigned char VALIDATION_FAILED = TSX::ABORT_VALIDATION_FAILURE;
 
-class ValidationAbortException: std::exception{};   
+#ifdef TM_EARLY_ABORT
+    class ValidationAbortException: std::exception{};   
+#endif
 
 template <class NodeType>
 class ConnPoint;
@@ -296,17 +299,17 @@ class SafeNode
         SafeNode(){}
 
         #ifndef USER_NODE_POOL
-        ~SafeNode() {
-            if (node_from_orig_tree) {
-                if (deleted && original != copy) {
-                    delete copy;
-                }
+        // ~SafeNode() {
+        //     if (node_from_orig_tree) {
+        //         if (deleted && original != copy) {
+        //             delete copy;
+        //         }
 
-                if (conn_point.copyWasConnected()) {
-                    delete original;
-                }
-            }  
-        }
+        //         if (conn_point.copyWasConnected()) {
+        //             delete original;
+        //         }
+        //     }  
+        // }
         #endif
         SafeNode(ConnPoint<NodeType>& _conn_point, NodeType* _original, bool node_from_orig_tree = true): 
         conn_point(_conn_point), 
