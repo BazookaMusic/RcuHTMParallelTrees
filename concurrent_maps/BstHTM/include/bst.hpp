@@ -10,6 +10,9 @@
 #include "../../../include/SafeTree.hpp"
 
 
+using namespace SafeTree;
+
+
 constexpr int THREAD_AMOUNT_MAX = 100;
 TSX::TSXStats stats[THREAD_AMOUNT_MAX];
 

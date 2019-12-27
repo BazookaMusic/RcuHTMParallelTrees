@@ -11,6 +11,8 @@
 #include "../../../include/TSXGuard.hpp"
 #include "../../../include/test_bench.hpp"
 
+using namespace SafeTree;
+
 #ifndef HACI3COMP
 const static int THREADS = std::thread::hardware_concurrency();
 #else

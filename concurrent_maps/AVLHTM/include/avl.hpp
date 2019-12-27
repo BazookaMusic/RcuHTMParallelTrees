@@ -9,6 +9,8 @@
 #include <tuple>
 #include "../../../include/SafeTree.hpp"
 
+using namespace SafeTree;
+
 
 constexpr int THREAD_AMOUNT_MAX = 100;
 TSX::TSXStats stats[THREAD_AMOUNT_MAX];
@@ -428,7 +430,7 @@ class AVLTree {
                 if (conn_point_snapshot.connection_point()) {
                     
                     bool rotation_happened = false;
-                    int height_old = 0;
+                    
                     
 
                     /* REBALANCE */
@@ -436,7 +438,7 @@ class AVLTree {
                     // go up path and rebalance
                     for (SafeNode<TreeNode>* n = conn.pop_path(); n != nullptr; n = conn.pop_path()) {
                         auto n_values = n->rwRef();
-                        height_old = n_values->height;
+                        int height_old = n_values->height;
 
                         n = rebalance_ins(n, k , rotation_happened);
 
@@ -562,12 +564,12 @@ class AVLTree {
                 // delete and set its right child as the next child of
                 // the proper node
                 if (del_stack.Empty()) {
-                    node_to_be_deleted->setChild(1, conn.create_safe(smallest_ref->getChild(1)));
+                    node_to_be_deleted->setChild(1, conn.wrap_no_validate(smallest_ref->getChild(1)));
                 } else {
                     auto parent_of_smallest = del_stack.pop();
                     
                     // delete node which was removed
-                    parent_of_smallest->setChild(0, conn.create_safe(smallest_ref->getChild(1)));
+                    parent_of_smallest->setChild(0, conn.wrap_no_validate(smallest_ref->getChild(1)));
 
                     // rebalance its parent
                     auto new_child = rebalance_rem(parent_of_smallest);
