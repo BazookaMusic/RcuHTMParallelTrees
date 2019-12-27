@@ -78,13 +78,13 @@
 static constexpr int MAX_THREADS = RCU_HTM_MAX_THREADS;
 
 /*  SafeTrees require Nodes with the following methods for the general tree version
-    1.     A bool hasKey(int key) method to return if the node contains a key
-    2.     A copy constructor, copy assignment and destructor (RULE OF THREE)
-    3.     NodeType* getChild(int i)
-    4.     void setChild(int i, NodeType * n)
-    5.     NodeType** getChildPointer(int i): get a pointer to the stored tree pointer
+    1.     A copy constructor, copy assignment and destructor (RULE OF THREE)
+    2.     NodeType* getChild(int i)
+    3.     void setChild(int i, NodeType * n)
+    4.     NodeType** getChildPointer(int i): get a pointer to the stored tree pointer
             (where the i'th child is stored)
     The optimized search tree version also requires:
+    5.     A bool hasKey(int key) method to return if the node contains a key
     6.     static constexpr int maxChildren(): max amount of children for each node, 
     7.     bool traversalDone(int key): returns true if the node with key is the caller, can also
             consider other factors like if it is a terminal node
@@ -238,13 +238,7 @@ class SafeNode
         // returns old value
         static SafeNode<NodeType>* move(SafeNode<NodeType>*& to_be_replaced, SafeNode<NodeType>* replacement) {
 
-            auto temp = to_be_replaced;
-
-            if (to_be_replaced) {
-                // mark for deletion
-                to_be_replaced->deleted = true;
-            }
-            
+            auto temp = to_be_replaced;  
 
             // replace value
             to_be_replaced = replacement;
@@ -846,19 +840,6 @@ class ConnPoint
             #endif
         }
 
-        // wrap_safe: wrap a node in a SafeNode,
-        // node is from the original tree,
-        // returns nullptr if nullptr is given.
-        SafeNode<NodeType>* wrap_safe(NodeType* some_node) {
-            if (!some_node) {
-                return nullptr;
-            }
-           #ifdef TSX_MEM_POOL
-            return ConnPoint::pool.create(*this, some_node);
-           #else
-            return new SafeNode<NodeType>(*this, some_node);
-           #endif
-        }
 
         void add_to_validation_set(SafeNode<NodeType>* a_node) {
             #ifdef STATIC_VECTORS_AND_ARRAYS
@@ -956,12 +937,12 @@ class ConnPoint
             
             // CLEANUP DISABLED !!!
 
-            // const bool clean_all = !copy_connected;
+            const bool clean_all = !copy_connected;
 
-            // for (auto it = validation_set.begin(); it != validation_set.end(); ++it)  {
-            //     it->safeNode->deleted = clean_all;
-            //     delete it->safeNode;
-            // }
+            for (auto it = validation_set.begin(); it != validation_set.end(); ++it)  {
+                it->safeNode->deleted = clean_all;
+                // delete it->safeNode;
+            }
 
         }
 
@@ -1015,6 +996,21 @@ class ConnPoint
             
             return newNode;  
         }
+
+        // wrap_safe: wrap a node in a SafeNode,
+        // node is from the original tree,
+        // returns nullptr if nullptr is given.
+        SafeNode<NodeType>* wrap_safe(NodeType* some_node) {
+            if (!some_node) {
+                return nullptr;
+            }
+           #ifdef TSX_MEM_POOL
+            return ConnPoint::pool.create(*this, some_node);
+           #else
+            return new SafeNode<NodeType>(*this, some_node);
+           #endif
+        }
+
 
 
         // newTree: Wraps newly created node in a SafeNode and sets it to
