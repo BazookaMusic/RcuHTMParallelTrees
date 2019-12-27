@@ -286,6 +286,22 @@ class SafeNode
             return copy;
         }
 
+        void cleanup() {
+            if (node_from_orig_tree) {
+                if (deleted && original != copy) {
+                    delete copy;
+                }
+
+                if (conn_point.copyWasConnected() && original != copy) {
+                    delete original;
+                }
+            } else {
+                if (!conn_point.copyWasConnected()) {
+                    delete copy;
+                }
+            }
+        }
+
     
     public:
         SafeNode(const SafeNode& other) = delete;
@@ -881,6 +897,7 @@ class ConnPoint
             validation_aborted = true;
             trans_retries--;
         }
+
 
 
     public:
