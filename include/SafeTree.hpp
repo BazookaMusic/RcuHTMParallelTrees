@@ -203,10 +203,6 @@ enum INSERT_POSITIONS {AT_ROOT = -1, UNDEFINED = -2};
 #endif
 
 
-
-
-
-
 static constexpr unsigned char VALIDATION_FAILED = TSX::ABORT_VALIDATION_FAILURE;
 
 #ifdef TM_EARLY_ABORT
@@ -219,6 +215,12 @@ class ConnPoint;
 template <class NodeType>
 class SafeNode
 {
+    enum SAFENODE_TYPE {
+        ORIG_TREE_NODE,
+        ORIG_TREE_NO_VALIDATION,
+        NEW_NODE
+    };
+
     friend class ConnPoint<NodeType>;
     private:
         ConnPoint<NodeType>& conn_point;
@@ -231,7 +233,7 @@ class SafeNode
 
         bool deleted;
 
-        bool node_from_orig_tree;
+        SAFENODE_TYPE node_type;
 
 
         // mark previous for deletion and move new value
@@ -287,7 +289,7 @@ class SafeNode
         }
 
         void cleanup() {
-            if (node_from_orig_tree) {
+            if (node_type == ORIG_TREE_NODE) {
                 if (deleted && original != copy) {
                     delete copy;
                 }
@@ -302,6 +304,7 @@ class SafeNode
             }
         }
 
+        
     
     public:
         SafeNode(const SafeNode& other) = delete;
@@ -321,23 +324,23 @@ class SafeNode
         //     }  
         // }
         #endif
-        SafeNode(ConnPoint<NodeType>& _conn_point, NodeType* _original, bool node_from_orig_tree = true): 
+        SafeNode(ConnPoint<NodeType>& _conn_point, NodeType* _original, SAFENODE_TYPE node_type = ORIG_TREE_NODE): 
         conn_point(_conn_point), 
         original(_original), 
         copy(_original),
         deleted(false),
-        node_from_orig_tree(node_from_orig_tree)
+        node_type(node_type)
         {
 
             // all nodes will be added to validation set
             // as it is used for memory management as well
             conn_point.add_to_validation_set(this);
 
-            if (node_from_orig_tree) {
+            if (node_type == ORIG_TREE_NODE) {
                 for (int i = 0; i < NodeType::maxChildren(); i++) {
-                        // keep backup of the original child pointers
-                        auto original_child = original->getChild(i);
-                        children_pointers_snapshot[i] = original_child;
+                    // keep backup of the original child pointers
+                    auto original_child = original->getChild(i);
+                    children_pointers_snapshot[i] = original_child;
                 }
             }
             
@@ -349,6 +352,7 @@ class SafeNode
                 modified[i] = false;
             }        
         }
+
 
         static constexpr int children_length() {
             return NodeType::maxChildren();
@@ -370,7 +374,7 @@ class SafeNode
         // can be modified freely
         // as only one thread has access to it
         NodeType* rwRef() {
-            if (node_from_orig_tree && copy == original) {
+            if (node_type == ORIG_TREE_NODE && copy == original) {
                 make_copy();
             }
             
@@ -402,13 +406,14 @@ class SafeNode
             */
             // no oob errors
             assert(child_pos >= 0 && child_pos < NodeType::maxChildren());
+            assert(node_type != ORIG_TREE_NO_VALIDATION && "Validation Error: Tried to access a child of a node with disabled validation");
 
             // force parent copy
             // getting a child
             // explicitly
             // means that you
             // seek to modify it
-            if (copy == original && node_from_orig_tree) {
+            if (copy == original && node_type == ORIG_TREE_NODE) {
                 make_copy();
             }
             
@@ -431,7 +436,7 @@ class SafeNode
             //child not copied yet,
             //copy and use the copy from now on
             if (original_child) {
-                new_safe = node_from_orig_tree? conn_point.wrap_safe(original_child): conn_point.create_safe(original_child);
+                new_safe = node_type == ORIG_TREE_NODE ? conn_point.wrap_safe(original_child): conn_point.create_safe(original_child);
                 children[child_pos] = new_safe;
                 copy->setChild(child_pos, new_safe->rwRef());
             }
@@ -448,10 +453,12 @@ class SafeNode
         SafeNode<NodeType>* setChild(int child_pos, SafeNode<NodeType>* newVal) {
             // no oob errors
             assert(child_pos >= 0 && child_pos < NodeType::maxChildren());
+            assert(node_type != ORIG_TREE_NO_VALIDATION && "Validation Error: Tried to access a child of a node with disabled validation");
+
 
             // node needs to be modified
             // copy it
-            if (copy == original && node_from_orig_tree) {
+            if (copy == original && node_type == ORIG_TREE_NODE) {
                 make_copy();
             }
 
@@ -1009,9 +1016,9 @@ class ConnPoint
 
             
             #ifdef TSX_MEM_POOL
-                auto newNode = ConnPoint::pool.create(*this, some_node, false);
+                auto newNode = ConnPoint::pool.create(*this, some_node, SafeNode<NodeType>::NEW_NODE);
             #else
-                auto newNode = new SafeNode<NodeType>(*this, some_node, false);
+                auto newNode = new SafeNode<NodeType>(*this, some_node, SafeNode<NodeType>::NEW_NODE);
             #endif
 
 
@@ -1035,6 +1042,20 @@ class ConnPoint
             return new SafeNode<NodeType>(*this, some_node);
            #endif
         }
+
+        // wrap_safe: wrap a node in a SafeNode,
+        // node is from the original tree but skip validation
+        SafeNode<NodeType>* wrap_no_validate(NodeType* some_node) {
+            if (!some_node) {
+                return nullptr;
+            }
+           #ifdef TSX_MEM_POOL
+            return ConnPoint::pool.create(*this, some_node, SafeNode<NodeType>::ORIG_TREE_NO_VALIDATION);
+           #else
+            return new SafeNode<NodeType>(*this, some_node, SafeNode<NodeType>::ORIG_TREE_NO_VALIDATION);
+           #endif
+        }
+
 
 
 
@@ -1137,7 +1158,7 @@ class ConnPoint
             // have the children pointers of the original nodes changed?
             for (auto it = validation_set.begin(); it != validation_set.end(); ++it) {
                     // skip for new nodes
-                    if ((*it)->node_from_orig_tree) {
+                    if ((*it)->node_type == SafeNode<NodeType>::ORIG_TREE_NODE) {
                         // the original node and its current children
                         const auto original_node = (*it)->original;
 
