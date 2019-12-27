@@ -261,7 +261,7 @@ class TreePathStackWithIndex{
                 stack[currentIndex].next_child = index;
             }
      
-        };
+        }
 
         //pop removes an element from the top of the stack
         //and returns the element

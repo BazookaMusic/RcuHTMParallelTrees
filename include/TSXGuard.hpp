@@ -196,26 +196,26 @@ namespace TSX {
     class TSXGuard {
     protected:
        
-        const int max_retries;  // how many retries before lock acquire
+        const int max_retries_;  // how many retries before lock acquire
         SpinLock &spin_lock_;    // fallback
-        bool has_locked;        // avoid checking global lock if haven't locked
-        bool user_explicitly_aborted;   // explicit user aborts mean that lock is not taken and
+        bool has_locked_;        // avoid checking global lock if haven't locked
+        bool user_explicitly_aborted_;   // explicit user aborts mean that lock is not taken and
                                         // transaction not pending
-        int nretries;           // how many retries have been made so far
+        int nretries_;           // how many retries have been made so far
                                 // used to resume transaction in case of user abort
-        bool disabled;
+        bool disabled_;
     public:
         TSXGuard(const int max_tx_retries, SpinLock &mutex, unsigned char &err_status,  bool disabled = false, RETRY_STRATEGY strat = STUBBORN): 
-        max_retries(max_tx_retries),
+        max_retries_(max_tx_retries),
         spin_lock_(mutex),
-        has_locked(false),
-        user_explicitly_aborted(false),
-        nretries(max_tx_retries),
-        disabled(disabled)
+        has_locked_(false),
+        user_explicitly_aborted_(false),
+        nretries_(max_tx_retries),
+        disabled_(disabled)
         {
-            if (!disabled) {
+            if (!disabled_) {
                 while(1) {
-                    --nretries;
+                    --nretries_;
 
                     // try to init transaction
                     unsigned int status = _xbegin();
@@ -225,12 +225,12 @@ namespace TSX {
                         // (acquired the  fall-back lock) -> aborting
                         _xabort(ABORT_GL_TAKEN); // abort with code 0xff
                     } else if (strat == HALF && (status & _XABORT_CONFLICT))  {
-                        nretries >>= 1; // half strategy
+                        nretries_ >>= 1; // half strategy
                     } else if (status & _XABORT_EXPLICIT) {
                         if (_XABORT_CODE(status) == ABORT_GL_TAKEN && !(status & _XABORT_NESTED)) {
                             while (spin_lock_.isLocked()) _mm_pause();
                         } else if (_XABORT_CODE(status) > USER_OPTION_LOWER_BOUND) {
-                            user_explicitly_aborted = true;
+                            user_explicitly_aborted_ = true;
                             err_status = _XABORT_CODE(status);
                             return;
                         } else if(!(status & _XABORT_RETRY)) {
@@ -241,11 +241,11 @@ namespace TSX {
                     } 
 
                     // too many retries, take the fall-back lock 
-                    if (!nretries) break;
+                    if (!nretries_) break;
 
                 }   //end
         fallback_lock:
-                    has_locked = true;
+                    has_locked_ = true;
                     spin_lock_.lock();
 
             } 
@@ -261,8 +261,8 @@ namespace TSX {
             static_assert(imm > USER_OPTION_LOWER_BOUND, 
             "User aborts should be larger than USER_OPTION_LOWER_BOUND, as lower numbers are reserved");
             _xabort(imm);
-            user_explicitly_aborted = true;
-            return max_retries - nretries;
+            user_explicitly_aborted_ = true;
+            return max_retries_ - nretries_;
         }
 
         // abort: aborts current transaction.
@@ -277,9 +277,9 @@ namespace TSX {
 
 
         ~TSXGuard() {
-            if (!user_explicitly_aborted && !disabled) {
+            if (!user_explicitly_aborted_ && !disabled_) {
                 // no abort code
-                if (has_locked && spin_lock_.isLocked()) {
+                if (has_locked_ && spin_lock_.isLocked()) {
                     spin_lock_.unlock();
                 } else {
                     _xend();
@@ -292,32 +292,32 @@ namespace TSX {
 
     class TSXGuardWithStats {
     private:
-        const int max_retries;  // how many retries before lock acquire
+        const int max_retries_;  // how many retries before lock acquire
         SpinLock &spin_lock_;    // fallback
-        bool has_locked;        // avoid checking global lock if haven't locked
-        bool user_explicitly_aborted;   // explicit user aborts mean that lock is not taken and
+        bool has_locked_;        // avoid checking global lock if haven't locked
+        bool user_explicitly_aborted_;   // explicit user aborts mean that lock is not taken and
                                         // transaction not pending
-        int nretries;           // how many retries have been made so far
+        int nretries_;           // how many retries have been made so far
                                 // used to resume transaction in case of user abort
         TSXStats &_stats;
-        bool disabled;
+        bool disabled_;
 
     public:
         TSXGuardWithStats(const int max_tx_retries, SpinLock &mutex, unsigned char &err_status, TSXStats &stats, bool disabled = false, RETRY_STRATEGY strat = STUBBORN):
-        max_retries(max_tx_retries),
+        max_retries_(max_tx_retries),
         spin_lock_(mutex),
-        has_locked(false),
-        user_explicitly_aborted(false),
-        nretries(max_tx_retries),
+        has_locked_(false),
+        user_explicitly_aborted_(false),
+        nretries_(max_tx_retries),
         _stats(stats),
-        disabled(disabled)
+        disabled_(disabled)
         {
             
 
-            if (!disabled) {
+            if (!disabled_) {
                 while(true) {
 
-                    --nretries;
+                    --nretries_;
                     
                     // try to init transaction
                     unsigned int status = _xbegin();
@@ -337,7 +337,7 @@ namespace TSX {
                         _stats.tx_aborts_per_reason[TX_ABORT_CONFLICT]++;
 
                         if (strat == HALF) {
-                            nretries >>= 1;
+                            nretries_ >>= 1;
                         }
                     } else if (status & _XABORT_EXPLICIT) {
                         _stats.tx_aborts++;
@@ -346,7 +346,7 @@ namespace TSX {
                             _stats.tx_aborts_per_reason[TX_ABORT_LOCK_TAKEN]++;
                             while (spin_lock_.isLocked()) _mm_pause();
                         } else if (_XABORT_CODE(status) > USER_OPTION_LOWER_BOUND) {
-                            user_explicitly_aborted = true;
+                            user_explicitly_aborted_ = true;
                             _stats.tx_aborts_per_reason[TX_ABORT_LOCK_TAKEN]++;
                             err_status = _XABORT_CODE(status);
                             return;
@@ -362,12 +362,12 @@ namespace TSX {
                     
                     
                     // too many retries, take the fall-back lock 
-                    if (!nretries) break;
+                    if (!nretries_) break;
 
             }   //end
     fallback_lock:
                 _stats.tx_lacqs++;
-                has_locked = true;
+                has_locked_ = true;
                 spin_lock_.lock();
             }
             
@@ -382,8 +382,8 @@ namespace TSX {
             static_assert(imm > USER_OPTION_LOWER_BOUND, 
             "User aborts should be larger than USER_OPTION_LOWER_BOUND, as lower numbers are reserved");
             _xabort(imm);
-            user_explicitly_aborted = true;
-            return max_retries - nretries;
+            user_explicitly_aborted_ = true;
+            return max_retries_ - nretries_;
         }
 
         // abort: aborts current transaction.
@@ -397,10 +397,10 @@ namespace TSX {
         }
 
         ~TSXGuardWithStats() {
-            if (!user_explicitly_aborted && !disabled) {
+            if (!user_explicitly_aborted_ && !disabled_) {
                 
                 // no abort code
-                if (has_locked && spin_lock_.isLocked()) {
+                if (has_locked_ && spin_lock_.isLocked()) {
                     spin_lock_.unlock();
                 } else {
                     _stats.tx_commits++; 
@@ -417,24 +417,24 @@ namespace TSX {
     private:
         int& retries_;  // how many retries before lock acquire
         SpinLock &spin_lock_;    // fallback
-        bool user_explicitly_aborted;   // explicit user aborts mean that lock is not taken and
+        bool user_explicitly_aborted_;   // explicit user aborts mean that lock is not taken and
                                         // transaction not pending
-        bool validation_failure;
+        bool validation_failure_;
         TSXStats &_stats;
-        bool disabled;
+        bool disabled_;
 
     public:
         TSXTransOnlyGuard(int& retries, SpinLock &mutex, unsigned char &err_status, TSXStats &stats, bool disabled = false, RETRY_STRATEGY strat = STUBBORN):
         retries_(retries),
         spin_lock_(mutex),
-        user_explicitly_aborted(false),
-        validation_failure(false),
+        user_explicitly_aborted_(false),
+        validation_failure_(false),
         _stats(stats),
-        disabled(disabled)
+        disabled_(disabled)
         {
             
 
-            if (!disabled) {
+            if (!disabled_) {
                 while(retries_) {
 
                     retries_--;
@@ -466,7 +466,7 @@ namespace TSX {
                             _stats.tx_aborts_per_reason[TX_ABORT_LOCK_TAKEN]++;
                             while (spin_lock_.isLocked()) _mm_pause();
                         } else if (_XABORT_CODE(status) > USER_OPTION_LOWER_BOUND) {
-                            user_explicitly_aborted = true;
+                            user_explicitly_aborted_ = true;
                             err_status = _XABORT_CODE(status);
                             return;
                         } else if(!(status & _XABORT_RETRY)) {
@@ -490,7 +490,7 @@ namespace TSX {
                 // by using the transaction
                 //std::cout << "should lock" << std::endl;
                 retries_ = 0;
-                validation_failure = true;
+                validation_failure_ = true;
                 err_status = ABORT_VALIDATION_FAILURE;
                 return;
             }
@@ -509,7 +509,7 @@ namespace TSX {
         }
 
         ~TSXTransOnlyGuard() {
-            if (!user_explicitly_aborted && !disabled && !validation_failure) {
+            if (!user_explicitly_aborted_ && !disabled_ && !validation_failure_) {
                     _stats.tx_commits++; 
                     _xend();
                 }

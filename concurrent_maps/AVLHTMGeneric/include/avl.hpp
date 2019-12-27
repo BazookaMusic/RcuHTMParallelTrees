@@ -375,7 +375,7 @@ class AVLTree {
             return tracker.connectHere();
         }
 
-        SafeNode<TreeNode>* rebalance_ins(SafeNode<TreeNode>* n, int k, bool rotation_happened) {
+        SafeNode<TreeNode>* rebalance_ins(SafeNode<TreeNode>* n, int k, bool& rotation_happened) {
              // reads and writes are safe
             auto n_values = n->rwRef();
 
