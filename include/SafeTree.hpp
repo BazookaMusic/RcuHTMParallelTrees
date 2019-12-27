@@ -921,7 +921,7 @@ class ConnPoint
             connect_success = false;
         }
 
-        ~ConnPoint() {
+         ~ConnPoint() {
 
             // if ConnPoint is deleted
             // but its copy
@@ -936,12 +936,20 @@ class ConnPoint
             //
             
             // CLEANUP DISABLED !!!
-
+            
             const bool clean_all = !copy_connected;
 
             for (auto it = validation_set.begin(); it != validation_set.end(); ++it)  {
-                it->safeNode->deleted = clean_all;
-                // delete it->safeNode;
+                if (clean_all || (*it)->deleted) {
+                    (*it)->deleted |= clean_all;
+                    // // cleanup should happen here
+                    // #ifndef TSX_MEM_POOL
+                    //     delete (*it);
+                    // #else
+                    //     (*it)->cleanup();
+                    // // #endif
+                }
+
             }
 
         }
