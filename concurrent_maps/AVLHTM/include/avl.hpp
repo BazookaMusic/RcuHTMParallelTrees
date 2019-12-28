@@ -32,7 +32,7 @@ class alignas(32) AVLNode {
 
         using SafeAVLNode = SafeNode<AVLNode<ValueType>>;
 
-
+        // return how balanced the current node is
         static int node_balance(AVLNode *node) {
             if (!node) {
                 return 0;
@@ -47,6 +47,8 @@ class alignas(32) AVLNode {
             return l_height - r_height;
         }
 
+        // returns the max of the heights of two subtrees
+        // or 0 if nullptr
         static inline unsigned int max_height(AVLNode *l, AVLNode *r) {
             int l_height = l ? l->height: 0;
             int r_height = r ? r->height: 0;
@@ -58,6 +60,10 @@ class alignas(32) AVLNode {
             return r_height;
         }
 
+        // right avl rotation
+        // notice how all it takes is to use
+        // SafeNodes instead of AVL Nodes but the code
+        // stays the same as the serial version
         static SafeAVLNode* right_rotate(SafeAVLNode* z) {
             /*  T1, T2, T3 and T4 are subtrees.
                 z                                      y
@@ -70,7 +76,7 @@ class alignas(32) AVLNode {
 
             assert(z != nullptr);
             // left becomes root
-            auto newRoot = z->getChild(0);
+            auto newRoot = z->getChild(0);  // use the SafeNode to get children
 
             assert(newRoot != nullptr);
             // left's right will be moved to old root's left
@@ -82,7 +88,7 @@ class alignas(32) AVLNode {
             z->setChild(0,T2);
 
             // copy to change
-            auto z_safe = z->rwRef();
+            auto z_safe = z->rwRef();   // for values get a reference
             auto newRoot_safe = newRoot->rwRef();
 
             z_safe->height = max_height(z_safe->getL(), z_safe->getR()) + 1;
@@ -91,6 +97,7 @@ class alignas(32) AVLNode {
             return newRoot;
         }
 
+        // left rotation
         static SafeAVLNode* left_rotate(SafeAVLNode *z) {
             /*	     z                                y
                 /  \                             /   \
@@ -124,9 +131,45 @@ class alignas(32) AVLNode {
             children[1] = right_child;
         }
 
+        // to satisfy search tree interface
         bool hasKey(int key_requested) {
             return key == key_requested;
         }
+
+        int nextChild(int desired_key) const {
+            return desired_key < key ? 0 : 1;
+        }
+
+        bool traversalDone(int desired_key) const {
+            return key == desired_key;
+        }
+
+        int nextChild(const AVLNode* target) const {
+            return target->key < key ? 0 : 1;
+        }
+
+        // and the basic required methods
+         static constexpr int maxChildren() {
+            return 2;
+        }
+   
+        AVLNode** getChildPointer(int i) {
+            assert(i >= 0 && i < 2);
+            return &children[i];
+        }
+
+        AVLNode* getChild(int i) {
+            assert(i >= 0 && i < 2);
+            return children[i];
+        }
+
+        
+        void setChild(int i, AVLNode* node) {
+            assert(i >= 0 && i < 2);
+            children[i] = node;
+        }
+
+        // helpers for the avl tree
 
         int getKey() const {
             return key;
@@ -144,18 +187,6 @@ class alignas(32) AVLNode {
             value = new_val;
         }
 
-        AVLNode** getChildPointer(int i) {
-            assert(i >= 0 && i < 2);
-            return &children[i];
-        }
-
-        AVLNode* getChild(int i) {
-            assert(i >= 0 && i < 2);
-            return children[i];
-        }
-
-
-
         AVLNode* getL() {
             return children[0];
         }
@@ -164,11 +195,6 @@ class alignas(32) AVLNode {
             return children[1];
         }
 
-
-        void setChild(int i, AVLNode* node) {
-            assert(i >= 0 && i < 2);
-            children[i] = node;
-        }
 
         AVLNode* setL(AVLNode* n) {
             children[0] = n;
@@ -186,21 +212,6 @@ class alignas(32) AVLNode {
             return children;
         }
 
-        static constexpr int maxChildren() {
-            return 2;
-        }
-
-        int nextChild(int desired_key) const {
-            return desired_key < key ? 0 : 1;
-        }
-
-        bool traversalDone(int desired_key) const {
-            return key == desired_key;
-        }
-
-        int nextChild(const AVLNode* target) const {
-            return target->key < key ? 0 : 1;
-        }   
 };
 
 template <class ValueType>
@@ -222,6 +233,8 @@ class AVLTree {
 
         // helpers
 
+        // sum of keys of tree
+        // for validation
         static std::size_t key_sum_helper(TreeNode* node) {
             if (!node) {
                 return 0;
@@ -230,6 +243,7 @@ class AVLTree {
             return node->getKey() + key_sum_helper(node->getChild(0)) + key_sum_helper(node->getChild(1));
         }
 
+        // number of nodes of tree
         static int count_nodes(TreeNode* node) {
             if (!node) {
                 return 0;
@@ -239,6 +253,7 @@ class AVLTree {
         }
 
 
+        // copy the tree
         void node_copy(AVLNode<ValueType>* curr, AVLNode<ValueType>* copy_curr = nullptr) {
             if (!curr) return;
 
@@ -253,6 +268,7 @@ class AVLTree {
             node_copy(curr->getChild(1), copy_curr->getChild(1));
         }
 
+        // print the tree pre-order
         void print_contents(AVLNode<ValueType>* root) {
             if (!root) {
                 return;
@@ -263,6 +279,7 @@ class AVLTree {
             print_contents(root->getChild(1));
         }
 
+        //print in-order
         void print_sorted_contents(AVLNode<ValueType>* root) {
             if (!root) {
                 return;
@@ -273,6 +290,7 @@ class AVLTree {
             print_sorted_contents(root->getChild(1));
         }
 
+        // print up to a certain height (depth)
         void print_depth(AVLNode<ValueType>* root,int depth) {
             if (depth <= 0 || !root) {
                 return;
@@ -283,6 +301,7 @@ class AVLTree {
             print_depth(root->getChild(1), depth-1);
         }
 
+        // tree's longest branch
         int longest_branch(AVLNode<ValueType>* root) {
             if (!root) {
                 return 0;
@@ -295,6 +314,7 @@ class AVLTree {
                     1 + right_branch_length;
         }
         
+        // tree's averge branch size
         void averageBranchHelper(AVLNode<ValueType>* root,int& total_leaves, int& total_length, int curr_branch_length = 1) {
             if (!root) {
                 return;
@@ -318,6 +338,7 @@ class AVLTree {
             return total_leaves ? total_length / total_leaves: -1;
         }
 
+        // bst validator
         bool isBstHelper(TreeNode* node,int min, int max) {
             if (!node) {
                 return true;
@@ -332,6 +353,7 @@ class AVLTree {
             return isBstHelper(node->getChild(0), min, nodekey) && isBstHelper(node->getChild(1), nodekey, max);
         }
 
+        // avl balance validator
         bool isBalancedHelper(TreeNode* node) {
             if (!node) {
                 return true;
@@ -343,6 +365,7 @@ class AVLTree {
             return abs(l_height - r_height) < 2 && isBalancedHelper(node->getL()) && isBalancedHelper(node->getR());
         }
 
+        // recursively delete
         void rec_delete(TreeNode* node) {
             if (!node) return;
 
@@ -352,7 +375,9 @@ class AVLTree {
             delete node;
         }
 
+        // apply rebalancing for an insertion operation
         SafeNode<TreeNode>* rebalance_ins(SafeNode<TreeNode>* n, int k, bool& rotation_happened) {
+
              // reads and writes are safe
             auto n_values = n->rwRef();
 
@@ -383,19 +408,21 @@ class AVLTree {
                 rotation_happened = false;
             }
 
+            // calculate new height
             n_values->height = TreeNode::max_height(n_values->getL(), n_values->getR()) + 1;
 
             return n;
 
         }
 
+        // the insert operation
         bool insert_impl(const int k, ValueType val, int t_id) {
 
             int retries = trans_retries;
             
             TM_SAFE_OPERATION_START {
 
-                Transaction t(retries,_lock, stats[t_id]);
+                TSX::Transaction t(retries,_lock, stats[t_id]);
 
                 /* FIND PHASE */
 
@@ -425,6 +452,8 @@ class AVLTree {
                 // insert it
                 conn.setRoot(node_to_be_inserted);
 
+                // identical to bst up to this point
+
 
                 // if not inserting at root
                 if (conn_point_snapshot.connection_point()) {
@@ -440,9 +469,13 @@ class AVLTree {
                         auto n_values = n->rwRef();
                         int height_old = n_values->height;
 
-                        n = rebalance_ins(n, k , rotation_happened);
+                        n = rebalance_ins(n, k , rotation_happened); // apply rebalancing to all
+                                                                    // required nodes
+                                                                    // rotation returns the new root to place
+                                                                    // below the connection point
 
-                        conn.setRoot(n);
+                        conn.setRoot(n);    // change the root of the
+                                            // tree of copies to make the change visible
 
                         if (height_old == n_values->height && !rotation_happened) {
                             break;
@@ -461,7 +494,7 @@ class AVLTree {
 
         }
 
-
+    // rebalance for removes
     SafeNode<TreeNode>* rebalance_rem(SafeNode<TreeNode>* n, bool& rotation_happened) {
         auto n_value = n->rwRef();
 
@@ -472,7 +505,9 @@ class AVLTree {
 
 		// calculate node's balance
 		int balance = TreeNode::node_balance(n_value);
+
         rotation_happened = true;
+
 		if (balance > 1 && TreeNode::node_balance(n_value->getL()) >= 0) {  // right rotate
 			n = TreeNode::right_rotate(n);
 		} else if (balance < -1 && TreeNode::node_balance(n_value->getR()) <= 0) { //left rotate
@@ -503,7 +538,7 @@ class AVLTree {
         int retries = trans_retries;
 
         TM_SAFE_OPERATION_START {
-            Transaction t(retries,_lock, stats[t_id]);
+            TSX::Transaction t(retries,_lock, stats[t_id]);
 
             /* FIND PHASE */
 
@@ -650,6 +685,19 @@ class AVLTree {
         return insert_impl(k,val, t_id);
     }
 
+    Result<ValueType> lookup(int desired_key) {
+        auto node = find<TreeNode>(root,desired_key);
+        
+        auto found = node != nullptr;
+        return {found, found ? node->getValue(): ValueType() };
+    }
+
+    // remove key value pair with key k
+    bool remove(int k, int t_id) {
+        return remove_impl(k,t_id);
+    }
+
+
     int size() {
         return count_nodes(root);
     }
@@ -661,6 +709,8 @@ class AVLTree {
     void setRoot(AVLNode<ValueType>* node) {
         root = node;
     }
+
+    /* VALIDATORS */
 
     std::size_t key_sum() {
         return key_sum_helper(root);
@@ -678,23 +728,10 @@ class AVLTree {
         return isBalancedHelper(root);
     }
 
-
-    Result<ValueType> lookup(int desired_key) {
-        auto node = find<TreeNode>(root,desired_key);
-        
-        auto found = node != nullptr;
-        return {found, found ? node->getValue(): ValueType() };
-    }
-
-    int find_conn(int desired_key) {
-        auto conn_point_snapshot = find_conn_point<TreeNode>(desired_key,&root);
-        return conn_point_snapshot.con_ptr.child_index;
-    }
+    /* END OF VALIDATORS */
 
 
-    bool remove(int k, int t_id) {
-        return remove_impl(k,t_id);
-    }
+    /* HELPERS */
 
 
     void print() {
@@ -706,6 +743,7 @@ class AVLTree {
     void longest_branch() {
         std::cout << "Longest branch is: " << longest_branch(root) << std::endl;
     }
+
 
     void average_branch() {
         std::cout << "Average branch is: " << averageBranchLength(root) << std::endl;
@@ -747,6 +785,8 @@ class AVLTree {
         }
         total_stats.print_lite_stats();
     }
+
+    /* END OF HELPERS */
 
 
 };

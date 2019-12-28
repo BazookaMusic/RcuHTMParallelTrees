@@ -20,7 +20,7 @@ const static int THREADS = std::thread::hardware_concurrency();
 const static int THREADS = 28;
 #endif
 
-constexpr static int OPERATION_MULTIPLIER = 100;
+constexpr static int OPERATION_MULTIPLIER = 10000;
 
 using TestBenchType = TestBench<BST<int>>;
 

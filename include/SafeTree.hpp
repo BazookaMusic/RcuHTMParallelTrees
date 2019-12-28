@@ -93,33 +93,6 @@ namespace SafeTree {
         9.     int nextChild(NodeType* target): return index of next child when looking for target node
     */
 
-    // used by all ConnectionPoint class instances to signal
-    // if a transaction succeeded or failed
-    thread_local bool __internal__thread_transaction_success_flag__ = false;
-
-    // thread safe operation macro definitions
-    #ifdef TM_EARLY_ABORT
-        #define TM_SAFE_OPERATION_START \
-        __internal__thread_transaction_success_flag__ = false;\
-        while(!__internal__thread_transaction_success_flag__) { \
-        try {\
-
-        #define TM_SAFE_OPERATION_END \
-        }catch (const ValidationAbortException& e) {\
-            __internal__thread_transaction_success_flag__ = false;\
-        }\
-        }
-
-    #else
-        #define TM_SAFE_OPERATION_START \
-        __internal__thread_transaction_success_flag__ = false;\
-        while(!__internal__thread_transaction_success_flag__) \
-
-
-        #define TM_SAFE_OPERATION_END
-    #endif
-
-
     // internal use
     enum INSERT_POSITIONS {AT_ROOT = -1, UNDEFINED = -2};
 
@@ -190,7 +163,7 @@ namespace SafeTree {
                     NodeAndNextPointer<NodeType> conn_point_and_next_child = path_.pop();
                     conn_point_snapshot.connection_point_ = at_root ? nullptr: conn_point_and_next_child.node;
 
-                    path_.move_to(conn_point_snapshot.path_);
+                    path_.move_to(conn_point_snapshot.path);
 
                     conn_point_snapshot.root_of_structure = root_;
 
@@ -576,55 +549,6 @@ namespace SafeTree {
     };
 
 
-
-    class Transaction {
-        private:
-            int& retries_;
-            TSX::SpinLock &lock_;
-            TSX::TSXStats &stats_;
-            bool has_locked_;
-
-        public:
-            Transaction(int &retries,TSX::SpinLock &global_lock, TSX::TSXStats &stats): 
-            retries_(retries), 
-            lock_(global_lock), 
-            stats_(stats),
-            has_locked_(false) {
-                if (retries == 0) {
-                    lock_.lock();
-                    has_locked_ = true;
-                }
-
-            }
-
-            bool go_to_fallback() {
-                return retries_ == 0;
-            }
-
-
-            TSX::SpinLock& get_lock() {
-                return lock_;
-            }
-
-            bool has_locked() {
-                return has_locked_;
-            }
-
-            TSX::TSXStats& get_stats() {
-                return stats_;
-            }
-
-            int& get_retries() {
-                return retries_;
-            }
-
-            ~Transaction() {
-                if (has_locked_) {
-                    lock_.unlock();
-                }
-            }
-    };
-
     #ifdef TSX_MEM_POOL
         // A SafeNode Memory Pool
         
@@ -907,7 +831,7 @@ namespace SafeTree {
             ConnPoint& operator=(const ConnPoint&) = delete;
             ConnPoint(const ConnPoint&) = delete;
 
-            ConnPoint(ConnPointData<NodeType>& data, Transaction& t):
+            ConnPoint(ConnPointData<NodeType>& data, TSX::Transaction& t):
             connect_success_(__internal__thread_transaction_success_flag__),
             connection_point_(data.connection_point_), connection_pointer_(nullptr),
             root_(data.root_of_structure),

@@ -18,7 +18,7 @@ const static int THREADS = std::thread::hardware_concurrency();
 #else
 const static int THREADS = 28;
 #endif
-constexpr static int OPERATION_MULTIPLIER = 1000000;
+constexpr static int OPERATION_MULTIPLIER = 100;
 
 using TestBenchType = TestBench<AVLTree<int>>;
 

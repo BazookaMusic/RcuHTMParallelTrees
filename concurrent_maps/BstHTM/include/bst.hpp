@@ -21,7 +21,7 @@ class BST;
     
 
 template <class ValueType>
-class alignas(64) BSTNode {
+class alignas(32) BSTNode {
     friend class BST<ValueType>;
     private:
         int key;
@@ -257,7 +257,7 @@ class BST {
             
             TM_SAFE_OPERATION_START {
 
-                Transaction t(retries,_lock, stats[t_id]);
+                TSX::Transaction t(retries,_lock, stats[t_id]);
 
                 /* FIND PHASE */
 
@@ -306,7 +306,7 @@ class BST {
         int retries = trans_retries;
 
         TM_SAFE_OPERATION_START {
-            Transaction t(retries,_lock, stats[t_id]);
+            TSX::Transaction t(retries,_lock, stats[t_id]);
 
             /* FIND PHASE */
 

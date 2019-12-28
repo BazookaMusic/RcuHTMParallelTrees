@@ -6,7 +6,7 @@
 #include <chrono>
 #include <atomic>
 
-#include "../include/avl_generic.hpp"
+#include "../include/avl.hpp"
 #include "../../../include/catch2/catch.hpp"
 #include "../../../include/TSXGuard.hpp"
 #include "../../../include/test_bench.hpp"

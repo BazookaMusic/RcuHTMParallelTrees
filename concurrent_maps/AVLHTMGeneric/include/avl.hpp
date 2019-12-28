@@ -12,6 +12,9 @@
 #include "../../../include/SafeTree.hpp"
 
 
+using namespace SafeTree;
+
+
 constexpr int THREAD_AMOUNT_MAX = 100;
 TSX::TSXStats stats[THREAD_AMOUNT_MAX];
 
@@ -20,7 +23,7 @@ class AVLTree;
     
 
 template <class ValueType>
-class alignas(64) AVLNode {
+class alignas(32) AVLNode {
     friend class AVLTree<ValueType>;
     private:
         int key;
@@ -418,7 +421,7 @@ class AVLTree {
             
             TM_SAFE_OPERATION_START {
 
-                Transaction t(retries,_lock, stats[t_id]);
+                TSX::Transaction t(retries,_lock, stats[t_id]);
 
                 /* FIND PHASE */
 
@@ -527,7 +530,7 @@ class AVLTree {
         int retries = trans_retries;
 
         TM_SAFE_OPERATION_START {
-            Transaction t(retries,_lock, stats[t_id]);
+            TSX::Transaction t(retries,_lock, stats[t_id]);
 
             /* FIND PHASE */
 

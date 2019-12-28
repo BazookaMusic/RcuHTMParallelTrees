@@ -299,7 +299,7 @@ namespace TSX {
                                         // transaction not pending
         int nretries_;           // how many retries have been made so far
                                 // used to resume transaction in case of user abort
-        TSXStats &_stats;
+        TSXStats &stats_;
         bool disabled_;
 
     public:
@@ -309,7 +309,7 @@ namespace TSX {
         has_locked_(false),
         user_explicitly_aborted_(false),
         nretries_(max_tx_retries),
-        _stats(stats),
+        stats_(stats),
         disabled_(disabled)
         {
             
@@ -322,7 +322,7 @@ namespace TSX {
                     // try to init transaction
                     unsigned int status = _xbegin();
                     if (status == _XBEGIN_STARTED) {   // tx started
-                        _stats.tx_starts++;
+                        stats_.tx_starts++;
                         if (!spin_lock_.isLocked()) return;  //successfully started transaction
                         
                         // started txn but someone is executing the txn  section non-speculatively 
@@ -330,33 +330,33 @@ namespace TSX {
 
                         _xabort(ABORT_GL_TAKEN); // abort with code 0xff  
                     } else if (status & _XABORT_CAPACITY) {
-                        _stats.tx_aborts++;
-                        _stats.tx_aborts_per_reason[TX_ABORT_CAPACITY]++;
+                        stats_.tx_aborts++;
+                        stats_.tx_aborts_per_reason[TX_ABORT_CAPACITY]++;
                     } else if (status & _XABORT_CONFLICT) {
-                        _stats.tx_aborts++;
-                        _stats.tx_aborts_per_reason[TX_ABORT_CONFLICT]++;
+                        stats_.tx_aborts++;
+                        stats_.tx_aborts_per_reason[TX_ABORT_CONFLICT]++;
 
                         if (strat == HALF) {
                             nretries_ >>= 1;
                         }
                     } else if (status & _XABORT_EXPLICIT) {
-                        _stats.tx_aborts++;
-                        _stats.tx_aborts_per_reason[TX_ABORT_EXPLICIT]++;
+                        stats_.tx_aborts++;
+                        stats_.tx_aborts_per_reason[TX_ABORT_EXPLICIT]++;
                         if (_XABORT_CODE(status) == ABORT_GL_TAKEN && !(status & _XABORT_NESTED)) {
-                            _stats.tx_aborts_per_reason[TX_ABORT_LOCK_TAKEN]++;
+                            stats_.tx_aborts_per_reason[TX_ABORT_LOCK_TAKEN]++;
                             while (spin_lock_.isLocked()) _mm_pause();
                         } else if (_XABORT_CODE(status) > USER_OPTION_LOWER_BOUND) {
                             user_explicitly_aborted_ = true;
-                            _stats.tx_aborts_per_reason[TX_ABORT_LOCK_TAKEN]++;
+                            stats_.tx_aborts_per_reason[TX_ABORT_LOCK_TAKEN]++;
                             err_status = _XABORT_CODE(status);
                             return;
                         } else if(!(status & _XABORT_RETRY)) {
-                            _stats.tx_aborts_per_reason[TX_ABORT_REST]++;
+                            stats_.tx_aborts_per_reason[TX_ABORT_REST]++;
                             // if the system recommends not to retry
                             // go to the fallback immediately
                             goto fallback_lock; 
                         } else {
-                            _stats.tx_aborts_per_reason[TX_ABORT_REST]++;
+                            stats_.tx_aborts_per_reason[TX_ABORT_REST]++;
                         }   
                     }
                     
@@ -366,7 +366,7 @@ namespace TSX {
 
             }   //end
     fallback_lock:
-                _stats.tx_lacqs++;
+                stats_.tx_lacqs++;
                 has_locked_ = true;
                 spin_lock_.lock();
             }
@@ -403,7 +403,7 @@ namespace TSX {
                 if (has_locked_ && spin_lock_.isLocked()) {
                     spin_lock_.unlock();
                 } else {
-                    _stats.tx_commits++; 
+                    stats_.tx_commits++; 
                     _xend();
                 }
             }
@@ -420,7 +420,7 @@ namespace TSX {
         bool user_explicitly_aborted_;   // explicit user aborts mean that lock is not taken and
                                         // transaction not pending
         bool validation_failure_;
-        TSXStats &_stats;
+        TSXStats &stats_;
         bool disabled_;
 
     public:
@@ -429,7 +429,7 @@ namespace TSX {
         spin_lock_(mutex),
         user_explicitly_aborted_(false),
         validation_failure_(false),
-        _stats(stats),
+        stats_(stats),
         disabled_(disabled)
         {
             
@@ -442,7 +442,7 @@ namespace TSX {
                     // try to init transaction
                     unsigned int status = _xbegin();
                     if (status == _XBEGIN_STARTED) {   // tx started
-                        _stats.tx_starts++;
+                        stats_.tx_starts++;
                         if (!spin_lock_.isLocked()) return;  //successfully started transaction
                         
                         // started txn but someone is executing the txn  section non-speculatively 
@@ -450,32 +450,32 @@ namespace TSX {
 
                         _xabort(ABORT_GL_TAKEN); // abort with code 0xff  
                     } else if (status & _XABORT_CAPACITY) {
-                        _stats.tx_aborts++;
-                        _stats.tx_aborts_per_reason[TX_ABORT_CAPACITY]++;
+                        stats_.tx_aborts++;
+                        stats_.tx_aborts_per_reason[TX_ABORT_CAPACITY]++;
                     } else if (status & _XABORT_CONFLICT) {
-                        _stats.tx_aborts++;
-                        _stats.tx_aborts_per_reason[TX_ABORT_CONFLICT]++;
+                        stats_.tx_aborts++;
+                        stats_.tx_aborts_per_reason[TX_ABORT_CONFLICT]++;
 
                         if (strat == HALF) {
                             retries_ >>= 1;
                         }
                     } else if (status & _XABORT_EXPLICIT) {
-                        _stats.tx_aborts++;
-                        _stats.tx_aborts_per_reason[TX_ABORT_EXPLICIT]++;
+                        stats_.tx_aborts++;
+                        stats_.tx_aborts_per_reason[TX_ABORT_EXPLICIT]++;
                         if (_XABORT_CODE(status) == ABORT_GL_TAKEN && !(status & _XABORT_NESTED)) {
-                            _stats.tx_aborts_per_reason[TX_ABORT_LOCK_TAKEN]++;
+                            stats_.tx_aborts_per_reason[TX_ABORT_LOCK_TAKEN]++;
                             while (spin_lock_.isLocked()) _mm_pause();
                         } else if (_XABORT_CODE(status) > USER_OPTION_LOWER_BOUND) {
                             user_explicitly_aborted_ = true;
                             err_status = _XABORT_CODE(status);
                             return;
                         } else if(!(status & _XABORT_RETRY)) {
-                            _stats.tx_aborts_per_reason[TX_ABORT_REST]++;
+                            stats_.tx_aborts_per_reason[TX_ABORT_REST]++;
                             // if the system recommends not to retry
                             // go to the fallback immediately
                             goto HARD_ABORT; 
                         } else {
-                            _stats.tx_aborts_per_reason[TX_ABORT_REST]++;
+                            stats_.tx_aborts_per_reason[TX_ABORT_REST]++;
                         }   
                     }
                     
@@ -510,15 +510,97 @@ namespace TSX {
 
         ~TSXTransOnlyGuard() {
             if (!user_explicitly_aborted_ && !disabled_ && !validation_failure_) {
-                    _stats.tx_commits++; 
+                    stats_.tx_commits++; 
                     _xend();
                 }
             }   
         
     };
 
+    // Handles the fallback and retries
+    // when using a TransOnlyGuard
+    class Transaction {
+        private:
+            int& retries_;
+            TSX::SpinLock &lock_;
+            TSX::TSXStats &stats_;
+            bool has_locked_;
 
+        public:
+            Transaction(int &retries,TSX::SpinLock &global_lock, TSX::TSXStats &stats): 
+            retries_(retries), 
+            lock_(global_lock), 
+            stats_(stats),
+            has_locked_(false) {
+                if (retries == 0) {
+                    lock_.lock();
+                    has_locked_ = true;
+                }
+
+            }
+
+            bool go_to_fallback() {
+                return retries_ == 0;
+            }
+
+
+            TSX::SpinLock& get_lock() {
+                return lock_;
+            }
+
+            bool has_locked() {
+                return has_locked_;
+            }
+
+            TSX::TSXStats& get_stats() {
+                return stats_;
+            }
+
+            int& get_retries() {
+                return retries_;
+            }
+
+            ~Transaction() {
+                if (has_locked_) {
+                    lock_.unlock();
+                }
+            }
+    };
 
 };
-   
+
+
+// Macros to reduce boilerplate to make a transactional operation
+// Syntax is of the form
+    //
+    //  TM_SAFE_OPERATION_START {
+    //      code...
+    //  } TM_SAFE_OPERATION_END 
+    //
+
+    // if a transaction succeeded or failed
+    thread_local bool __internal__thread_transaction_success_flag__ = false;
+
+    // thread safe operation macro definitions
+    #ifdef TM_EARLY_ABORT
+        #define TM_SAFE_OPERATION_START \
+        __internal__thread_transaction_success_flag__ = false;\
+        while(!__internal__thread_transaction_success_flag__) { \
+        try {\
+
+        #define TM_SAFE_OPERATION_END \
+        }catch (const ValidationAbortException& e) {\
+            __internal__thread_transaction_success_flag__ = false;\
+        }\
+        }
+
+    #else
+        #define TM_SAFE_OPERATION_START \
+        __internal__thread_transaction_success_flag__ = false;\
+        while(!__internal__thread_transaction_success_flag__) \
+
+
+        #define TM_SAFE_OPERATION_END
+    #endif
+
 #endif
