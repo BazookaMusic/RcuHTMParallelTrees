@@ -598,6 +598,7 @@ namespace SafeTree {
         struct memory_pool_tracked: public memory_pool<Object> {
 
             using buffer_type = typename std::aligned_storage<sizeof(Object), alignof(Object)>::type;
+
             
             explicit memory_pool_tracked(std::size_t limit): memory_pool<Object>(limit) {
                 pool_lock_.lock();
@@ -627,6 +628,16 @@ namespace SafeTree {
                 index_ = -1;
 
             }
+
+            void set_checkpoint() {
+                checkpoint_ = memory_pool<Object>::used_;
+            }
+
+            void reset_to_checkpoint() {
+                memory_pool<Object>::used_ = checkpoint_;
+            }
+
+            std::size_t checkpoint_;
 
             static TSX::SpinLock pool_lock_;
             static typename memory_pool_tracked<Object>::buffer_type** thread_buffers_;
@@ -862,6 +873,10 @@ namespace SafeTree {
                 }
 
                 connect_success_ = false;
+
+                #ifdef USER_MEM_POOL 
+                    user_node_pool_.set_checkpoint();
+                #endif
             }
 
             ~ConnPoint() {
@@ -876,6 +891,15 @@ namespace SafeTree {
                 if (tree_was_modified_ && !copy_connected_) {
                     connect_success_ = connect_atomically();
                 }
+
+                #ifdef USER_MEM_POOL 
+                    if (!copy_connected_) {
+                        user_node_pool_.reset_to_checkpoint();
+                    }
+                #endif
+
+
+                
                 //
                 
                 // CLEANUP DISABLED !!!

@@ -293,9 +293,6 @@ TEST_CASE("AVLTree MULTITHREADED Remove Test","[remove_mt]") {
 
 TEST_CASE("THROUGHPUT TESTS","[tp]") {
     const std::size_t RANGE_OF_KEYS = 2*OPERATION_MULTIPLIER; // RANGE IS 1 TO RANGE_OF_KEYS
-   
-
-    srand(time(NULL));
 
 
     SECTION("Totally random access") {

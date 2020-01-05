@@ -20,7 +20,7 @@ class AVLTree;
     
 
 template <class ValueType>
-class alignas(32) AVLNode {
+class alignas(64) AVLNode {
     friend class AVLTree<ValueType>;
     private:
         int key;
@@ -228,7 +228,7 @@ class AVLTree {
         AVLNode<ValueType>* root;
         TSX::SpinLock &_lock;
         using TreeNode = AVLNode<ValueType>;
-        const int trans_retries = 20;
+        const int trans_retries = 50;
         
 
         // helpers
