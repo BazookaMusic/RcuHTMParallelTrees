@@ -21,7 +21,7 @@ class BST;
     
 
 template <class ValueType>
-class alignas(32) BSTNode {
+class alignas(64) BSTNode {
     friend class BST<ValueType>;
     private:
         int key;
@@ -126,7 +126,7 @@ class BST {
         BSTNode<ValueType>* root;
         TSX::SpinLock &_lock;
         using TreeNode = BSTNode<ValueType>;
-        const int trans_retries = 20;
+        const int trans_retries = 30;
         
 
         // helpers

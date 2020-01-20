@@ -35,12 +35,11 @@ namespace TSX {
 
             void lock() noexcept{
 
-
                 for (;;) {
                     // test
                     while (spin_lock_.load(std::memory_order_relaxed) == LOCKED) _mm_pause();
 
-                    if (!spin_lock_.exchange(LOCKED)) {
+                    if (!spin_lock_.exchange(LOCKED, std::memory_order_acquire)) {
                         break;
                     }
 
@@ -48,7 +47,7 @@ namespace TSX {
             }
 
             void unlock() noexcept{
-                spin_lock_.store(false);
+                spin_lock_.store(false, std::memory_order_release);
             }
 
             bool isLocked() noexcept {
