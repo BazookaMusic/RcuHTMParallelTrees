@@ -39,6 +39,10 @@
     // memory pools for user defined nodes
     #define USER_MEM_POOL
 
+    #define PREALLOC_VALIDATION_SET
+
+    #define PATH_MAX_LEN 10000
+
     // all internal vectors and arrays are
     // static (decreases performance in my tests)
     //#define STATIC_VECTORS_AND_ARRAYS
@@ -72,7 +76,7 @@
 
 
 
-#include "generic_tree.hpp"
+#include "helper_data_structures.hpp"
 #include "TSXGuard.hpp"
 
 namespace SafeTree {
@@ -112,7 +116,7 @@ namespace SafeTree {
 
                 NodeType* current_pos_;
                 int at_level_;
-                TreePathStackWithIndex<NodeType> path_;
+                TreePathStackWithIndex<NodeType, PATH_MAX_LEN> path_;
 
 
             public:
@@ -200,7 +204,7 @@ namespace SafeTree {
             ConnPoint<NodeType>& conn_point_;
             NodeType* const original_;
             NodeType* copy_;
-            std::array<SafeNode*, NodeType::maxChildren()> children_;
+            std::array<SafeNode<NodeType>*,NodeType::maxChildren()> children_;
             std::array<bool,NodeType::maxChildren()> modified_;
             std::array<NodeType*, NodeType::maxChildren()> children_pointers_snapshot_;
 
@@ -529,7 +533,7 @@ namespace SafeTree {
             #if TREE_TYPE == SEARCH_TREE
                 bool found_;
             #endif
-            TreePathStackWithIndex<T> path;
+            TreePathStackWithIndex<T,PATH_MAX_LEN> path;
             T** root_of_structure;
         public:
             #if TREE_TYPE == SEARCH_TREE
@@ -659,7 +663,7 @@ namespace SafeTree {
     template <class NodeType>
     class ConnPoint
     {
-        using Stack = TreePathStackWithIndex<NodeType>;
+        using Stack = TreePathStackWithIndex<NodeType,PATH_MAX_LEN>;
         friend class SafeNode<NodeType>;
 
         private:
@@ -673,8 +677,9 @@ namespace SafeTree {
 
             // returns if copy connection was successful
             bool& connect_success_;
-            #ifdef STATIC_VECTORS_AND_ARRAYS
-                static thread_local std::vector<SafeNode<NodeType>*> validation_set_;
+
+            #ifdef PREALLOC_VALIDATION_SET
+                thread_local static PreAllocVec<SafeNode<NodeType>*, 500> validation_set_;
             #else
                 std::deque<SafeNode<NodeType>*> validation_set_;
             #endif
@@ -795,11 +800,11 @@ namespace SafeTree {
 
 
             void add_to_validation_set(SafeNode<NodeType>* a_node) {
-                #ifdef STATIC_VECTORS_AND_ARRAYS
-                    validation_set_.emplace_back(a_node);
-                #else
+                #ifdef PREALLOC_VALIDATION_SET
                     validation_set_.push_back(a_node);
-                #endif    
+                #else
+                    validation_set_.push_back(a_node);  
+                #endif
             }
 
 
@@ -862,8 +867,8 @@ namespace SafeTree {
                     pool_.reset();
                 #endif
 
-                #ifdef STATIC_VECTORS_AND_ARRAYS
-                    validation_set_.clear();
+                #ifdef PREALLOC_VALIDATION_SET
+                    validation_set_.reset();
                 #endif
 
                 if (child_to_exchange_ != INSERT_POSITIONS::AT_ROOT) {
@@ -900,24 +905,43 @@ namespace SafeTree {
 
 
                 
-                //
                 
                 // CLEANUP DISABLED !!!
-                
                 const bool clean_all = !copy_connected_;
 
-                for (auto it = validation_set_.begin(); it != validation_set_.end(); ++it)  {
-                    if (clean_all || (*it)->deleted_) {
-                        (*it)->deleted_ |= clean_all;
-                        // // cleanup should happen here
-                        // #ifndef TSX_MEM_POOL
-                        //     delete (*it);
-                        // #else
-                        //     (*it)->cleanup();
-                        // // #endif
-                    }
+                #ifdef PREALLOC_VALIDATION_SET
+                    for (int i = 0; i < validation_set_.size(); i++) {
+                        auto item = validation_set_.get(i);
 
-                }
+                        if (clean_all || item->deleted_) {
+                            item->deleted_ |= clean_all;
+                            // // cleanup should happen here
+                            // #ifndef TSX_MEM_POOL
+                            //     delete (*it);
+                            // #else
+                            //     (*it)->cleanup();
+                            // // #endif
+                        }
+
+
+                    }
+                #else
+                    for (auto it = validation_set_.begin(); it != validation_set_.end(); ++it)  {
+                        if (clean_all || (*it)->deleted_) {
+                            (*it)->deleted_ |= clean_all;
+                            // // cleanup should happen here
+                            // #ifndef TSX_MEM_POOL
+                            //     delete (*it);
+                            // #else
+                            //     (*it)->cleanup();
+                            // // #endif
+                        }
+
+                    }
+                #endif
+                
+
+                
 
             }
 
@@ -1097,25 +1121,50 @@ namespace SafeTree {
                 }
 
 
+                #ifdef PREALLOC_VALIDATION_SET
+                    // have the children pointers of the original nodes changed?
+                    for (auto i = 0; i < validation_set_.size(); i++) {
+                            auto safe_node = validation_set_.get(i);
+                            // skip for new nodes
+                            if (safe_node->node_type_ == SafeNode<NodeType>::ORIG_TREE_NODE) {
+                                // the original node and its current children
+                                const auto original_node = safe_node->original_;
 
-                // have the children pointers of the original nodes changed?
-                for (auto it = validation_set_.begin(); it != validation_set_.end(); ++it) {
-                        // skip for new nodes
-                        if ((*it)->node_type_ == SafeNode<NodeType>::ORIG_TREE_NODE) {
-                            // the original node and its current children
-                            const auto original_node = (*it)->original_;
+                                // the saved children which shouldn't have changed
+                                const auto &saved_children = safe_node->children_pointers_snapshot_;
 
-                            // the saved children which shouldn't have changed
-                            const auto &saved_children = (*it)->children_pointers_snapshot_;
-
-                            for (int i = 0; i < NodeType::maxChildren(); i++) {
-                                if (saved_children[i] != original_node->getChild(i)) {
-                                    TSX::TSXGuard::abort<VALIDATION_FAILED>();
-                                    return false;
+                                for (int i = 0; i < NodeType::maxChildren(); i++) {
+                                    if (saved_children[i] != original_node->getChild(i)) {
+                                        TSX::TSXGuard::abort<VALIDATION_FAILED>();
+                                        return false;
+                                    }
                                 }
-                            }
-                        }  
-                }
+                            }  
+                    }
+
+                #else
+                    // have the children pointers of the original nodes changed?
+                    for (auto it = validation_set_.begin(); it != validation_set_.end(); ++it) {
+                            // skip for new nodes
+                            if ((*it)->node_type_ == SafeNode<NodeType>::ORIG_TREE_NODE) {
+                                // the original node and its current children
+                                const auto original_node = (*it)->original_;
+
+                                // the saved children which shouldn't have changed
+                                const auto &saved_children = (*it)->children_pointers_snapshot_;
+
+                                for (int i = 0; i < NodeType::maxChildren(); i++) {
+                                    if (saved_children[i] != original_node->getChild(i)) {
+                                        TSX::TSXGuard::abort<VALIDATION_FAILED>();
+                                        return false;
+                                    }
+                                }
+                            }  
+                    }
+
+                #endif
+
+               
 
                 // all checks ok
                 return true;
@@ -1219,9 +1268,9 @@ namespace SafeTree {
         thread_local memory_pool_tracked<NodeType> ConnPoint<NodeType>::user_node_pool_(50000000);
     #endif
 
-    #ifdef STATIC_VECTORS_AND_ARRAYS
+     #ifdef PREALLOC_VALIDATION_SET
         template <class NodeType>
-        thread_local std::vector<SafeNode<NodeType>*> ConnPoint<NodeType>::validation_set_(100);
+        thread_local PreAllocVec<SafeNode<NodeType>*,500> ConnPoint<NodeType>::validation_set_;
     #endif
 
     //---------------------//

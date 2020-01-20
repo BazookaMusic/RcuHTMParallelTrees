@@ -48,6 +48,7 @@ class TestBench {
             void reset() {
                 n_ops = i_ops = r_ops = l_ops = 0;
                 sum_inserts = sum_removes = 0;
+                light_ops_ins = light_ops_rems = 0;
             }
         };
 
@@ -265,11 +266,57 @@ class TestBench {
 
        
 
+        
+        struct xorshift128_state {
+            long a, b, c, d;
+        };
+
+
+        /* The state array must be initialized to not be all zero */
+        static long xorshift128(xorshift128_state& state)
+        {
+            /* Algorithm "xor128" from p. 5 of Marsaglia, "Xorshift RNGs" */
+            long t = state.d;
+
+            long const s = state.a;
+            state.d = state.c;
+            state.c = state.b;
+            state.b = s;
+
+            t ^= t << 11;
+            t ^= t >> 8;
+            return (state.a = t ^ s ^ (s >> 19));
+        }
+
+        static long minimum(const long a, const long b) {
+            return a < b ? a : b;
+        }
+
+       
+
+        static inline int intRand_h(const int & min, const int & max, const int t_id) {
+            // thread_local int dummy_address;
+            // thread_local std::mt19937 generator((unsigned long)(&dummy_address) ^ (unsigned long)(t_id * 123456789));
+            // std::uniform_int_distribution<int> distribution(min,max);
+            // return distribution(generator);
+            thread_local xorshift128_state s;
+            thread_local bool init = false;
+
+            if (!init) {
+                s.a = t_id + 1821;
+                s.b = 1973;
+                s.c = 1922;
+                s.d = 1918;
+                init = true;
+            }
+
+            const auto delta = xorshift128(s) % max;
+
+            return minimum(min + delta, max);
+        }
+
         static inline int intRand(const int & min, const int & max, const int t_id) {
-            thread_local int dummy_address;
-            thread_local std::mt19937 generator((unsigned long)(&dummy_address) ^ (unsigned long)(t_id * 123456789));
-            std::uniform_int_distribution<int> distribution(min,max);
-            return distribution(generator);
+            return intRand_h(min,max,t_id);
         }
 
 

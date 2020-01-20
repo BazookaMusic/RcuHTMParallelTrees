@@ -572,7 +572,7 @@ class AVLTree {
             } else {
                 // search for smallest of the right subtree
 
-                NodeStack<SafeNode<TreeNode>> del_stack;
+                NodeStack<SafeNode<TreeNode>,10000> del_stack;
 
                 auto smallest = node_to_be_deleted->getChild(1);
 
