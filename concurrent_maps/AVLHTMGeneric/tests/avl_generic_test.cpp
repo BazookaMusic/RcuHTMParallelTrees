@@ -270,42 +270,36 @@ TEST_CASE("AVLTree MULTITHREADED Remove Test","[remove_mt]") {
 
 
 TEST_CASE("THROUGHPUT TESTS","[tp]") {
-    const std::size_t RANGE_OF_KEYS = 2*OPERATION_MULTIPLIER; // RANGE IS 1 TO RANGE_OF_KEYS
-   
+    const int OPERATION_MULTIPLIERS[] = {1000000,10000,1000};
 
-    srand(time(NULL));
+    for (int i = 0; i < 4; i++) {
+        std::cout << "Start of tests for tree size: " << OPERATION_MULTIPLIERS[i] << std::endl;
+        const std::size_t RANGE_OF_KEYS = 2 * OPERATION_MULTIPLIERS[i]; // RANGE IS 1 TO RANGE_OF_KEYS
 
+        std::vector<int> threads_to_use = {1,2,4,7,14,20,28};
+        // RANDOM OPS
+        TestBenchType::experiment exp1(33,33,34);
+        TestBenchType::test(exp1,THREADS,RANGE_OF_KEYS,threads_to_use);
+        
+        // 10 - 10 -80
+        TestBenchType::experiment exp2(10,10,80);
+        TestBenchType::test(exp2,THREADS,RANGE_OF_KEYS,threads_to_use);
 
-    SECTION("Totally random access") {
-        TestBenchType::experiment exp(33,33,34);
-        TestBenchType::test(exp,THREADS,RANGE_OF_KEYS,1);
+        // 100% LOOKUPS
+        TestBenchType::experiment exp3(0,0,100);
+        TestBenchType::test(exp3,THREADS,RANGE_OF_KEYS, threads_to_use);
+        
+
+        // 50-50 UPDATES
+        TestBenchType::experiment exp4(50,50,0);
+        TestBenchType::test(exp4,THREADS,RANGE_OF_KEYS,threads_to_use);  
+    
+        // 25-25 UPDATES, 50 LOOKUPS
+        TestBenchType::experiment exp5(25,25,50);
+        TestBenchType::test(exp5,THREADS,RANGE_OF_KEYS,threads_to_use);
+        
     }
-
-    SECTION("80% lookups") {
-        TestBenchType::experiment exp(10,10,80);
-        TestBenchType::test(exp,THREADS,RANGE_OF_KEYS,1);
-    }
-
-    SECTION("100% lookups") {
-        TestBenchType::experiment exp(0,0,100);
-        TestBenchType::test(exp,THREADS,RANGE_OF_KEYS,1);
-    }
-
-
-    SECTION("50-50 Insert Remove ") {
-        TestBenchType::experiment exp(50,50,0);
-        TestBenchType::test(exp,THREADS,RANGE_OF_KEYS,1);  
-    }
-
-    SECTION("50% lookups") {
-        TestBenchType::experiment exp(25,25,50);
-        TestBenchType::test(exp,THREADS,RANGE_OF_KEYS,1);
-    }
-
-
-
 }
-
 
 
 

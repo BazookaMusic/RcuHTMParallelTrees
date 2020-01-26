@@ -65,7 +65,6 @@
 
 
 #include <memory>
-
 #include <tuple>
 #include <iostream>
 #include <deque>
@@ -73,6 +72,7 @@
 #include <tuple>
 #include <new>
 #include <cassert>
+#include <algorithm>
 
 
 
@@ -116,6 +116,7 @@ namespace SafeTree {
 
                 NodeType* current_pos_;
                 int at_level_;
+                
                 TreePathStackWithIndex<NodeType, PATH_MAX_LEN> path_;
 
 
@@ -316,18 +317,13 @@ namespace SafeTree {
                 if (node_type_ == ORIG_TREE_NODE) {
                     for (int i = 0; i < NodeType::maxChildren(); i++) {
                         // keep backup of the original_ child pointers
-                        auto original_child = original_->getChild(i);
+                        const auto original_child = original_->getChild(i);
                         children_pointers_snapshot_[i] = original_child;
                     }
                 }
-                
-                for (int i = 0; i < NodeType::maxChildren(); i++)
-                {
-                    // the modified children
-                    // are initialized to null
-                    children_[i] = nullptr;
-                    modified_[i] = false;
-                }        
+
+                children_.fill(nullptr);
+                modified_.fill(node_type_ == NEW_NODE);
             }
 
 
@@ -987,11 +983,6 @@ namespace SafeTree {
                 #else
                     auto newNode = new SafeNode<NodeType>(*this, some_node, SafeNode<NodeType>::NEW_NODE);
                 #endif
-
-
-                for (auto elem = newNode->modified_.begin(); elem != newNode->modified_.end(); elem++ ) {
-                        *elem = true;
-                }
                 
                 return newNode;  
             }
@@ -1284,7 +1275,7 @@ namespace SafeTree {
         // the key given. The node will be determined by the traversalDone
         // method and the path taken by the nextChild method. 
         template <class NodeType>
-        NodeType* find(NodeType* root, int desired_key) {
+        inline NodeType* find(NodeType* root, int desired_key) {
             auto curr = root;
             for (; curr && !curr->traversalDone(desired_key); curr = curr->getChild(curr->nextChild(desired_key))) {
             // search for node with key
@@ -1297,7 +1288,7 @@ namespace SafeTree {
         // the target node. The nextChild method determines the
         // path taken
         template <class NodeType>
-        bool find_target_node(NodeType* root, NodeType* target) {
+        inline bool find_target_node(NodeType* root, NodeType* target) {
             auto curr = root;
 
             for (; curr; curr = curr->getChild(curr->nextChild(target))) {
