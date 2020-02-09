@@ -21,7 +21,7 @@ class BST;
     
 
 template <class ValueType>
-class alignas(64) BSTNode {
+class BSTNode {
     friend class BST<ValueType>;
     private:
         int key;
@@ -437,13 +437,11 @@ class BST {
 
 
     Result<ValueType> lookup(int desired_key) {
-        Result<ValueType> res;
         auto node = find<TreeNode>(root,desired_key);
         
-        res.found = node != nullptr;
-        if (res.found) res.val = node->getValue();
-        
-        return res;
+        const auto found = node != nullptr;
+    
+        return {found, found ? node->getValue(): ValueType()};
     }
 
     int find_conn(int desired_key) {

@@ -20,7 +20,7 @@ class AVLTree;
     
 
 template <class ValueType>
-class alignas(64) AVLNode {
+class AVLNode {
     friend class AVLTree<ValueType>;
     private:
         int key;
@@ -689,6 +689,7 @@ class AVLTree {
         auto node = find<TreeNode>(root,desired_key);
         
         auto found = node != nullptr;
+
         return {found, found ? node->getValue(): ValueType() };
     }
 

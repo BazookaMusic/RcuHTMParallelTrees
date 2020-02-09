@@ -65,7 +65,6 @@
 
 
 #include <memory>
-
 #include <tuple>
 #include <iostream>
 #include <deque>
@@ -73,6 +72,7 @@
 #include <tuple>
 #include <new>
 #include <cassert>
+#include <algorithm>
 
 
 
@@ -88,9 +88,9 @@ namespace SafeTree {
         3.     void setChild(int i, NodeType * n)
         4.     NodeType** getChildPointer(int i): get a pointer to the stored tree pointer
                 (where the i'th child is stored)
+        5.     static constexpr int maxChildren(): max amount of children for each node, 
         The optimized search tree version also requires:
-        5.     A bool hasKey(int key) method to return if the node contains a key
-        6.     static constexpr int maxChildren(): max amount of children for each node, 
+        6.     A bool hasKey(int key) method to return if the node contains a key
         7.     bool traversalDone(int key): returns true if the node with key is the caller, can also
                 consider other factors like if it is a terminal node
         8.     int nextChild(int target_key): return index of next child when looking for node with target_key
@@ -116,6 +116,7 @@ namespace SafeTree {
 
                 NodeType* current_pos_;
                 int at_level_;
+                
                 TreePathStackWithIndex<NodeType, PATH_MAX_LEN> path_;
 
 
@@ -316,29 +317,18 @@ namespace SafeTree {
                 if (node_type_ == ORIG_TREE_NODE) {
                     for (int i = 0; i < NodeType::maxChildren(); i++) {
                         // keep backup of the original_ child pointers
-                        auto original_child = original_->getChild(i);
+                        const auto original_child = original_->getChild(i);
                         children_pointers_snapshot_[i] = original_child;
                     }
                 }
-                
-                for (int i = 0; i < NodeType::maxChildren(); i++)
-                {
-                    // the modified children
-                    // are initialized to null
-                    children_[i] = nullptr;
-                    modified_[i] = false;
-                }        
+
+                children_.fill(nullptr);
+                modified_.fill(node_type_ == NEW_NODE);
             }
 
 
             static constexpr int children_length() {
                 return NodeType::maxChildren();
-            }
-
-            // getOriginal: used to access original
-            // node (any modifications are not guaranteed thread safe)
-            const NodeType* getOriginal() {
-                return original_;
             }
 
             // peekOriginal: used to access original_
@@ -357,12 +347,6 @@ namespace SafeTree {
                 
                 return copy_;
             }
-
-            // returns a reference safe for reading
-            const NodeType* rRef() const {
-                return copy_;
-            }
-
 
 
             NodeType* peekChild(const int child_pos) {
@@ -840,6 +824,108 @@ namespace SafeTree {
                 trans_retries_--;
             }
 
+            
+            bool copyWasConnected() {
+                return copy_connected_;
+            }
+
+            
+
+            // connect created tree copy by exchanging proper parent pointer
+            void connect_copy() noexcept {
+
+                NodeType* copied_tree_head_ = head_ ? head_->node_to_be_connected() : nullptr; 
+
+                // inserting at root
+                if (!connection_point_) {
+                    connection_pointer_ = root_;
+                }
+
+                // connect connection point to the new tree
+                *connection_pointer_ = copied_tree_head_;
+                
+                // originals can be deleted
+                copy_connected_ = true;
+            }
+
+
+            // validate copy and abort transaction
+            // on failure
+            bool validate_copy() {
+                if (!connection_point_) {
+
+                    // insertion at root
+
+                    // has root copy changed ?
+                    if (conn_pointer_snapshot_ != *root_) {
+                        TSX::TSXGuard::abort<VALIDATION_FAILED>();
+                        return false;
+                    }
+                } else { 
+                    // has the connection pointer to be modified
+                    // changed?
+                    if (conn_pointer_snapshot_ != connection_point_->getChild(child_to_exchange_)) {
+                        TSX::TSXGuard::abort<VALIDATION_FAILED>();
+                        return false;
+                    }
+
+                    // is the root of the tree of copies still connected?
+                    if (!connPointConnected()) {
+                        TSX::TSXGuard::abort<VALIDATION_FAILED>();
+                        return false;
+                    }
+                }
+
+
+                #ifdef PREALLOC_VALIDATION_SET
+                    // have the children pointers of the original nodes changed?
+                    for (auto i = 0; i < validation_set_.size(); i++) {
+                            auto safe_node = validation_set_.get(i);
+                            // skip for new nodes
+                            if (safe_node->node_type_ == SafeNode<NodeType>::ORIG_TREE_NODE) {
+                                // the original node and its current children
+                                const auto original_node = safe_node->original_;
+
+                                // the saved children which shouldn't have changed
+                                const auto &saved_children = safe_node->children_pointers_snapshot_;
+
+                                for (int i = 0; i < NodeType::maxChildren(); i++) {
+                                    if (saved_children[i] != original_node->getChild(i)) {
+                                        TSX::TSXGuard::abort<VALIDATION_FAILED>();
+                                        return false;
+                                    }
+                                }
+                            }  
+                    }
+
+                #else
+                    // have the children pointers of the original nodes changed?
+                    for (auto it = validation_set_.begin(); it != validation_set_.end(); ++it) {
+                            // skip for new nodes
+                            if ((*it)->node_type_ == SafeNode<NodeType>::ORIG_TREE_NODE) {
+                                // the original node and its current children
+                                const auto original_node = (*it)->original_;
+
+                                // the saved children which shouldn't have changed
+                                const auto &saved_children = (*it)->children_pointers_snapshot_;
+
+                                for (int i = 0; i < NodeType::maxChildren(); i++) {
+                                    if (saved_children[i] != original_node->getChild(i)) {
+                                        TSX::TSXGuard::abort<VALIDATION_FAILED>();
+                                        return false;
+                                    }
+                                }
+                            }  
+                    }
+
+                #endif
+
+               
+
+                // all checks ok
+                return true;
+            }
+
 
 
         public:
@@ -987,11 +1073,6 @@ namespace SafeTree {
                 #else
                     auto newNode = new SafeNode<NodeType>(*this, some_node, SafeNode<NodeType>::NEW_NODE);
                 #endif
-
-
-                for (auto elem = newNode->modified_.begin(); elem != newNode->modified_.end(); elem++ ) {
-                        *elem = true;
-                }
                 
                 return newNode;  
             }
@@ -1068,107 +1149,6 @@ namespace SafeTree {
                 return wrap_safe(node);
             }
 
-
-            bool copyWasConnected() {
-                return copy_connected_;
-            }
-
-            
-
-            // connect created tree copy by exchanging proper parent pointer
-            void connect_copy() noexcept {
-
-                NodeType* copied_tree_head_ = head_ ? head_->node_to_be_connected() : nullptr; 
-
-                // inserting at root
-                if (!connection_point_) {
-                    connection_pointer_ = root_;
-                }
-
-                // connect connection point to the new tree
-                *connection_pointer_ = copied_tree_head_;
-                
-                // originals can be deleted
-                copy_connected_ = true;
-            }
-
-
-            // validate copy and abort transaction
-            // on failure
-            bool validate_copy() {
-                if (!connection_point_) {
-
-                    // insertion at root
-
-                    // has root copy changed ?
-                    if (conn_pointer_snapshot_ != *root_) {
-                        TSX::TSXGuard::abort<VALIDATION_FAILED>();
-                        return false;
-                    }
-                } else { 
-                    // has the connection pointer to be modified
-                    // changed?
-                    if (conn_pointer_snapshot_ != connection_point_->getChild(child_to_exchange_)) {
-                        TSX::TSXGuard::abort<VALIDATION_FAILED>();
-                        return false;
-                    }
-
-                    // is the root of the tree of copies still connected?
-                    if (!connPointConnected()) {
-                        TSX::TSXGuard::abort<VALIDATION_FAILED>();
-                        return false;
-                    }
-                }
-
-
-                #ifdef PREALLOC_VALIDATION_SET
-                    // have the children pointers of the original nodes changed?
-                    for (auto i = 0; i < validation_set_.size(); i++) {
-                            auto safe_node = validation_set_.get(i);
-                            // skip for new nodes
-                            if (safe_node->node_type_ == SafeNode<NodeType>::ORIG_TREE_NODE) {
-                                // the original node and its current children
-                                const auto original_node = safe_node->original_;
-
-                                // the saved children which shouldn't have changed
-                                const auto &saved_children = safe_node->children_pointers_snapshot_;
-
-                                for (int i = 0; i < NodeType::maxChildren(); i++) {
-                                    if (saved_children[i] != original_node->getChild(i)) {
-                                        TSX::TSXGuard::abort<VALIDATION_FAILED>();
-                                        return false;
-                                    }
-                                }
-                            }  
-                    }
-
-                #else
-                    // have the children pointers of the original nodes changed?
-                    for (auto it = validation_set_.begin(); it != validation_set_.end(); ++it) {
-                            // skip for new nodes
-                            if ((*it)->node_type_ == SafeNode<NodeType>::ORIG_TREE_NODE) {
-                                // the original node and its current children
-                                const auto original_node = (*it)->original_;
-
-                                // the saved children which shouldn't have changed
-                                const auto &saved_children = (*it)->children_pointers_snapshot_;
-
-                                for (int i = 0; i < NodeType::maxChildren(); i++) {
-                                    if (saved_children[i] != original_node->getChild(i)) {
-                                        TSX::TSXGuard::abort<VALIDATION_FAILED>();
-                                        return false;
-                                    }
-                                }
-                            }  
-                    }
-
-                #endif
-
-               
-
-                // all checks ok
-                return true;
-            }
 
             // pop_path: pops a node from the path to the connection point,
             // sets it as the new connection point, then connects the old 
@@ -1284,7 +1264,7 @@ namespace SafeTree {
         // the key given. The node will be determined by the traversalDone
         // method and the path taken by the nextChild method. 
         template <class NodeType>
-        NodeType* find(NodeType* root, int desired_key) {
+        inline NodeType* find(NodeType* root, int desired_key) {
             auto curr = root;
             for (; curr && !curr->traversalDone(desired_key); curr = curr->getChild(curr->nextChild(desired_key))) {
             // search for node with key
@@ -1297,7 +1277,7 @@ namespace SafeTree {
         // the target node. The nextChild method determines the
         // path taken
         template <class NodeType>
-        bool find_target_node(NodeType* root, NodeType* target) {
+        inline bool find_target_node(NodeType* root, NodeType* target) {
             auto curr = root;
 
             for (; curr; curr = curr->getChild(curr->nextChild(target))) {

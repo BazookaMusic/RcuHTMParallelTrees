@@ -129,7 +129,7 @@ class TestBench {
             int inserted = 0;
 
             while (inserted < max_amount) {
-                int rand_num = intRand(start, end,0);
+                int rand_num = intRand(end);
 
                 if (!num_map[rand_num]) {
                     inserted += 1;
@@ -152,7 +152,7 @@ class TestBench {
        
 
         // perform a test using the given operations
-        static void test(experiment exp,int maximum_thread_amount, const std::size_t RANGE_OF_KEYS, int start_threads = 1, int test_thread_step = 1) {
+        static void test(experiment exp,int maximum_thread_amount, const std::size_t RANGE_OF_KEYS, std::vector<int>& threads_to_use) {
 
             for (int i = 0; i < maximum_thread_amount; i++) {
                 thread_stats[i].reset();
@@ -161,7 +161,8 @@ class TestBench {
             static std::atomic<bool> run;
             run = true;
             
-            for (int max_threads = start_threads; max_threads <= maximum_thread_amount; max_threads += test_thread_step) {
+            for (auto thread_el = threads_to_use.begin(); thread_el != threads_to_use.end(); ++ thread_el) {
+                    const int max_threads = *thread_el;
                     MapType aMap(nullptr,global_lock);
                     binary_insert_map_random(0,RANGE_OF_KEYS,RANGE_OF_KEYS/2, aMap); // insert even numbers only
 
@@ -272,64 +273,65 @@ class TestBench {
         };
 
 
-        /* The state array must be initialized to not be all zero */
-        static long xorshift128(xorshift128_state& state)
-        {
-            /* Algorithm "xor128" from p. 5 of Marsaglia, "Xorshift RNGs" */
-            long t = state.d;
+        // /* The state array must be initialized to not be all zero */
+        // static long xorshift128(xorshift128_state& state)
+        // {
+        //     /* Algorithm "xor128" from p. 5 of Marsaglia, "Xorshift RNGs" */
+        //     long t = state.d;
 
-            long const s = state.a;
-            state.d = state.c;
-            state.c = state.b;
-            state.b = s;
+        //     long const s = state.a;
+        //     state.d = state.c;
+        //     state.c = state.b;
+        //     state.b = s;
 
-            t ^= t << 11;
-            t ^= t >> 8;
-            return (state.a = t ^ s ^ (s >> 19));
-        }
+        //     t ^= t << 11;
+        //     t ^= t >> 8;
+        //     return (state.a = t ^ s ^ (s >> 19));
+        // }
 
         static long minimum(const long a, const long b) {
             return a < b ? a : b;
         }
 
-       
-
-        static inline int intRand_h(const int & min, const int & max, const int t_id) {
-            // thread_local int dummy_address;
-            // thread_local std::mt19937 generator((unsigned long)(&dummy_address) ^ (unsigned long)(t_id * 123456789));
-            // std::uniform_int_distribution<int> distribution(min,max);
-            // return distribution(generator);
-            thread_local xorshift128_state s;
-            thread_local bool init = false;
-
-            if (!init) {
-                s.a = t_id + 1821;
-                s.b = 1973;
-                s.c = 1922;
-                s.d = 1918;
-                init = true;
-            }
-
-            const auto delta = xorshift128(s) % max;
-
-            return minimum(min + delta, max);
+        
+        static inline int nextNatural(const int n) {      
+            thread_local int seed = slow_rand(0,n + 1);                                                                                                                                                            
+            seed ^= seed << 6;
+            seed ^= seed >> 21;
+            seed ^= seed << 7;
+            int retval = (int) (seed % (n + 1));
+            return (retval < 0 ? -retval : retval);
         }
 
-        static inline int intRand(const int & min, const int & max, const int t_id) {
-            return intRand_h(min,max,t_id);
+        static int slow_rand(const int min, const int max) {
+            thread_local int dummy_address;
+            thread_local std::mt19937 generator((unsigned long)(&dummy_address) ^ (unsigned long)(123456789));
+            std::uniform_int_distribution<int> distribution(min,max);
+            return distribution(generator);
+        }
+
+       
+
+        static inline int intRand_h(const int & max) {   
+            return nextNatural(max);
+        }
+
+        static inline int intRand(const int & max) {
+            return intRand_h(max);
         }
 
 
 
         static void rand_op(std::atomic<bool>& run,MapType& map, const int range, const int t_id,t_ops& t_op, const int ins_freq,const int rem_freq,const int look_freq) {
             const auto total = ins_freq + rem_freq + look_freq;
-            
+            thread_local volatile bool res;
+
             while(!run);  // wait for start
 
             while (run.load(std::memory_order_relaxed)) {
-                int rand_n = intRand(1, total, t_id);
 
-                int key = intRand(0, range, t_id);
+                int key = intRand(range);
+                int rand_n = 1 + intRand(total - 1);
 
                 if (rand_n <= ins_freq && ins_freq > 0) {
                     if (map.insert(key,1, t_id)) {
@@ -346,7 +348,7 @@ class TestBench {
                     }
                     ++t_op.r_ops;
                 } else if (look_freq > 0) {
-                    map.lookup(key);
+                    res = map.lookup(key).found;
                 }
 
                 ++t_op.n_ops;
