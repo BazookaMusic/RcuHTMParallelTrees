@@ -124,9 +124,7 @@ class BST {
     friend class BSTNode<ValueType>;
     private:
         BSTNode<ValueType>* root;
-        TSX::SpinLock &_lock;
         using TreeNode = BSTNode<ValueType>;
-        const int trans_retries = 30;
         
 
         // helpers
@@ -251,14 +249,9 @@ class BST {
             delete node;
         }
 
-        bool insert_impl(const int k, ValueType val, int t_id) {
+        bool insert_impl(const int k, ValueType val) {
 
-            int retries = trans_retries;
-            
-            TM_SAFE_OPERATION_START {
-
-                TSX::Transaction t(retries,_lock, stats[t_id]);
-
+            TM_SAFE_OPERATION_START(30) {
                 /* FIND PHASE */
 
                 
@@ -272,7 +265,7 @@ class BST {
 
                     /* FIND PHASE END */
 
-                ConnPoint<TreeNode> conn(conn_point_snapshot, t);
+                ConnPoint<TreeNode> conn(conn_point_snapshot);
 
                 /* INSERT */
 
@@ -301,12 +294,9 @@ class BST {
 
 
 
-    bool remove_impl(const int k, const int t_id) {
+    bool remove_impl(const int k) {
         
-        int retries = trans_retries;
-
-        TM_SAFE_OPERATION_START {
-            TSX::Transaction t(retries,_lock, stats[t_id]);
+        TM_SAFE_OPERATION_START(30) {
 
             /* FIND PHASE */
 
@@ -319,7 +309,7 @@ class BST {
             }
 
 
-            ConnPoint<TreeNode> conn(conn_point_snapshot, t);
+            ConnPoint<TreeNode> conn(conn_point_snapshot);
 
             // the connection point is above the
             // node which will be deleted
@@ -387,7 +377,7 @@ class BST {
 
     public:
 
-    BST(TreeNode* root, TSX::SpinLock &lock): root(root), _lock(lock){
+    BST(TreeNode* root): root(root) {
         #ifdef USER_NODE_POOL
             ConnPoint<TreeNode>::init_node_pool();
         #endif
@@ -406,8 +396,8 @@ class BST {
         #endif
     }
 
-    bool insert(const int k, ValueType val, int t_id) {
-        return insert_impl(k,val, t_id);
+    bool insert(const int k, ValueType val) {
+        return insert_impl(k,val);
     }
 
     int size() {
@@ -450,8 +440,8 @@ class BST {
     }
 
 
-    bool remove(int k, int t_id) {
-        return remove_impl(k,t_id);
+    bool remove(int k) {
+        return remove_impl(k);
     }
 
 

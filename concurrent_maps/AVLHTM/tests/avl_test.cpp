@@ -22,17 +22,16 @@ constexpr static int OPERATION_MULTIPLIER = 10000;
 
 using TestBenchType = TestBench<AVLTree<int>>;
 
-TSX::SpinLock& lock = TestBenchType::global_lock;
 
 TEST_CASE("AVLTree Init Test","[init]") {
-    AVLTree<int> someMap(nullptr, lock);
+    AVLTree<int> someMap(nullptr);
     (void)someMap;
 }
 
 
-void insert(int i, AVLTree<int>& map, int t_id) {
+void insert(int i, AVLTree<int>& map) {
     for (int j = i * OPERATION_MULTIPLIER; j < (i+1)*OPERATION_MULTIPLIER; j++) {
-         map.insert(j,1,t_id);
+         map.insert(j,1);
     }
 }
 
@@ -40,7 +39,7 @@ void insert(int i, AVLTree<int>& map, int t_id) {
 void even_remove(AVLTree<int>& map, int i) {
     for (int j = i * OPERATION_MULTIPLIER; j < (i+1)*OPERATION_MULTIPLIER; j++) {
         if (j % 2 == 0) {
-            map.remove(j,i);
+            map.remove(j);
         }
     }
 }
@@ -61,14 +60,14 @@ void even_remove(AVLTree<int>& map, int i) {
 
 // void vec_insert(std::vector<int>& vec, AVLTree<int>& map, int t_id) {
 //     for (int j = t_id * OPERATION_MULTIPLIER; j <= (t_id + 1)*OPERATION_MULTIPLIER; j++) {
-//          map.insert(vec[j],1,t_id);
+//          map.insert(vec[j],1);
 //     }
 // }
 
 
 
 TEST_CASE("AVLTree Find Test") {
-    AVLTree<int> someMap(nullptr, lock);
+    AVLTree<int> someMap(nullptr);
     someMap.setRoot(new AVLNode<int>(100,0, new AVLNode<int>(50,0,nullptr,nullptr),new AVLNode<int>(150,0,nullptr,nullptr)));
 
     REQUIRE(someMap.getRoot()->nextChild(120) == 1);
@@ -78,31 +77,31 @@ TEST_CASE("AVLTree Find Test") {
 
 TEST_CASE("AVLTree Insert Test","[insert]") {
     std::cout << "SINGLE THREADED INSERT" << std::endl;
-    AVLTree<int> someMap(nullptr, lock);
+    AVLTree<int> someMap(nullptr);
 
     SECTION("empty insert") {
-        REQUIRE_NOTHROW(someMap.insert(1,2,0));
+        REQUIRE_NOTHROW(someMap.insert(1,2));
         REQUIRE(someMap.lookup(1).found);
 
         SECTION("in the middle insert") {
-            REQUIRE_NOTHROW(someMap.insert(2,1,0));
+            REQUIRE_NOTHROW(someMap.insert(2,1));
             REQUIRE(someMap.lookup(2).found);
         }
 
         
         SECTION("another in the middle insert") {
-            REQUIRE_NOTHROW(someMap.insert(-1,1,0));
+            REQUIRE_NOTHROW(someMap.insert(-1,1));
             REQUIRE(someMap.lookup(-1).found);
         }
 
          SECTION("inserts all work together") {
-            REQUIRE_NOTHROW(someMap.insert(4,1,0));
+            REQUIRE_NOTHROW(someMap.insert(4,1));
             REQUIRE(someMap.lookup(4).found);
             //someMap.print();
-            REQUIRE_NOTHROW(someMap.insert(5,1,0));
+            REQUIRE_NOTHROW(someMap.insert(5,1));
             //someMap.print();
             REQUIRE(someMap.lookup(5).found);
-            REQUIRE_NOTHROW(someMap.insert(6,1,0));
+            REQUIRE_NOTHROW(someMap.insert(6,1));
             REQUIRE(someMap.lookup(6).found);
             REQUIRE(someMap.lookup(4).found);
             REQUIRE(someMap.lookup(5).found);
@@ -128,11 +127,11 @@ TEST_CASE("AVLTree Multithreaded Insert Test","[mt_insert]") {
     std::cout << "MULTITHREADED INSERT" << std::endl;
 
     for (int j = 0; j < 100; j++) { 
-            AVLTree<int> someMap(nullptr,lock);
+            AVLTree<int> someMap(nullptr);
             std::thread threads[THREADS];
 
             for (int i = 0; i < THREADS; i++) {
-                threads[i] = std::thread(insert, i, std::ref(someMap), i);
+                threads[i] = std::thread(insert, i, std::ref(someMap));
             }
 
             for (int i = 0; i < THREADS; i++) {
@@ -161,7 +160,7 @@ TEST_CASE("AVLTree Multithreaded Insert Test","[mt_insert]") {
 //     for (int k = 0; k < OPERATION_MULTIPLIER; k++) {
 //             auto index = start + k;
 //             if (index % 2 == 0) {
-//                 map.remove(index,t_id);
+//                 map.remove(index);
 //                 //REQUIRE(!map.lookup(index).found);
 //             }
 //     }
@@ -174,27 +173,27 @@ TEST_CASE("AVLTree Remove Test","[remove]") {
         std::cout << "SINGLE THREADED REMOVE" << std::endl;
     }
     
-    AVLTree<int> someMap(nullptr, lock);
+    AVLTree<int> someMap(nullptr);
 
     SECTION("root remove") {
-        someMap.insert(1,1,0);
+        someMap.insert(1,1);
 
         REQUIRE(someMap.lookup(1).found);
 
-        REQUIRE(someMap.remove(1,0));
+        REQUIRE(someMap.remove(1));
 
         REQUIRE(!someMap.lookup(1).found);
         
     }
 
     SECTION("leaf tree remove") {
-        someMap.insert(1,1,0);
-        someMap.insert(2,1,0);
-        someMap.insert(3,1,0);
+        someMap.insert(1,1);
+        someMap.insert(2,1);
+        someMap.insert(3,1);
 
         
 
-        someMap.remove(1,0);
+        someMap.remove(1);
 
         REQUIRE(!someMap.lookup(1).found);
         REQUIRE(someMap.lookup(2).found);
@@ -202,18 +201,18 @@ TEST_CASE("AVLTree Remove Test","[remove]") {
     }
 
     SECTION("remove by replacing leftest subtree") {
-        someMap.insert(6,1,0);
-        someMap.insert(3,1,0);
-        someMap.insert(9,1,0);
-        someMap.insert(7,1,0);
-        someMap.insert(10,1,0);
-        someMap.insert(1,1,0);
-        someMap.insert(4,1,0);
-        someMap.insert(8,1,0);
+        someMap.insert(6,1);
+        someMap.insert(3,1);
+        someMap.insert(9,1);
+        someMap.insert(7,1);
+        someMap.insert(10,1);
+        someMap.insert(1,1);
+        someMap.insert(4,1);
+        someMap.insert(8,1);
 
         
 
-        someMap.remove(6,0);
+        someMap.remove(6);
 
         REQUIRE(!someMap.lookup(6).found);
         REQUIRE(someMap.lookup(3).found);
@@ -231,7 +230,7 @@ TEST_CASE("AVLTree Remove Test","[remove]") {
         //someMap.print();
         for (int i = 0; i < THREADS*OPERATION_MULTIPLIER; i++) {
             if ((i % 2) == 0) {
-                someMap.remove(i,0);
+                someMap.remove(i);
                 if (someMap.lookup(i).found) {
                     std::cout << "SHOULDNT " << i << std::endl;
                     someMap.print();
@@ -261,7 +260,7 @@ TEST_CASE("AVLTree MULTITHREADED Remove Test","[remove_mt]") {
 
     SECTION("mt remove") {
         for (int j = 0; j < 100; j++) {
-            AVLTree<int> someMap(nullptr, lock);
+            AVLTree<int> someMap(nullptr);
             TestBenchType::binary_insert_map(0, THREADS*OPERATION_MULTIPLIER - 1,someMap);
 
             for (int i = 0; i < THREADS; i++) {
@@ -298,7 +297,7 @@ TEST_CASE("THROUGHPUT TESTS","[tp]") {
         std::cout << "Start of tests for tree size: " << OPERATION_MULTIPLIERS[i] << std::endl;
         const std::size_t RANGE_OF_KEYS = 2 * OPERATION_MULTIPLIERS[i]; // RANGE IS 1 TO RANGE_OF_KEYS
 
-        std::vector<int> threads_to_use = {1,2,4,7,14,20,28};
+        std::vector<int> threads_to_use = {1,2,4,6};//{1,2,4,7,14,20,28};
         // RANDOM OPS
         TestBenchType::experiment exp1(33,33,34);
         TestBenchType::test(exp1,THREADS,RANGE_OF_KEYS,threads_to_use);

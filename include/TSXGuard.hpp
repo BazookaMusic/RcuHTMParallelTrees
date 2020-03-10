@@ -516,6 +516,10 @@ namespace TSX {
         
     };
 
+    thread_local TSXStats __internal_thread_stat;
+    static TSX::SpinLock __framework_global_lock;
+    thread_local int __internal_trans_retries = 30;
+
     // Handles the fallback and retries
     // when using a TransOnlyGuard
     class Transaction {
@@ -526,16 +530,32 @@ namespace TSX {
             bool has_locked_;
 
         public:
-            Transaction(int &retries,TSX::SpinLock &global_lock, TSX::TSXStats &stats): 
+            Transaction(): 
+            retries_(__internal_trans_retries), 
+            lock_(__framework_global_lock), 
+            stats_(__internal_thread_stat) {};
+
+            Transaction(int &retries,TSX::SpinLock &global_lock): 
             retries_(retries), 
             lock_(global_lock), 
-            stats_(stats),
+            stats_(__internal_thread_stat),
             has_locked_(false) {
-                if (retries == 0) {
+                lock_sequence();
+            }
+
+            void lock_sequence() {
+                if (retries_ == 0) {
                     lock_.lock();
                     has_locked_ = true;
                 }
 
+            }
+
+            void reset(int& retries) {
+                has_locked_ = false;
+                retries_ = retries;
+
+                lock_sequence();
             }
 
             bool go_to_fallback() {
@@ -566,6 +586,12 @@ namespace TSX {
             }
     };
 
+    thread_local bool __internal__thread_transaction_success_flag__ = false;
+
+    thread_local TSX::Transaction __framework_global_transaction;
+
+    thread_local TSX::Transaction* __framework__trans_pointer;
+
 };
 
 
@@ -578,13 +604,16 @@ namespace TSX {
     //
 
     // if a transaction succeeded or failed
-    thread_local bool __internal__thread_transaction_success_flag__ = false;
+ 
 
     // thread safe operation macro definitions
     #ifdef TM_EARLY_ABORT
-        #define TM_SAFE_OPERATION_START \
-        __internal__thread_transaction_success_flag__ = false;\
-        while(!__internal__thread_transaction_success_flag__) { \
+        #define TM_SAFE_OPERATION_START(n_retries) \
+        int __trans__retries__ = n_retries;\
+        TSX::__internal__thread_transaction_success_flag__ = false;\
+        while(!TSX::__internal__thread_transaction_success_flag__) { \
+            TSX::Transaction ____t(__trans__retries__, TSX::__framework_global_lock); \
+            TSX::__framework__trans_pointer = &____t;\
         try {\
 
         #define TM_SAFE_OPERATION_END \
@@ -594,12 +623,15 @@ namespace TSX {
         }
 
     #else
-        #define TM_SAFE_OPERATION_START \
-        __internal__thread_transaction_success_flag__ = false;\
-        while(!__internal__thread_transaction_success_flag__) \
+        #define TM_SAFE_OPERATION_START(n_retries) \
+        int __trans__retries__ = n_retries;\
+        TSX::__internal__thread_transaction_success_flag__ = false;\
+        while(!TSX::__internal__thread_transaction_success_flag__) {\
+        TSX::Transaction ____t(__trans__retries__, TSX::__framework_global_lock); \
+            TSX::__framework__trans_pointer = &____t;\
 
 
-        #define TM_SAFE_OPERATION_END
+        #define TM_SAFE_OPERATION_END }
     #endif
 
 #endif

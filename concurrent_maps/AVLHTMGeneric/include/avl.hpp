@@ -218,9 +218,8 @@ class AVLTree {
     friend class AVLNode<ValueType>;
     private:
         AVLNode<ValueType>* root;
-        TSX::SpinLock &_lock;
         using TreeNode = AVLNode<ValueType>;
-        const int trans_retries = 20;
+
         
 
         // helpers
@@ -415,14 +414,9 @@ class AVLTree {
 
         }
 
-        bool insert_impl(const int k, ValueType val, int t_id) {
-
-            int retries = trans_retries;
+        bool insert_impl(const int k, ValueType val) {
             
-            TM_SAFE_OPERATION_START {
-
-                TSX::Transaction t(retries,_lock, stats[t_id]);
-
+            TM_SAFE_OPERATION_START(30) {
                 /* FIND PHASE */
 
             
@@ -437,7 +431,7 @@ class AVLTree {
 
                 /* FIND PHASE END */
 
-                ConnPoint<TreeNode> conn(conn_point_snapshot, t);
+                ConnPoint<TreeNode> conn(conn_point_snapshot);
 
                 /* INSERT */
 
@@ -525,12 +519,10 @@ class AVLTree {
     }
 
 
-    bool remove_impl(const int k, const int t_id) {
+    bool remove_impl(const int k) {
         
-        int retries = trans_retries;
 
-        TM_SAFE_OPERATION_START {
-            TSX::Transaction t(retries,_lock, stats[t_id]);
+        TM_SAFE_OPERATION_START(30) {
 
             /* FIND PHASE */
 
@@ -546,7 +538,7 @@ class AVLTree {
 
             /* FIND PHASE END */
 
-            ConnPoint<TreeNode> conn(conn_point_snapshot, t);
+            ConnPoint<TreeNode> conn(conn_point_snapshot);
 
             /* REMOVE */
 
@@ -655,7 +647,7 @@ class AVLTree {
 
     public:
 
-    AVLTree(TreeNode* root, TSX::SpinLock &lock): root(root), _lock(lock){
+    AVLTree(TreeNode* root): root(root){
         #ifdef USER_NODE_POOL
             ConnPoint<TreeNode>::init_node_pool();
         #endif
@@ -674,8 +666,8 @@ class AVLTree {
         #endif
     }
 
-    bool insert(const int k, ValueType val, int t_id) {
-        return insert_impl(k,val, t_id);
+    bool insert(const int k, ValueType val) {
+        return insert_impl(k,val);
     }
 
     int size() {
@@ -725,8 +717,8 @@ class AVLTree {
 
 
 
-    bool remove(int k, int t_id) {
-        return remove_impl(k,t_id);
+    bool remove(int k) {
+        return remove_impl(k);
     }
 
 

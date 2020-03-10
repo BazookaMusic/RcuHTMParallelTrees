@@ -77,7 +77,7 @@ class TestBench {
 
             int mid = (start + end) / 2;
 
-            map.insert(mid,1,0);
+            map.insert(mid,1);
 
             binary_insert_map(start,mid-1,map);
             binary_insert_map(mid+1,end,map);
@@ -112,7 +112,7 @@ class TestBench {
             int mid = (start + end) / 2;
 
             if (mid % 2 == 0) {
-                map.insert(mid,1,0);
+                map.insert(mid,1);
             }
         
 
@@ -134,7 +134,7 @@ class TestBench {
                 if (!num_map[rand_num]) {
                     inserted += 1;
 
-                    map.insert(rand_num,1,0);
+                    map.insert(rand_num,1);
 
                     num_map[rand_num] = true;
                 }
@@ -153,7 +153,7 @@ class TestBench {
 
         // perform a test using the given operations
         static void test(experiment exp,int maximum_thread_amount, const std::size_t RANGE_OF_KEYS, std::vector<int>& threads_to_use) {
-
+            
             for (int i = 0; i < maximum_thread_amount; i++) {
                 thread_stats[i].reset();
             }
@@ -162,11 +162,15 @@ class TestBench {
             run = true;
             
             for (auto thread_el = threads_to_use.begin(); thread_el != threads_to_use.end(); ++ thread_el) {
+                    
                     const int max_threads = *thread_el;
-                    MapType aMap(nullptr,global_lock);
+                    MapType aMap(nullptr);
                     binary_insert_map_random(0,RANGE_OF_KEYS,RANGE_OF_KEYS/2, aMap); // insert even numbers only
 
-                    REQUIRE(aMap.size() == RANGE_OF_KEYS/2);
+                    if (!(aMap.size() == RANGE_OF_KEYS/2)) {
+                        REQUIRE(aMap.size() == RANGE_OF_KEYS/2);
+                    }
+                    
 
                     std::size_t insert_sum = 0;
                     std::size_t rem_sum = 0;
@@ -179,8 +183,9 @@ class TestBench {
                         thread_stats[i].reset();
                     }
 
+
                     for (int i = 0; i < max_threads; i++) {
-                            threads[i] = std::thread(rand_op, std::ref(run), std::ref(aMap), RANGE_OF_KEYS, i, std::ref(thread_stats[i]), exp.inserts,exp.removes,exp.lookups);
+                            threads[i] = std::thread(rand_op, std::ref(run), std::ref(aMap), RANGE_OF_KEYS, std::ref(thread_stats[i]), exp.inserts,exp.removes,exp.lookups);
                     }
 
 
@@ -196,6 +201,7 @@ class TestBench {
                         if (rc != 0) {
                             std::cerr << "Error calling pthread_setaffinity_np: " << rc << "\n";
                         }
+
                     }
                     #else
                     for (int i = 0; i < max_threads/2; i++) {
@@ -322,7 +328,7 @@ class TestBench {
 
 
 
-        static void rand_op(std::atomic<bool>& run,MapType& map, const int range, const int t_id,t_ops& t_op, const int ins_freq,const int rem_freq,const int look_freq) {
+        static void rand_op(std::atomic<bool>& run,MapType& map, const int range,t_ops& t_op, const int ins_freq,const int rem_freq,const int look_freq) {
             const auto total = ins_freq + rem_freq + look_freq;
             thread_local volatile bool res;
 
@@ -334,14 +340,14 @@ class TestBench {
                 int rand_n = 1 + intRand(total - 1);
 
                 if (rand_n <= ins_freq && ins_freq > 0) {
-                    if (map.insert(key,1, t_id)) {
+                    if (map.insert(key, 1)) {
                         t_op.sum_inserts += key;
                     } else {
                             ++t_op.light_ops_ins;
                     }
                     ++t_op.i_ops;
                 } else if (rand_n <= ins_freq + rem_freq && rem_freq > 0) {
-                    if (map.remove(key, t_id)) {
+                    if (map.remove(key)) {
                          t_op.sum_removes += key;
                     } else {
                         ++t_op.light_ops_rems;
