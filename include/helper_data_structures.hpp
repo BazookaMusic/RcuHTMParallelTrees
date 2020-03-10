@@ -114,7 +114,21 @@ struct NodeAndNextPointer {
 
     NodeAndNextPointer(){}
     NodeAndNextPointer(NodeType* node, int next_child):node(node), next_child(next_child){}
-    NodeAndNextPointer(NodeAndNextPointer&& other): node(other.node), next_child(other.next_child) {}
+    NodeAndNextPointer(const NodeAndNextPointer& other): node(other.node), next_child(other.next_child) {}
+    NodeAndNextPointer(const NodeAndNextPointer&& other): node(other.node), next_child(other.next_child) {}
+    NodeAndNextPointer& operator=(NodeAndNextPointer& other) {
+        node = other.node;
+        next_child = other.next_child;
+
+        return *this;
+    }
+
+    NodeAndNextPointer&& operator=(NodeAndNextPointer&& other) {
+        node = other.node;
+        next_child = other.next_child;
+
+        return *this;
+    }
 };
 
 template <class NodeType, int CAP>
@@ -131,7 +145,7 @@ class TreePathStackWithIndex{
 
         void move_to(TreePathStackWithIndex& other_stack) {
             for (int i = 0; i < currentIndex; i++) {
-                other_stack.stack[i] = std::move(stack[i]);
+                other_stack.stack[i] = stack[i];
             }
             other_stack.currentIndex = currentIndex;
         }
@@ -148,7 +162,7 @@ class TreePathStackWithIndex{
 
         NodeAndNextPointer<NodeType> bottom() const {
             if (currentIndex == -1) {
-                return NodeAndNextPointer<NodeType>{nullptr,-1};
+                return NodeAndNextPointer<NodeType>(nullptr,-1);
             }
 
             return stack[0];
@@ -156,7 +170,7 @@ class TreePathStackWithIndex{
 
         NodeAndNextPointer<NodeType> top() const {
             if (currentIndex == -1) {
-                return NodeAndNextPointer<NodeType>{nullptr,-1};
+                return NodeAndNextPointer<NodeType>(nullptr,-1);
             }
 
             return stack[currentIndex];
@@ -182,10 +196,12 @@ class TreePathStackWithIndex{
         //and returns the element
         NodeAndNextPointer<NodeType> pop() {
             if (currentIndex < 0) {
-                return NodeAndNextPointer<NodeType>{nullptr ,-1};
-            } 
+                return NodeAndNextPointer<NodeType>(nullptr ,-1);
+            }
 
-            return std::move(stack[currentIndex--]);
+            auto res =  stack[currentIndex--];
+
+            return res;
         }
         //Empty returns true if stack is empty, else false
         bool Empty() {
