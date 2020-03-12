@@ -162,9 +162,14 @@ namespace SafeTree {
                 // of copies to be constructed.
                 ConnPointData<NodeType> connectHere() {
 
+                    //path_check();
+
                     ConnPointData<NodeType> conn_point_snapshot;
 
+                    //path_.print_contents();
+
                     bool at_root = at_level_ == -1;
+
                     NodeAndNextPointer<NodeType> conn_point_and_next_child = path_.pop();
                     conn_point_snapshot.connection_point_ = at_root ? nullptr: conn_point_and_next_child.node;
 
@@ -172,8 +177,11 @@ namespace SafeTree {
 
                     conn_point_snapshot.root_of_structure = root_;
 
-                    conn_point_snapshot.con_ptr.child_index = at_root? INSERT_POSITIONS::AT_ROOT :  conn_point_and_next_child.next_child;
+                    conn_point_snapshot.con_ptr.child_index = at_root? INSERT_POSITIONS::AT_ROOT : conn_point_and_next_child.next_child;
                     conn_point_snapshot.con_ptr.snapshot = current_pos_;
+
+                    // restore state
+                    path_.push(conn_point_and_next_child.node, conn_point_and_next_child.next_child);
 
 
                     return conn_point_snapshot;
@@ -731,30 +739,33 @@ namespace SafeTree {
                 // chech if path to connPoint hasn't changed
                 // and if conn_point exists in the tree
                 bool path_unchanged() {
+                    // std::cout << "Path recorded" << std::endl;
+                    // path_to_conn_point_.print_contents();
 
+                    
+                    auto to_be_validated = *root_;
                     
                     // modifying at root?
                     if (path_to_conn_point_.Empty()) {
-                        return true;
+                        return connection_point_ == to_be_validated;
                     }
 
                     // root is unchanged?
                     auto supposed_root = path_to_conn_point_.bottom();
 
-                    auto to_be_validated = *root_;
                     auto next_child = supposed_root.next_child;
 
                     if (supposed_root.node != to_be_validated) {
                         return false;
                     }
-
-                
+                    
 
 
                     // do the same for the rest of the path to the conn_point
                     NodeType* supposed_next_child = supposed_root.node->getChild(next_child);
 
                     for (int i = 1; i < path_to_conn_point_.size(); ++i) {
+
                         
                         if (path_to_conn_point_[i].node != supposed_next_child) {
                             return false;
@@ -853,9 +864,7 @@ namespace SafeTree {
             // on failure
             bool validate_copy() {
                 if (!connection_point_) {
-
                     // insertion at root
-
                     // has root copy changed ?
                     if (conn_pointer_snapshot_ != *root_) {
                         TSX::TSXGuard::abort<VALIDATION_FAILED>();
@@ -933,7 +942,7 @@ namespace SafeTree {
             ConnPoint& operator=(const ConnPoint&) = delete;
             ConnPoint(const ConnPoint&) = delete;
 
-            ConnPoint(ConnPointData<NodeType>& data, TSX::Transaction& t):
+            ConnPoint(ConnPointData<NodeType>& data):
             connect_success_(__internal__thread_transaction_success_flag__),
             connection_point_(data.connection_point_), connection_pointer_(nullptr),
             root_(data.root_of_structure),
@@ -941,12 +950,12 @@ namespace SafeTree {
             child_to_exchange_(data.con_ptr.child_index),
             path_to_conn_point_(data.path), 
             copy_connected_(false),
-            _lock(t.get_lock()),
-            stats_(t.get_stats()),
+            _lock(TSX::__internal__trans_pointer->get_lock()),
+            stats_(TSX::__internal__trans_pointer->get_stats()),
             head_(nullptr),
             tree_was_modified_(false),
-            already_locked_(t.has_locked()),
-            trans_retries_(t.get_retries()),
+            already_locked_(TSX::__internal__trans_pointer->has_locked()),
+            trans_retries_(TSX::__internal__trans_pointer->get_retries()),
             validation_aborted_(false)
             {
                 #ifdef TSX_MEM_POOL
@@ -1353,6 +1362,8 @@ namespace SafeTree {
         }
 
     #endif
+
+    
 
         
     }

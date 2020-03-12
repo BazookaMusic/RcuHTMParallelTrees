@@ -292,7 +292,7 @@ TEST_CASE("AVLTree MULTITHREADED Remove Test","[remove_mt]") {
 
 
 TEST_CASE("THROUGHPUT TESTS","[tp]") {
-    const int OPERATION_MULTIPLIERS[] = {1000000,10000,1000};
+    const int OPERATION_MULTIPLIERS[] = {1000};
 
     for (int i = 0; i < 4; i++) {
         std::cout << "Start of tests for tree size: " << OPERATION_MULTIPLIERS[i] << std::endl;

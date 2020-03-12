@@ -516,6 +516,10 @@ namespace TSX {
         
     };
 
+    static SpinLock __internal__global_lock;
+    thread_local TSXStats __internal__trans_stats;
+
+
     // Handles the fallback and retries
     // when using a TransOnlyGuard
     class Transaction {
@@ -526,10 +530,10 @@ namespace TSX {
             bool has_locked_;
 
         public:
-            Transaction(int &retries,TSX::SpinLock &global_lock, TSX::TSXStats &stats): 
+            Transaction(int &retries): 
             retries_(retries), 
-            lock_(global_lock), 
-            stats_(stats),
+            lock_(__internal__global_lock), 
+            stats_(__internal__trans_stats),
             has_locked_(false) {
                 if (retries == 0) {
                     lock_.lock();
@@ -566,6 +570,7 @@ namespace TSX {
             }
     };
 
+    thread_local Transaction* __internal__trans_pointer = nullptr;
 };
 
 
@@ -582,9 +587,12 @@ namespace TSX {
 
     // thread safe operation macro definitions
     #ifdef TM_EARLY_ABORT
-        #define TM_SAFE_OPERATION_START \
+        #define TM_SAFE_OPERATION_START(n_retries) \
         __internal__thread_transaction_success_flag__ = false;\
+        int __current__op__retries = n_retries; \
         while(!__internal__thread_transaction_success_flag__) { \
+            TSX::Transaction __trans_obj__(__current__op__retries);
+            TSX::__internal__trans_pointer = &__trans_obj__;
         try {\
 
         #define TM_SAFE_OPERATION_END \
@@ -594,12 +602,15 @@ namespace TSX {
         }
 
     #else
-        #define TM_SAFE_OPERATION_START \
+        #define TM_SAFE_OPERATION_START(n_retries) \
         __internal__thread_transaction_success_flag__ = false;\
-        while(!__internal__thread_transaction_success_flag__) \
+        int __current__op__retries = n_retries; \
+        while(!__internal__thread_transaction_success_flag__) {\
+            TSX::Transaction __trans_obj(__current__op__retries);\
+            TSX::__internal__trans_pointer = &__trans_obj;
 
 
-        #define TM_SAFE_OPERATION_END
+        #define TM_SAFE_OPERATION_END }
     #endif
 
 #endif
