@@ -418,11 +418,9 @@ class AVLTree {
         // the insert operation
         bool insert_impl(const int k, ValueType val, int t_id) {
 
-            int retries = trans_retries;
+            (void)t_id;
             
-            TM_SAFE_OPERATION_START {
-
-                TSX::Transaction t(retries,_lock, stats[t_id]);
+            TM_SAFE_OPERATION_START(30) {
 
                 /* FIND PHASE */
 
@@ -437,7 +435,7 @@ class AVLTree {
 
                     /* FIND PHASE END */
 
-                ConnPoint<TreeNode> conn(conn_point_snapshot, t);
+                ConnPoint<TreeNode> conn(conn_point_snapshot);
 
                 /* INSERT */
 
@@ -534,11 +532,9 @@ class AVLTree {
 
 
     bool remove_impl(const int k, const int t_id) {
+        (void)t_id;
         
-        int retries = trans_retries;
-
-        TM_SAFE_OPERATION_START {
-            TSX::Transaction t(retries,_lock, stats[t_id]);
+        TM_SAFE_OPERATION_START(30) {
 
             /* FIND PHASE */
 
@@ -553,7 +549,7 @@ class AVLTree {
 
             /* FIND PHASE END */
 
-            ConnPoint<TreeNode> conn(conn_point_snapshot, t);
+            ConnPoint<TreeNode> conn(conn_point_snapshot);
 
             /* REMOVE */
 

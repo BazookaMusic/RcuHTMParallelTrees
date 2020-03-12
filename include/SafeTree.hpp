@@ -933,7 +933,7 @@ namespace SafeTree {
             ConnPoint& operator=(const ConnPoint&) = delete;
             ConnPoint(const ConnPoint&) = delete;
 
-            ConnPoint(ConnPointData<NodeType>& data, TSX::Transaction& t):
+            ConnPoint(ConnPointData<NodeType>& data):
             connect_success_(__internal__thread_transaction_success_flag__),
             connection_point_(data.connection_point_), connection_pointer_(nullptr),
             root_(data.root_of_structure),
@@ -941,12 +941,12 @@ namespace SafeTree {
             child_to_exchange_(data.con_ptr.child_index),
             path_to_conn_point_(data.path), 
             copy_connected_(false),
-            _lock(t.get_lock()),
-            stats_(t.get_stats()),
+            _lock(TSX::__internal__trans_pointer->get_lock()),
+            stats_(TSX::__internal__trans_pointer->get_stats()),
             head_(nullptr),
             tree_was_modified_(false),
-            already_locked_(t.has_locked()),
-            trans_retries_(t.get_retries()),
+            already_locked_(TSX::__internal__trans_pointer->has_locked()),
+            trans_retries_(TSX::__internal__trans_pointer->get_retries()),
             validation_aborted_(false)
             {
                 #ifdef TSX_MEM_POOL
