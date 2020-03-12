@@ -115,6 +115,21 @@ struct NodeAndNextPointer {
     NodeAndNextPointer(){}
     NodeAndNextPointer(NodeType* node, int next_child):node(node), next_child(next_child){}
     NodeAndNextPointer(NodeAndNextPointer&& other): node(other.node), next_child(other.next_child) {}
+
+    NodeAndNextPointer(const NodeAndNextPointer& other): node(other.node), next_child(other.next_child) {}
+    
+    // NodeAndNextPointer& operator=(NodeAndNextPointer&& other) {
+    //     node = other.node;
+    //     next_child = other.next_child;
+    // }
+
+    NodeAndNextPointer& operator=(const NodeAndNextPointer other) {
+        node = other.node;
+        next_child = other.next_child;
+
+        return *this;
+    }
+
 };
 
 template <class NodeType, int CAP>
@@ -130,8 +145,8 @@ class TreePathStackWithIndex{
         };
 
         void move_to(TreePathStackWithIndex& other_stack) {
-            for (int i = 0; i < currentIndex; i++) {
-                other_stack.stack[i] = std::move(stack[i]);
+            for (int i = 0; i <= currentIndex; i++) {
+                other_stack.stack[i] = stack[i];
             }
             other_stack.currentIndex = currentIndex;
         }

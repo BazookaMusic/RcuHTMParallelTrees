@@ -270,13 +270,13 @@ TEST_CASE("AVLTree MULTITHREADED Remove Test","[remove_mt]") {
 
 
 TEST_CASE("THROUGHPUT TESTS","[tp]") {
-    const int OPERATION_MULTIPLIERS[] = {1000000,10000,1000};
+    const int OPERATION_MULTIPLIERS[] = {1000, 10000, 1000000};
 
     for (int i = 0; i < 4; i++) {
         std::cout << "Start of tests for tree size: " << OPERATION_MULTIPLIERS[i] << std::endl;
         const std::size_t RANGE_OF_KEYS = 2 * OPERATION_MULTIPLIERS[i]; // RANGE IS 1 TO RANGE_OF_KEYS
 
-        std::vector<int> threads_to_use = {1,2,4,7,14,20,28};
+        std::vector<int> threads_to_use = {6};//,2,4,7,14,20,28};
         // RANDOM OPS
         TestBenchType::experiment exp1(33,33,34);
         TestBenchType::test(exp1,THREADS,RANGE_OF_KEYS,threads_to_use);

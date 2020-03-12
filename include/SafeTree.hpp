@@ -162,9 +162,14 @@ namespace SafeTree {
                 // of copies to be constructed.
                 ConnPointData<NodeType> connectHere() {
 
+                    //path_check();
+
                     ConnPointData<NodeType> conn_point_snapshot;
 
+                    //path_.print_contents();
+
                     bool at_root = at_level_ == -1;
+
                     NodeAndNextPointer<NodeType> conn_point_and_next_child = path_.pop();
                     conn_point_snapshot.connection_point_ = at_root ? nullptr: conn_point_and_next_child.node;
 
@@ -172,8 +177,12 @@ namespace SafeTree {
 
                     conn_point_snapshot.root_of_structure = root_;
 
-                    conn_point_snapshot.con_ptr.child_index = at_root? INSERT_POSITIONS::AT_ROOT :  conn_point_and_next_child.next_child;
+                    conn_point_snapshot.con_ptr.child_index = at_root? INSERT_POSITIONS::AT_ROOT : conn_point_and_next_child.next_child;
                     conn_point_snapshot.con_ptr.snapshot = current_pos_;
+
+                    // std::cerr << "Inserting at root?: " << at_root << " con_ptr: " <<  conn_point_and_next_child.node << std::endl;
+                    // std::cerr << "current root:" << *root_ << " con_ptr: " <<  conn_point_snapshot.con_ptr.snapshot << std::endl;
+                    // std::cerr << conn_point_snapshot.connection_point_ << std::endl;
 
 
                     return conn_point_snapshot;
@@ -731,22 +740,28 @@ namespace SafeTree {
                 // chech if path to connPoint hasn't changed
                 // and if conn_point exists in the tree
                 bool path_unchanged() {
+                    // std::cout << "Path recorded" << std::endl;
+                    // path_to_conn_point_.print_contents();
 
+                    
+                    auto to_be_validated = *root_;
                     
                     // modifying at root?
                     if (path_to_conn_point_.Empty()) {
-                        return true;
+                        return connection_point_ == to_be_validated;
                     }
 
                     // root is unchanged?
                     auto supposed_root = path_to_conn_point_.bottom();
 
-                    auto to_be_validated = *root_;
                     auto next_child = supposed_root.next_child;
 
                     if (supposed_root.node != to_be_validated) {
                         return false;
                     }
+                    
+                    // std::cerr << "actual path" << std::endl;
+                    // std::cerr << "root: " << to_be_validated << std::endl;
 
                 
 
@@ -755,6 +770,8 @@ namespace SafeTree {
                     NodeType* supposed_next_child = supposed_root.node->getChild(next_child);
 
                     for (int i = 1; i < path_to_conn_point_.size(); ++i) {
+
+                       // std::cerr << "-> " << supposed_next_child << std::endl;
                         
                         if (path_to_conn_point_[i].node != supposed_next_child) {
                             return false;
@@ -763,6 +780,13 @@ namespace SafeTree {
                         to_be_validated = supposed_next_child;
                         supposed_next_child = to_be_validated->getChild(path_to_conn_point_[i].next_child);
                     }
+
+
+                    // std::cerr << "-> " << supposed_next_child << std::endl;
+
+                    // std::cerr << "stored path" << std::endl;
+                    // path_to_conn_point_.print_contents();
+                    // std::cerr << connection_point_ << std::endl;
 
 
                     // the last node of the path should be the connection point 
@@ -853,15 +877,14 @@ namespace SafeTree {
             // on failure
             bool validate_copy() {
                 if (!connection_point_) {
-
                     // insertion at root
-
                     // has root copy changed ?
                     if (conn_pointer_snapshot_ != *root_) {
                         TSX::TSXGuard::abort<VALIDATION_FAILED>();
                         return false;
                     }
                 } else { 
+                    //std::cerr << "non root check" << std::endl;
                     // has the connection pointer to be modified
                     // changed?
                     if (conn_pointer_snapshot_ != connection_point_->getChild(child_to_exchange_)) {
@@ -1172,6 +1195,8 @@ namespace SafeTree {
                     auto parent_of_conn_point = path_to_conn_point_.pop();
                     new_conn_point = parent_of_conn_point.node;
                     new_conn_point_next_index = parent_of_conn_point.next_child;
+                    // std::cerr << "Old conn point: " << connection_point_ << std::endl;
+                    // std::cerr << "Popping: " << new_conn_point << std::endl;
                 }
 
                 // keep old conn pointer snapshot to force its validation
@@ -1353,6 +1378,8 @@ namespace SafeTree {
         }
 
     #endif
+
+    
 
         
     }

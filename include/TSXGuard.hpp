@@ -516,7 +516,7 @@ namespace TSX {
         
     };
 
-    thread_local SpinLock __internal__global_lock;
+    static SpinLock __internal__global_lock;
     thread_local TSXStats __internal__trans_stats;
 
 
