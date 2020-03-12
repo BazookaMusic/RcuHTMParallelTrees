@@ -298,7 +298,7 @@ TEST_CASE("THROUGHPUT TESTS","[tp]") {
         std::cout << "Start of tests for tree size: " << OPERATION_MULTIPLIERS[i] << std::endl;
         const std::size_t RANGE_OF_KEYS = 2 * OPERATION_MULTIPLIERS[i]; // RANGE IS 1 TO RANGE_OF_KEYS
 
-        std::vector<int> threads_to_use = {1};
+        std::vector<int> threads_to_use = {1,2,4,7,14,20,28};
         // RANDOM OPS
         TestBenchType::experiment exp1(33,33,34);
         TestBenchType::test(exp1,THREADS,RANGE_OF_KEYS,threads_to_use);
