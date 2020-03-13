@@ -1145,7 +1145,9 @@ namespace SafeTree {
                 if (!tree_was_modified_ && !head_) {
                     tree_was_modified_ = true;
                     head_ = wrap_safe(conn_pointer_snapshot_);
-                    head_->rwRef();
+                    if (head_) {
+                        head_->rwRef();
+                    }
                 }
                 return head_;
             }
