@@ -126,6 +126,8 @@ class AVLNode {
         }
 
     public:
+        using KeyType = int;
+
         AVLNode(int key, ValueType val, AVLNode* left_child, AVLNode* right_child): key(key), value(val), height(1) {
             children[0] = left_child;
             children[1] = right_child;
