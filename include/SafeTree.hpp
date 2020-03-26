@@ -90,11 +90,12 @@ namespace SafeTree {
                 (where the i'th child is stored)
         5.     static constexpr int maxChildren(): max amount of children for each node, 
         The optimized search tree version also requires:
-        6.     A bool hasKey(int key) method to return if the node contains a key
-        7.     bool traversalDone(int key): returns true if the node with key is the caller, can also
+        6.     A using KeyType = (type of key used) declaration
+        7.     A bool hasKey(KeyType key) method to return if the node contains a key
+        8.     bool traversalDone(KeyType key): returns true if the node with key is the caller, can also
                 consider other factors like if it is a terminal node
-        8.     int nextChild(int target_key): return index of next child when looking for node with target_key
-        9.     int nextChild(NodeType* target): return index of next child when looking for target node
+        9.     int nextChild(KeyType target_key): return index of next child when looking for node with target_key
+        10.     int nextChild(NodeType* target): return index of next child when looking for target node
     */
 
     // internal use
@@ -502,7 +503,7 @@ namespace SafeTree {
     // forward declaration to have it grouped with
     // find_conn_point
     template <class NodeType>
-    NodeType* find(NodeType* root, int desired_key);
+    NodeType* find(NodeType* root, typename NodeType::KeyType desired_key);
 
 
     // forward declaration to have it grouped with
@@ -514,7 +515,7 @@ namespace SafeTree {
     struct ConnPointData {
         friend class ConnPoint<T>;
         template <class NodeType>
-        friend ConnPointData<NodeType> find_conn_point(int key, NodeType** root);
+        friend ConnPointData<NodeType> find_conn_point(typename NodeType::KeyType key, NodeType** root);
         #if TREE_TYPE == GENERAL_TREE
             friend class PathTracker<T>;
         #endif
@@ -1275,7 +1276,7 @@ namespace SafeTree {
         // the key given. The node will be determined by the traversalDone
         // method and the path taken by the nextChild method. 
         template <class NodeType>
-        inline NodeType* find(NodeType* root, int desired_key) {
+        inline NodeType* find(NodeType* root, typename NodeType::KeyType desired_key) {
             auto curr = root;
             for (; curr && !curr->traversalDone(desired_key); curr = curr->getChild(curr->nextChild(desired_key))) {
             // search for node with key
@@ -1304,7 +1305,7 @@ namespace SafeTree {
         // node with the given key. The node will be determined by the traversalDone
         // method and the path taken by the nextChild method.
         template <class NodeType>
-        ConnPointData<NodeType> find_conn_point(int key, NodeType** root) {
+        ConnPointData<NodeType> find_conn_point(typename NodeType::KeyType key, NodeType** root) {
             // give address of root node
             // find the connection point of both remove and insert operations
             // we are looking for the node before the one with key

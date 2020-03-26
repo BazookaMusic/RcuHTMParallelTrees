@@ -32,6 +32,8 @@ class BSTNode {
         using SafeBSTNode = SafeNode<BSTNode<ValueType>>;
 
     public:
+        using KeyType = int;
+
         BSTNode(int key, ValueType val, BSTNode* left_child, BSTNode* right_child): key(key), value(val) {
             children[0] = left_child;
             children[1] = right_child;
@@ -126,7 +128,6 @@ class BST {
         BSTNode<ValueType>* root;
         TSX::SpinLock &_lock;
         using TreeNode = BSTNode<ValueType>;
-        const int trans_retries = 30;
         
 
         // helpers
@@ -252,13 +253,9 @@ class BST {
         }
 
         bool insert_impl(const int k, ValueType val, int t_id) {
-
-            int retries = trans_retries;
+            (void)t_id;
             
-            TM_SAFE_OPERATION_START {
-
-                TSX::Transaction t(retries,_lock, stats[t_id]);
-
+            TM_SAFE_OPERATION_START(30) {
                 /* FIND PHASE */
 
                 
@@ -272,7 +269,7 @@ class BST {
 
                     /* FIND PHASE END */
 
-                ConnPoint<TreeNode> conn(conn_point_snapshot, t);
+                ConnPoint<TreeNode> conn(conn_point_snapshot);
 
                 /* INSERT */
 
@@ -292,8 +289,6 @@ class BST {
             // OPERATION END can be omitted if
             // not using EARLY ABORT COMPILATION FLAGS
             
-            
-       
             return true;
 
         }
@@ -302,12 +297,9 @@ class BST {
 
 
     bool remove_impl(const int k, const int t_id) {
-        
-        int retries = trans_retries;
+        (void)t_id;
 
-        TM_SAFE_OPERATION_START {
-            TSX::Transaction t(retries,_lock, stats[t_id]);
-
+        TM_SAFE_OPERATION_START(30) {
             /* FIND PHASE */
 
                 
@@ -319,7 +311,7 @@ class BST {
             }
 
 
-            ConnPoint<TreeNode> conn(conn_point_snapshot, t);
+            ConnPoint<TreeNode> conn(conn_point_snapshot);
 
             // the connection point is above the
             // node which will be deleted
