@@ -346,6 +346,10 @@ namespace SafeTree {
                 return original_;
             }
 
+            NodeType* unsafeRef() {
+                return original_;
+            }
+
             // rwRef: get reference to safe copy of node,
             // can be modified freely
             // as only one thread has access to it
@@ -1225,7 +1229,7 @@ namespace SafeTree {
                 // the old connection point should necessarily continue 
                 // pointing to it's old value
                 #ifdef TM_EARLY_ABORT
-                    if (newHead->original->getChild(child_to_exchange_) != old_conn_pointer_snapshot_) {
+                    if (newHead->unsafeRef()->getChild(child_to_exchange_) != old_conn_pointer_snapshot_) {
                         validation_abort();
                         throw ValidationAbortException();
                     }

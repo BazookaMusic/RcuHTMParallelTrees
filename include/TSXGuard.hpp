@@ -590,11 +590,11 @@ namespace TSX {
         #define TM_SAFE_OPERATION_START(n_retries) \
         __internal__thread_transaction_success_flag__ = false;\
         int __current__op__retries = n_retries; \
-        while(!__internal__thread_transaction_success_flag__) { \
-            TSX::Transaction __trans_obj__(__current__op__retries);
-            TSX::__internal__trans_pointer = &__trans_obj__;
-        try {\
-
+        while(!__internal__thread_transaction_success_flag__) {\
+            TSX::Transaction __trans_obj(__current__op__retries);\
+            TSX::__internal__trans_pointer = &__trans_obj;\
+            try {
+        
         #define TM_SAFE_OPERATION_END \
         }catch (const ValidationAbortException& e) {\
             __internal__thread_transaction_success_flag__ = false;\
