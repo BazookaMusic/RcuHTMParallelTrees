@@ -39,6 +39,12 @@
     // memory pools for user defined nodes
     #define USER_MEM_POOL
 
+    #ifdef USER_MEM_POOL
+
+        #define USER_MEM_POOL_SZ 50000000
+
+    #endif
+
     #define PREALLOC_VALIDATION_SET
 
     #define PATH_MAX_LEN 10000
@@ -1261,7 +1267,7 @@ namespace SafeTree {
 
     #ifdef USER_MEM_POOL
         template <class NodeType>
-        thread_local memory_pool_tracked<NodeType> ConnPoint<NodeType>::user_node_pool_(50000000);
+        thread_local memory_pool_tracked<NodeType> ConnPoint<NodeType>::user_node_pool_(USER_MEM_POOL_SZ);
     #endif
 
      #ifdef PREALLOC_VALIDATION_SET
