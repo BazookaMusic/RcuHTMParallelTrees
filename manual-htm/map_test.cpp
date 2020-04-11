@@ -8,7 +8,7 @@
 
 #include "../include/catch2/catch.hpp"
 #include "../include/TSXGuard.hpp"
-#include "../include/test_bench.hpp"
+#include "../include/test_bench_manual.hpp"
 #include "map.h"
 
 
@@ -25,7 +25,7 @@ TSX::SpinLock& lock = TestBenchType::global_lock;
 
 
 TEST_CASE("THROUGHPUT TESTS","[tp]") {
-    const int OPERATION_MULTIPLIERS[] = {1000};
+    const int OPERATION_MULTIPLIERS[] = {1000000};
 
     for (int i = 0; i < 4; i++) {
         std::cout << "Start of tests for tree size: " << OPERATION_MULTIPLIERS[i] << std::endl;

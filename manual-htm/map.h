@@ -51,6 +51,11 @@ class Map {
 
             return final_res;
         }
+
+        bool validate(std::size_t correct_sum) {
+            (void)correct_sum;
+            return map_validate(map_);
+        }
 };
 
 thread_local void* Map::t_data = nullptr;

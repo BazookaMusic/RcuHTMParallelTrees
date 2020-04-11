@@ -63,6 +63,8 @@ class TestBench {
 
         static int THREADS;
         static TSX::SpinLock global_lock;
+
+        static std::atomic<int> readyThreads;
     
 
         static void setMaxThreads(int max_threads) {
@@ -120,7 +122,7 @@ class TestBench {
             binary_insert_map(mid+1,end,map);
         }
 
-        static void binary_insert_map_random(int start,int end, int max_amount, MapType& map) {
+        static void binary_insert_map_random(int start,int end, int max_amount, MapType& map, std::size_t& start_sum) {
             bool* num_map = new bool[end - start + 1];
 
             for (int i = 0; i < end - start; i++) {
@@ -135,6 +137,8 @@ class TestBench {
                     inserted += 1;
 
                     map.insert(rand_num,1,0);
+
+                    start_sum += rand_num;
 
                     num_map[rand_num] = true;
                 }
@@ -164,14 +168,15 @@ class TestBench {
             for (auto thread_el = threads_to_use.begin(); thread_el != threads_to_use.end(); ++ thread_el) {
                     const int max_threads = *thread_el;
                     MapType aMap(nullptr,global_lock);
-                    binary_insert_map_random(0,RANGE_OF_KEYS,RANGE_OF_KEYS/2, aMap); // insert even numbers only
-
-                    REQUIRE(aMap.size() == RANGE_OF_KEYS/2);
+                    std::size_t start_sum;
+                    binary_insert_map_random(0,RANGE_OF_KEYS,RANGE_OF_KEYS/2, aMap, start_sum); // insert even numbers only
+                    readyThreads = 0;
+                    //REQUIRE(aMap.size() == RANGE_OF_KEYS/2);
 
                     std::size_t insert_sum = 0;
                     std::size_t rem_sum = 0;
 
-                    std::size_t start_sum = aMap.key_sum();
+                    
 
                     run = false;
 
@@ -224,6 +229,7 @@ class TestBench {
 
 
 
+                    while (readyThreads < max_threads);
 
                     run = true;
 
@@ -238,7 +244,7 @@ class TestBench {
                     }
 
                     op_stats(thread_stats,max_threads,exp.inserts,exp.removes,exp.lookups);
-                    aMap.lite_stat(max_threads, sum_ops);
+                    //aMap.lite_stat(max_threads, sum_ops);
 
                     for (int i = 0; i < max_threads; i++) {
                             threads[i].join();
@@ -252,16 +258,20 @@ class TestBench {
                     //std::cout << aMap.size() << std::endl;
 
                     //aMap.lite_stat(max_threads);
-                    REQUIRE(aMap.isSorted());
-                    aMap.longest_branch();
-                    aMap.average_branch();
+                    // REQUIRE(aMap.isSorted());
+                    // aMap.longest_branch();
+                    // aMap.average_branch();
 
                     for (int i = 0; i < max_threads; i++) {
                         insert_sum += thread_stats[i].sum_inserts;
                         rem_sum += thread_stats[i].sum_removes;
                     }
 
-                    REQUIRE((start_sum + insert_sum - rem_sum) == reinterpret_cast<std::size_t>(aMap.key_sum()));
+                    const auto correct_sum = start_sum + insert_sum - rem_sum;
+
+                    REQUIRE(aMap.validate(correct_sum));
+
+                   // REQUIRE((start_sum + insert_sum - rem_sum) == reinterpret_cast<std::size_t>(aMap.key_sum()));
             }
         }
 
@@ -326,6 +336,9 @@ class TestBench {
             const auto total = ins_freq + rem_freq + look_freq;
             thread_local volatile bool res;
 
+            map.setup(t_id);
+            readyThreads++;
+
             while(!run);  // wait for start
 
             while (run.load(std::memory_order_relaxed)) {
@@ -382,6 +395,8 @@ class TestBench {
         }
 
 };
+template <class MapType>
+std::atomic<int> TestBench<MapType>::readyThreads(0);
 
 template <class MapType>
 TSX::SpinLock TestBench<MapType>::global_lock{};
