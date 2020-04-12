@@ -622,6 +622,7 @@ validate_and_connect_copy:
 void *map_new()
 {
 	printf("Size of tree node is %lu\n", sizeof(bst_node_t));
+	nalloc_init();
 	return _bst_new_helper();
 }
 

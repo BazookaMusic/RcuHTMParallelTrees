@@ -33,5 +33,6 @@ void *nalloc_init();
 void *nalloc_thread_init(int tid, size_t sz);
 void *nalloc_alloc_node(void *nalloc);
 void  nalloc_free_node(void *nalloc, void *node);
+void nalloc_destroy(void);
 
 #endif /* _MAP_H_ */

@@ -12,8 +12,8 @@ obj/catch_test_main.o: catch/catch_test_main.cpp
 obj/rcu-htm-internal.o: c_files/rcu-htm-internal.c
 	clang -O3 -DMAP_KEY_TYPE_INT -c  $< -o $@
 
-obj/nalloc.o: allocator/allocator.cpp
-	$(CC) -Og -g -static -pthread -c  $< -o $@
+obj/nalloc.o: allocator/allocator.c
+	clang -Og -g -static -pthread -c  $< -o $@
 
 bst_manual_test: bst_manual_test.cpp $(INCLUDE)/* obj/catch_test_main.o  Makefile  obj/nalloc.o obj/rcu-htm-internal.o
 	$(CC) $(CFLAGS) bst_manual_test.cpp obj/catch_test_main.o obj/rcu-htm-internal.o obj/nalloc.o -o bst_manual_test

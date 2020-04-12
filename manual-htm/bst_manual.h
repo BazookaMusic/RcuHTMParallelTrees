@@ -35,7 +35,7 @@ class Map {
         }
 
         ~Map() {
-            pool.hard_reset();
+            nalloc_destroy();
         }
 
         void setup(int t_id) {
