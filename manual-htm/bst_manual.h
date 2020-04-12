@@ -1,6 +1,9 @@
+#ifndef BST_MANUAL_H
 #include <iostream>
 #include "map_if.h"
 #include "../include/TSXGuard.hpp"
+#include "allocator/allocator.h"
+
 
 void* t_datas[50];
 
@@ -11,6 +14,7 @@ struct ResultType {
 
     ResultType(bool _found_, T* item__): found(_found_), item(item__){}
 };
+
 
 class Map {
     private:
@@ -25,8 +29,13 @@ class Map {
         Map(void* root, TSX::SpinLock& lock): root_(root), lock_(lock){
             map_ = map_new();
             t_data = map_tdata_new(0);
+            setup(0);
             (void)root_;
             (void)lock_;
+        }
+
+        ~Map() {
+            pool.hard_reset();
         }
 
         void setup(int t_id) {
@@ -59,3 +68,4 @@ class Map {
 };
 
 thread_local void* Map::t_data = nullptr;
+#endif

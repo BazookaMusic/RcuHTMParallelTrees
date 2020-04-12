@@ -1,26 +1,25 @@
 CC=clang++
 
-CFLAGS=-std=c++0x -static -pthread -O3 -Wall -Werror -Wextra -DCATCH_CONFIG_ENABLE_BENCHMARKING -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
+CFLAGS=-std=c++0x -static -pthread -Og -g -Wall -Werror -Wextra -DCATCH_CONFIG_ENABLE_BENCHMARKING -Wl,--whole-archive -lpthread -Wl,--no-whole-archive -DHACI3COMP
 CFLAGS_SIMPLE=-std=c++0x -pthread -O3 -Wall -Werror -Wextra -DCATCH_CONFIG_ENABLE_BENCHMARKING
 INCLUDE=../include
 
 MAP_IMPL=c_files/rcu-htm-internal.o
 
-obj/catch_test_main.o: catch_test_main.cpp
+obj/catch_test_main.o: catch/catch_test_main.cpp
 	$(CC) $(CFLAGS_SIMPLE) -c $<  -o $@
 
-$(MAP_IMPL): c_files/rcu-htm-internal.c
-	clang -O3 -DMAP_KEY_TYPE_INT -c c_files/rcu-htm-internal.c -o $(MAP_IMPL)
+obj/rcu-htm-internal.o: c_files/rcu-htm-internal.c
+	clang -O3 -DMAP_KEY_TYPE_INT -c  $< -o $@
 
-nalloc.o: allocator.cpp
-	$(CC) -O3 -static -pthread -c allocator.cpp -o nalloc.o
+obj/nalloc.o: allocator/allocator.cpp
+	$(CC) -Og -g -static -pthread -c  $< -o $@
 
+bst_manual_test: bst_manual_test.cpp $(INCLUDE)/* obj/catch_test_main.o  Makefile  obj/nalloc.o obj/rcu-htm-internal.o
+	$(CC) $(CFLAGS) bst_manual_test.cpp obj/catch_test_main.o obj/rcu-htm-internal.o obj/nalloc.o -o bst_manual_test
 
-map_test: map_test.cpp $(INCLUDE)/* obj/catch_test_main.o  Makefile nalloc.o $(MAP_IMPL)
-	$(CC) $(CFLAGS) map_test.cpp obj/catch_test_main.o c_files/rcu-htm-internal.o nalloc.o -o map_test
-
-tests: map_test.cpp
-	./map_test.cpp --benchmark-samples 5
+tests: bst_manual_test.cpp
+	./bst_manual_test.cpp --benchmark-samples 5
 
 
 run-tests:
@@ -29,4 +28,7 @@ run-tests:
 	
 
 clean:
-	rm -rf map_test nalloc.o $(MAP_IMPL)
+	rm -rf bst_manual_test obj/nalloc.o $(MAP_IMPL)
+
+deploy:
+	make clean && make bst_manual_test && scp -i ~/.ssh/id_rsa bst_manual_test  sdrag@scirouter.cslab.ece.ntua.gr:/home/users/sdrag/thesis
