@@ -2,7 +2,7 @@
     #define M_ALLOCATOR_H
 #include <pthread.h>
 
-#define NR_NODES 15000000
+#define NR_NODES 30000000
 #define MAX_THREADS 100
 
 
@@ -20,6 +20,9 @@ pthread_mutex_t lock;
 
 static allocator* pools;
 static int alloc_index;
+
+static void** extra_blocks;
+static int extra_index;
 
 #endif
 

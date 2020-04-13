@@ -1,8 +1,8 @@
 #include <stdlib.h>
 #include "allocator.h"
 
-#define ALIGNMENT 32
-
+/* Memory allocator for manual implementation,
+functionally identical to framework */
 
 void *nalloc_init()
 {
@@ -17,7 +17,7 @@ void *nalloc_thread_init(int tid, size_t sz)
 	pthread_mutex_lock(&lock);
 	if (!pools) {
 		alloc_index = -1;
-		pools = malloc(MAX_THREADS*sizeof(allocator));
+		pools = malloc((MAX_THREADS + 2)*sizeof(allocator));
 
 		for (int i = 0; i < MAX_THREADS; i++) pools[i].blocks = NULL;
 	}
@@ -27,17 +27,20 @@ void *nalloc_thread_init(int tid, size_t sz)
 
 	if (!alloc->blocks) {
 		++alloc_index;
-		alloc->blocks = aligned_alloc(ALIGNMENT,NR_NODES*sz);
+		
+		sz = sz > 32 ? 64 : 32;
+		int alignment = sz;
+
+		alloc->blocks = aligned_alloc(alignment,NR_NODES*sz);
 
 		alloc->index = -1;
 		alloc->shifts = 0;
-		while (sz > 0) {
+		while (sz > 1) {
 			alloc->shifts += 1;
 			sz >>= 1;
 		}
 	}
-	
-	
+
 	pthread_mutex_unlock(&lock);
     return NULL;
 }
@@ -45,12 +48,13 @@ void *nalloc_thread_init(int tid, size_t sz)
 void *nalloc_alloc_node(void *_nalloc)
 {
 	// bound check
-	if (alloc->index >= NR_NODES) {
+	if (alloc->index == NR_NODES) {
 		printf("OOB");
-		exit(-1);
+		while (1);
+		
 	}
-	
-	return &alloc->blocks[(++alloc->index) << alloc->shifts];
+	long long next_pos = (++alloc->index) << alloc->shifts;
+	return &alloc->blocks[next_pos];
 }
 
 void nalloc_free_node(void *nalloc, void *node)
@@ -59,7 +63,7 @@ void nalloc_free_node(void *nalloc, void *node)
 
 void nalloc_destroy() {
 	// free blocks of nodes
-	for (int i = 0; i < alloc_index; i++) {
+	for (int i = 0; i <= alloc_index; i++) {
 		free(pools[i].blocks);
 		pools[i].blocks = NULL;
 	}

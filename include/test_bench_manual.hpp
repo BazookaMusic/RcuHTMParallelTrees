@@ -14,6 +14,7 @@
 
 #include "catch2/catch.hpp"
 #include "../include/TSXGuard.hpp"
+#include "test_bench_conf.hpp"
 
 
 std::chrono::system_clock::rep time_since_epoch(){
@@ -305,7 +306,7 @@ class TestBench {
 
         
         static inline int nextNatural(const int n) {      
-            thread_local int seed = slow_rand(0,n + 1);                                                                                                                                                            
+            thread_local int seed = SEED;                                                                                                                                                            
             seed ^= seed << 6;
             seed ^= seed >> 21;
             seed ^= seed << 7;
@@ -314,8 +315,8 @@ class TestBench {
         }
 
         static int slow_rand(const int min, const int max) {
-            thread_local int dummy_address;
-            thread_local std::mt19937 generator((unsigned long)(&dummy_address) ^ (unsigned long)(123456789));
+            //thread_local int dummy_address;
+            thread_local std::mt19937 generator(12345678);
             std::uniform_int_distribution<int> distribution(min,max);
             return distribution(generator);
         }
