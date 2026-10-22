@@ -78,6 +78,12 @@ class Queue {
         }
 
         const QueueItem<ContentType>* dequeue() {
+            // the dequeued item can only be returned after the
+            // operation has been committed, returning from inside
+            // the transaction block would skip the retry on a
+            // failed validation
+            const QueueItem<ContentType>* old_top = nullptr;
+
             // transaction block
             TM_SAFE_OPERATION_START(30) {
 
@@ -91,21 +97,17 @@ class Queue {
                 // remove the root element
                 // replace with the next element
                 auto top = conn.getRoot();
-                auto const old_top = top? top->peekOriginal() : nullptr;
+                old_top = top? top->peekOriginal() : nullptr;
 
-                if (!top) {
-                    return nullptr;
+                if (top) {
+                    auto after_top = top->getChild(0);
+
+                    // set the next element
+                    conn.setRoot(after_top);
                 }
-
-                auto after_top = top->getChild(0);
-
-                // set the next element
-                conn.setRoot(after_top);
-
-                return old_top;
             } TM_SAFE_OPERATION_END
 
-            return nullptr;
+            return old_top;
 
         }
 

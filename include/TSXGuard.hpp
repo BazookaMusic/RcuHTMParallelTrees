@@ -123,7 +123,7 @@ namespace TSX {
                 confl_pc = (100.0*tx_aborts_per_reason[0]) / (tx_aborts);
                 cap_pc = (100.0*tx_aborts_per_reason[1]) / (tx_aborts);
                 lock_pc = (100.0*tx_aborts_per_reason[3]) / (tx_aborts);
-                explicit_pc = (100 * tx_aborts_per_reason[2]) / (tx_aborts);
+                explicit_pc = (100.0*tx_aborts_per_reason[2]) / (tx_aborts);
             } else {
                 confl_pc = 0;
                 cap_pc = 0;
@@ -142,7 +142,7 @@ namespace TSX {
         }
 
         TSXStats operator+(const TSXStats& rhs ) {
-            TSXStats total_stats;
+            TSXStats total_stats = *this;
             total_stats.tx_starts += rhs.tx_starts;
             total_stats.tx_commits += rhs.tx_commits;
             total_stats.tx_aborts += rhs.tx_aborts;
@@ -346,7 +346,6 @@ namespace TSX {
                             while (spin_lock_.isLocked()) _mm_pause();
                         } else if (_XABORT_CODE(status) > USER_OPTION_LOWER_BOUND) {
                             user_explicitly_aborted_ = true;
-                            stats_.tx_aborts_per_reason[TX_ABORT_LOCK_TAKEN]++;
                             err_status = _XABORT_CODE(status);
                             return;
                         } else if(!(status & _XABORT_RETRY)) {
@@ -591,12 +590,12 @@ namespace TSX {
         __internal__thread_transaction_success_flag__ = false;\
         int __current__op__retries = n_retries; \
         while(!__internal__thread_transaction_success_flag__) { \
-            TSX::Transaction __trans_obj__(__current__op__retries);
-            TSX::__internal__trans_pointer = &__trans_obj__;
+            TSX::Transaction __trans_obj__(__current__op__retries);\
+            TSX::__internal__trans_pointer = &__trans_obj__;\
         try {\
 
         #define TM_SAFE_OPERATION_END \
-        }catch (const ValidationAbortException& e) {\
+        }catch (const SafeTree::ValidationAbortException&) {\
             __internal__thread_transaction_success_flag__ = false;\
         }\
         }

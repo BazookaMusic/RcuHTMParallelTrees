@@ -11,6 +11,8 @@
 #include <random>
 #include <chrono>
 #include <atomic>
+#include <algorithm>
+#include <vector>
 
 #include "catch2/catch.hpp"
 #include "../include/TSXGuard.hpp"
@@ -94,14 +96,13 @@ class TestBench {
             
             int mid = (start + end) / 2;
 
-            predicate(mid);
-            if (mid % 2 == 0) {
+            if (predicate(mid)) {
                 map.insert(mid,1,0);
             }
             
 
-            binary_insert_map(start,mid-1,map);
-            binary_insert_map(mid+1,end,map);
+            binary_insert_map_pred(start,mid-1,map,predicate);
+            binary_insert_map_pred(mid+1,end,map,predicate);
         }
 
         
@@ -116,27 +117,27 @@ class TestBench {
             }
         
 
-            binary_insert_map(start,mid-1,map);
-            binary_insert_map(mid+1,end,map);
+            binary_insert_map_even(start,mid-1,map);
+            binary_insert_map_even(mid+1,end,map);
         }
 
         static void binary_insert_map_random(int start,int end, int max_amount, MapType& map) {
             bool* num_map = new bool[end - start + 1];
 
-            for (int i = 0; i < end - start; i++) {
+            for (int i = 0; i <= end - start; i++) {
                 num_map[i] = false;
             }
             int inserted = 0;
 
             while (inserted < max_amount) {
-                int rand_num = intRand(end);
+                int rand_num = start + intRand(end - start);
 
-                if (!num_map[rand_num]) {
+                if (!num_map[rand_num - start]) {
                     inserted += 1;
 
                     map.insert(rand_num,1,0);
 
-                    num_map[rand_num] = true;
+                    num_map[rand_num - start] = true;
                 }
             }
 
@@ -163,6 +164,14 @@ class TestBench {
             
             for (auto thread_el = threads_to_use.begin(); thread_el != threads_to_use.end(); ++ thread_el) {
                     const int max_threads = *thread_el;
+
+                    // threads and thread_stats only have room for THREADS threads
+                    if (max_threads > THREADS || max_threads > maximum_thread_amount) {
+                        std::cout << "Skipping test with " << max_threads << " threads, maximum is "
+                                  << std::min(THREADS, maximum_thread_amount) << std::endl;
+                        continue;
+                    }
+
                     MapType aMap(nullptr,global_lock);
                     binary_insert_map_random(0,RANGE_OF_KEYS,RANGE_OF_KEYS/2, aMap); // insert even numbers only
 
@@ -231,7 +240,12 @@ class TestBench {
 
                     run = false;
 
-                    auto sum_ops = 0;
+                    // stats are only final after the threads have stopped
+                    for (int i = 0; i < max_threads; i++) {
+                            threads[i].join();
+                    }
+
+                    long long sum_ops = 0;
 
                     for (int i = 0; i < max_threads; i++) {
                         sum_ops += thread_stats[i].n_ops;
@@ -239,10 +253,6 @@ class TestBench {
 
                     op_stats(thread_stats,max_threads,exp.inserts,exp.removes,exp.lookups);
                     aMap.lite_stat(max_threads, sum_ops);
-
-                    for (int i = 0; i < max_threads; i++) {
-                            threads[i].join();
-                    }
 
                     //aMap.stat_report(max_threads);
                     //aMap.lite_stat(max_threads);
@@ -325,6 +335,7 @@ class TestBench {
         static void rand_op(std::atomic<bool>& run,MapType& map, const int range, const int t_id,t_ops& t_op, const int ins_freq,const int rem_freq,const int look_freq) {
             const auto total = ins_freq + rem_freq + look_freq;
             thread_local volatile bool res;
+            (void)res;
 
             while(!run);  // wait for start
 

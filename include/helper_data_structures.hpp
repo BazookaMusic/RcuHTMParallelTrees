@@ -6,13 +6,15 @@
 #include <vector>
 #include <sstream>
 #include <string>
+#include <iostream>
+#include <cstdlib>
 
 
 
 const int STACK_DEPTH = 1000;
 class StackOverflowError: public std::exception {
     private:
-     const char * err;
+     std::string err;
 
     public:
      StackOverflowError(int maxDepth, int attemptedDepth) {
@@ -20,9 +22,7 @@ class StackOverflowError: public std::exception {
 
         stringStream << "Stack Overflow: Max Depth was:" << maxDepth << " and tried to insert " << attemptedDepth << " elements";
 
-        auto str = stringStream.str();
-
-        err = str.c_str();
+        err = stringStream.str();
 
 
      };
@@ -30,7 +30,7 @@ class StackOverflowError: public std::exception {
 	 const char * what() const throw ()
      {
 
-         return err;
+         return err.c_str();
 
      }
     
@@ -78,6 +78,7 @@ class NodeStack{
 
             if (currentIndex + 1 > CAP) {
                 std::cerr << "Too small path stack" << std::endl;
+                exit(-1);
             } else {
                 stack[currentIndex] = node;
             }
