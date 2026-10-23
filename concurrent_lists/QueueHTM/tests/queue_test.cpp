@@ -1,4 +1,5 @@
 #include <thread>
+#include <vector>
 #include "../include/queue.hpp"
 #include "../../../include/catch2/catch.hpp"
 
@@ -87,42 +88,46 @@ TEST_CASE("Queue Multithreaded Push Test","[mt_enqueue]") {
     }
 }
 
-void dequeue(bool* exists, Queue<int>& queue) {
+void dequeue(std::vector<int>* popped, Queue<int>& queue) {
     const QueueItem<int>* item;
     while ((item = queue.dequeue())) {
-        auto n = item->getItem();
-        exists[n] = true;
+        popped->push_back(item->getItem());
     }
 }
 
 TEST_CASE("Queue Multithreaded Pop Test","[mt_enqueue]") {
     std::cout << "MULTITHREADED POP" << std::endl;
 
-    bool exists[N_ITEMS*THREADS];
-
-    for (int j = 0; j < 1; j++) { 
+    for (int j = 0; j < 1; j++) {
             Queue<int> queue;
             std::thread threads[THREADS];
+            std::vector<int> popped[THREADS];
 
             for (int i = 0; i < N_ITEMS*THREADS;i++) {
-                exists[i] = false;
                 queue.enqueue(i);
             }
 
             for (int i = 0; i < THREADS; i++) {
-                threads[i] = std::thread(dequeue,std::ref(exists), std::ref(queue));
+                threads[i] = std::thread(dequeue, &popped[i], std::ref(queue));
             }
 
             for (int i = 0; i < THREADS; i++) {
                 threads[i].join();
             }
 
+            // every item should have been popped exactly once
+            std::vector<int> times_popped(N_ITEMS*THREADS, 0);
+            for (int i = 0; i < THREADS; i++) {
+                for (auto n : popped[i]) {
+                    ++times_popped[n];
+                }
+            }
 
             for (int i = 0; i < N_ITEMS*THREADS; i++) {
-                if (!exists[i]) {
-                    std::cerr << i << std::endl;
+                if (times_popped[i] != 1) {
+                    std::cerr << i << " popped " << times_popped[i] << " times" << std::endl;
                 }
-                REQUIRE(exists[i]);
+                REQUIRE(times_popped[i] == 1);
             }
     }
 }

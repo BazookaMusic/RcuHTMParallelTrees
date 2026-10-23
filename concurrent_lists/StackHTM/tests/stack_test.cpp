@@ -1,4 +1,5 @@
 #include <thread>
+#include <vector>
 #include "../include/stack.hpp"
 #include "../../../include/catch2/catch.hpp"
 
@@ -87,43 +88,46 @@ TEST_CASE("Stack Multithreaded Push Test","[mt_push]") {
     }
 }
 
-void pop(bool* exists, Stack<int>& stack) {
+void pop(std::vector<int>* popped, Stack<int>& stack) {
     const StackItem<int>* item;
     while ((item = stack.pop())) {
-        auto n = item->getItem();
-        exists[n] = true;
+        popped->push_back(item->getItem());
     }
 }
 
 TEST_CASE("Stack Multithreaded Pop Test","[mt_push]") {
     std::cout << "MULTITHREADED POP" << std::endl;
 
-    bool exists[N_ITEMS*THREADS];
-
-    for (int j = 0; j < 1; j++) { 
+    for (int j = 0; j < 1; j++) {
             Stack<int> stack;
             std::thread threads[THREADS];
+            std::vector<int> popped[THREADS];
 
             for (int i = 0; i < N_ITEMS*THREADS;i++) {
-                exists[i] = false;
-                //std::cerr << "inserting " << i << std::endl;
                 stack.push(i);
             }
 
             for (int i = 0; i < THREADS; i++) {
-                threads[i] = std::thread(pop,std::ref(exists), std::ref(stack));
+                threads[i] = std::thread(pop, &popped[i], std::ref(stack));
             }
 
             for (int i = 0; i < THREADS; i++) {
                 threads[i].join();
             }
 
+            // every item should have been popped exactly once
+            std::vector<int> times_popped(N_ITEMS*THREADS, 0);
+            for (int i = 0; i < THREADS; i++) {
+                for (auto n : popped[i]) {
+                    ++times_popped[n];
+                }
+            }
 
             for (int i = 0; i < N_ITEMS*THREADS; i++) {
-                if (!exists[i]) {
-                    std::cerr << i << std::endl;
+                if (times_popped[i] != 1) {
+                    std::cerr << i << " popped " << times_popped[i] << " times" << std::endl;
                 }
-                REQUIRE(exists[i]);
+                REQUIRE(times_popped[i] == 1);
             }
     }
 }

@@ -146,15 +146,12 @@ namespace SafeTree {
                 // moveUp: move the tracker up
                 // n levels on the path it has followed
                 void moveUp(int n_levels = 1) {
-                    at_level_ = at_level_ >= n_levels ? at_level_ - n_levels: -1;
-
-                    for (int i = 0; at_level_ >= 0 && i < n_levels - 1; i++) {
-                        path_.pop();
+                    // stops at the root if n_levels is
+                    // larger than the current depth
+                    for (int i = 0; i < n_levels && !path_.Empty(); i++) {
+                        current_pos_ = path_.pop().node;
+                        --at_level_;
                     }
-
-                    if (!path_.Empty()) {
-                        current_pos_ =  path_.pop().node;
-                    }   
                 }
 
                 // set previous node in path followed
@@ -181,8 +178,10 @@ namespace SafeTree {
                     conn_point_snapshot.con_ptr.child_index = at_root? INSERT_POSITIONS::AT_ROOT : conn_point_and_next_child.next_child;
                     conn_point_snapshot.con_ptr.snapshot = current_pos_;
 
-                    // restore state
-                    path_.push(conn_point_and_next_child.node, conn_point_and_next_child.next_child);
+                    // restore state, nothing was popped at the root
+                    if (!at_root) {
+                        path_.push(conn_point_and_next_child.node, conn_point_and_next_child.next_child);
+                    }
 
 
                     return conn_point_snapshot;
@@ -194,7 +193,7 @@ namespace SafeTree {
     static constexpr unsigned char VALIDATION_FAILED = TSX::ABORT_VALIDATION_FAILURE;
 
     #ifdef TM_EARLY_ABORT
-        class ValidationAbortException: std::exception{};   
+        class ValidationAbortException: public std::exception{};   
     #endif
 
     template <class NodeType>
@@ -599,6 +598,7 @@ namespace SafeTree {
             
             explicit memory_pool_tracked(std::size_t limit): memory_pool<Object>(limit) {
                 pool_lock_.lock();
+                register_buffer();
                 ++index_;
                 thread_buffers_[index_] = memory_pool<Object>::objects_;
                 pool_lock_.unlock();
@@ -606,7 +606,9 @@ namespace SafeTree {
 
             void fill_pool() {
                 memory_pool<Object>::objects_ = new buffer_type[memory_pool<Object>::limit_];
+                memory_pool<Object>::used_ = 0;
                 pool_lock_.lock();
+                register_buffer();
                 ++index_;
                 thread_buffers_[index_] = memory_pool<Object>::objects_;
                 pool_lock_.unlock();
@@ -624,6 +626,14 @@ namespace SafeTree {
 
                 index_ = -1;
 
+            }
+
+            // caller holds pool_lock_
+            static void register_buffer() {
+                if (index_ + 1 >= MAX_THREADS) {
+                    std::cerr << "Too many node pools, increase RCU_HTM_MAX_THREADS" << std::endl;
+                    exit(-1);
+                }
             }
 
             void set_checkpoint() {
@@ -1157,7 +1167,7 @@ namespace SafeTree {
             // without adding it to the tree of copies.
             // Useful if node is to be thrown away.
             // Returns SafeNode.
-            SafeNode<NodeType> watchNode(NodeType* node) {
+            SafeNode<NodeType>* watchNode(NodeType* node) {
                 return wrap_safe(node);
             }
 
@@ -1225,7 +1235,7 @@ namespace SafeTree {
                 // the old connection point should necessarily continue 
                 // pointing to it's old value
                 #ifdef TM_EARLY_ABORT
-                    if (newHead->original->getChild(child_to_exchange_) != old_conn_pointer_snapshot_) {
+                    if (newHead->original_->getChild(child_to_exchange_) != old_conn_pointer_snapshot_) {
                         validation_abort();
                         throw ValidationAbortException();
                     }
@@ -1236,6 +1246,7 @@ namespace SafeTree {
                 
                 // now head can be updated
                 head_ = newHead; 
+                tree_was_modified_ = true;
                 // as well which child to update for the next pop
                 child_to_exchange_ = next_child_index;
 

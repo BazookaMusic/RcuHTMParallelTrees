@@ -47,7 +47,7 @@ class BSTNode {
             return key;
         }
 
-        int getValue() const {
+        ValueType getValue() const {
             return value;
         }
 
@@ -85,11 +85,11 @@ class BSTNode {
             children[i] = node;
         }
 
-        BSTNode* setL(BSTNode* n) {
+        void setL(BSTNode* n) {
             children[0] = n;
         }
 
-        BSTNode* setR(BSTNode* n) {
+        void setR(BSTNode* n) {
             children[1] = n;
         }
 
@@ -148,20 +148,6 @@ class BST {
             return 1 + count_nodes(node->getChild(0)) + count_nodes(node->getChild(1));
         }
 
-
-        void node_copy(BSTNode<ValueType>* curr, BSTNode<ValueType>* copy_curr = nullptr) {
-            if (!curr) return;
-
-            if (!copy_curr) {
-                copy_curr = new BSTNode<ValueType>*(curr);
-            }
-
-            copy_curr->setChild(0, curr->getChild(0));
-            copy_curr->setChild(1, curr->getChild(1));
-
-            node_copy(curr->getChild(0), copy_curr->getChild(0));
-            node_copy(curr->getChild(1), copy_curr->getChild(1));
-        }
 
         void print_contents(BSTNode<ValueType>* root) {
             if (!root) {

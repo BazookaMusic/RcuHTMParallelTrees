@@ -3,7 +3,7 @@
     #define USERSPACERCU_INCLUDE_URCU_HPP_
 
     // used for line sharing
-    #ifndef URCU_CACHE_SIZE
+    #ifndef URCU_CACHE_LINE
         #define URCU_CACHE_LINE 64
     #endif
 

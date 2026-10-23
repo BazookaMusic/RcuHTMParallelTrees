@@ -5,6 +5,8 @@
 #include <random>
 #include <chrono>
 #include <atomic>
+#include <algorithm>
+#include <vector>
 
 #include "../include/bst.hpp"
 #include "../../../include/catch2/catch.hpp"
@@ -33,7 +35,16 @@ TEST_CASE("BST Init Test","[init]") {
 
 
 void insert(int i, BST<int>& map, int t_id) {
+    // the bst is unbalanced, inserting sorted keys would create a
+    // branch longer than the maximum path length (PATH_MAX_LEN)
+    std::vector<int> keys;
     for (int j = i * OPERATION_MULTIPLIER; j < (i+1)*OPERATION_MULTIPLIER; j++) {
+        keys.push_back(j);
+    }
+
+    std::shuffle(keys.begin(), keys.end(), std::mt19937(i));
+
+    for (auto j : keys) {
          map.insert(j,1,t_id);
     }
 }
@@ -131,7 +142,7 @@ TEST_CASE("BST Multithreaded Insert Test","[mt_insert]") {
 
     for (int j = 0; j < 1; j++) { 
             BST<int> someMap(nullptr,lock);
-            std::thread threads[THREADS];
+            std::vector<std::thread> threads(THREADS);
 
             for (int i = 0; i < THREADS; i++) {
                 threads[i] = std::thread(insert, i, std::ref(someMap), i);
@@ -257,7 +268,7 @@ TEST_CASE("BST MULTITHREADED Remove Test","[remove_mt]") {
     }
 
     
-    std::thread threads[THREADS];
+    std::vector<std::thread> threads(THREADS);
     
 
     SECTION("mt remove") {
@@ -295,7 +306,7 @@ TEST_CASE("BST MULTITHREADED Remove Test","[remove_mt]") {
 TEST_CASE("THROUGHPUT TESTS","[tp]") {
     const int OPERATION_MULTIPLIERS[] = {1000000,10000,1000};
 
-    for (int i = 0; i < 4; i++) {
+    for (std::size_t i = 0; i < sizeof(OPERATION_MULTIPLIERS) / sizeof(OPERATION_MULTIPLIERS[0]); i++) {
         std::cout << "Start of tests for tree size: " << OPERATION_MULTIPLIERS[i] << std::endl;
         const std::size_t RANGE_OF_KEYS = 2 * OPERATION_MULTIPLIERS[i]; // RANGE IS 1 TO RANGE_OF_KEYS
 

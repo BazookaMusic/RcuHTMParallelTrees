@@ -135,7 +135,7 @@ class alignas(32) AVLNode {
             return key;
         }
 
-        int getValue() const {
+        ValueType getValue() const {
             return value;
         }
 
@@ -173,11 +173,11 @@ class alignas(32) AVLNode {
             children[i] = node;
         }
 
-        AVLNode* setL(AVLNode* n) {
+        void setL(AVLNode* n) {
             children[0] = n;
         }
 
-        AVLNode* setR(AVLNode* n) {
+        void setR(AVLNode* n) {
             children[1] = n;
         }
 
@@ -241,20 +241,6 @@ class AVLTree {
             return 1 + count_nodes(node->getChild(0)) + count_nodes(node->getChild(1));
         }
 
-
-        void node_copy(AVLNode<ValueType>* curr, AVLNode<ValueType>* copy_curr = nullptr) {
-            if (!curr) return;
-
-            if (!copy_curr) {
-                copy_curr = new AVLNode<ValueType>*(curr);
-            }
-
-            copy_curr->setChild(0, curr->getChild(0));
-            copy_curr->setChild(1, curr->getChild(1));
-
-            node_copy(curr->getChild(0), copy_curr->getChild(0));
-            node_copy(curr->getChild(1), copy_curr->getChild(1));
-        }
 
         void print_contents(AVLNode<ValueType>* root) {
             if (!root) {

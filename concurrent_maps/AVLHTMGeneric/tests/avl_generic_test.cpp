@@ -5,6 +5,7 @@
 #include <random>
 #include <chrono>
 #include <atomic>
+#include <vector>
 
 #include "../include/avl.hpp"
 #include "../../../include/catch2/catch.hpp"
@@ -107,7 +108,7 @@ TEST_CASE("AVLTree Multithreaded Insert Test","[mt_insert]") {
 
     for (int j = 0; j < 100; j++) { 
             AVLTree<int> someMap(nullptr,lock);
-            std::thread threads[THREADS];
+            std::vector<std::thread> threads(THREADS);
 
             for (int i = 0; i < THREADS; i++) {
                 threads[i] = std::thread(insert, i, std::ref(someMap), i);
@@ -234,7 +235,7 @@ TEST_CASE("AVLTree MULTITHREADED Remove Test","[remove_mt]") {
     }
 
     
-    std::thread threads[THREADS];
+    std::vector<std::thread> threads(THREADS);
     
 
     SECTION("mt remove") {
@@ -272,7 +273,7 @@ TEST_CASE("AVLTree MULTITHREADED Remove Test","[remove_mt]") {
 TEST_CASE("THROUGHPUT TESTS","[tp]") {
     const int OPERATION_MULTIPLIERS[] = {1000, 10000, 1000000};
 
-    for (int i = 0; i < 4; i++) {
+    for (std::size_t i = 0; i < sizeof(OPERATION_MULTIPLIERS) / sizeof(OPERATION_MULTIPLIERS[0]); i++) {
         std::cout << "Start of tests for tree size: " << OPERATION_MULTIPLIERS[i] << std::endl;
         const std::size_t RANGE_OF_KEYS = 2 * OPERATION_MULTIPLIERS[i]; // RANGE IS 1 TO RANGE_OF_KEYS
 
