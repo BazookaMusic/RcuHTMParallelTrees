@@ -1,22 +1,22 @@
 CC=clang++
-CFLAGS=-std=c++0x -static -pthread -Og -g -Wall -Werror -Wextra -DCATCH_CONFIG_ENABLE_BENCHMARKING -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
-CFLAGSSIMPLE=-std=c++0x -static -pthread -O3 -Wall -Werror -Wextra -DCATCH_CONFIG_ENABLE_BENCHMARKING
+# CATCH_CONFIG_NO_POSIX_SIGNALS: the bundled Catch v2.9.1 does not compile with glibc >= 2.34 otherwise
+CFLAGS=-std=c++0x -static -pthread -O3 -g -Wall -Werror -Wextra -DCATCH_CONFIG_ENABLE_BENCHMARKING -DCATCH_CONFIG_NO_POSIX_SIGNALS -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
+CFLAGSSIMPLE=-std=c++0x -static -pthread -O3 -Wall -Werror -Wextra -DCATCH_CONFIG_ENABLE_BENCHMARKING -DCATCH_CONFIG_NO_POSIX_SIGNALS
 
 INCLUDE=../../../include
 
 obj/catch_test_main.o: catch_test_main.cpp
+	mkdir -p obj
 	$(CC) $(CFLAGSSIMPLE) -c $<  -o $@
 
-queue_test: ../include/queue.hpp queue_test.cpp $(INCLUDE)/* obj/catch_test_main.o  Makefile
+queue_test: queue_test.cpp ../include/queue.hpp $(INCLUDE)/* obj/catch_test_main.o Makefile
 	$(CC) $(CFLAGS) queue_test.cpp obj/catch_test_main.o -o queue_test
 
 tests: queue_test
-	./queue_test --benchmark-samples 5
+	./queue_test
 
 run-tests:
 	make clean && make tests
 
-	
-
 clean:
-	rm -rf queue_test
+	rm -rf queue_test obj
