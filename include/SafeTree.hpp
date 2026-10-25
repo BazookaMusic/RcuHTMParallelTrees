@@ -73,6 +73,7 @@
 #include <new>
 #include <cassert>
 #include <algorithm>
+#include <utility>
 
 
 
@@ -1001,6 +1002,10 @@ namespace SafeTree {
                 // in transaction
                 if (tree_was_modified_ && !copy_connected_) {
                     connect_success_ = connect_atomically();
+                } else if (!tree_was_modified_ && !validation_aborted_) {
+                    // nothing to connect, the operation
+                    // does not need to be retried
+                    connect_success_ = true;
                 }
 
                 #ifdef USER_MEM_POOL 
@@ -1257,6 +1262,73 @@ namespace SafeTree {
 
 
     };
+
+    namespace internal {
+        // holds the value returned by an operation
+        // until it is known whether it committed
+        template <class T>
+        struct OperationResult {
+            T value;
+
+            template <class Operation>
+            explicit OperationResult(Operation& op): value(op()) {}
+
+            T get() {
+                return std::move(value);
+            }
+        };
+
+        template <>
+        struct OperationResult<void> {
+            template <class Operation>
+            explicit OperationResult(Operation& op) {
+                op();
+            }
+
+            void get() {}
+        };
+    }
+
+    // safe_operation: run op as a thread safe operation, retrying it
+    // until its ConnPoint has been connected, and return op's result.
+    // Unlike the TM_SAFE_OPERATION macros, op can return at any point:
+    //
+    //      return safe_operation(30, [&]() -> bool {
+    //          ...
+    //          ConnPoint<Node> conn(data);
+    //          ...
+    //          return true;
+    //      });
+    //
+    // The ConnPoint is destroyed (and its copy connected) when op
+    // returns, so the result is only returned if that succeeded.
+    template <class Operation>
+    auto safe_operation(int n_retries, Operation op) -> decltype(op()) {
+        int retries = n_retries;
+
+        for (;;) {
+            TSX::Transaction trans(retries);
+            TSX::__internal__trans_pointer = &trans;
+
+            // reset by a ConnPoint until its copy is connected
+            __internal__thread_transaction_success_flag__ = true;
+
+            #ifdef TM_EARLY_ABORT
+            try {
+            #endif
+                internal::OperationResult<decltype(op())> result(op);
+                trans.body_done();
+
+                if (__internal__thread_transaction_success_flag__) {
+                    return result.get();
+                }
+            #ifdef TM_EARLY_ABORT
+            } catch (const ValidationAbortException&) {
+                trans.body_done();
+            }
+            #endif
+        }
+    }
 
     // STATIC DECLARATIONS
 

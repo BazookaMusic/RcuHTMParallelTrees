@@ -78,14 +78,9 @@ class Queue {
         }
 
         const QueueItem<ContentType>* dequeue() {
-            // the dequeued item can only be returned after the
-            // operation has been committed, returning from inside
-            // the transaction block would skip the retry on a
-            // failed validation
-            const QueueItem<ContentType>* old_top = nullptr;
-
-            // transaction block
-            TM_SAFE_OPERATION_START(30) {
+            // safe_operation only returns the dequeued item
+            // once the operation has been committed
+            return safe_operation(30, [&]() -> const QueueItem<ContentType>* {
 
                 // PathTracker makes root the connection point
                 PathTracker<Item> tracker(&top_item);
@@ -97,18 +92,19 @@ class Queue {
                 // remove the root element
                 // replace with the next element
                 auto top = conn.getRoot();
-                old_top = top? top->peekOriginal() : nullptr;
+                auto const old_top = top? top->peekOriginal() : nullptr;
 
-                if (top) {
-                    auto after_top = top->getChild(0);
-
-                    // set the next element
-                    conn.setRoot(after_top);
+                if (!top) {
+                    return nullptr;
                 }
-            } TM_SAFE_OPERATION_END
 
-            return old_top;
+                auto after_top = top->getChild(0);
 
+                // set the next element
+                conn.setRoot(after_top);
+
+                return old_top;
+            });
         }
 
         void enqueue(ContentType content) {
