@@ -3,9 +3,14 @@
 A C++ library to make designing thread safe trees as easy as copying
 the Geeks for Geeks guides ;)
 
-SafeTree applies the RCU-HTM technique to any tree data structure. You write
-an operation as if it were sequential code, using the library's wrappers to
-read and modify nodes, and the library makes it thread safe:
+SafeTree generalises RCU-HTM [[1]](#references), a technique by Siakavaras et
+al. for building fast concurrent binary search trees. RCU-HTM combines
+Read-Copy-Update [[2]](#references) with hardware transactional memory, so
+readers never synchronise and writers only use a short transaction to
+publish their changes. SafeTree turns the technique into a library that works
+for any tree data structure. You write an operation as if it were sequential
+code, using the library's wrappers to read and modify nodes, and the library
+makes it thread safe:
 
 - **Lookups** traverse the tree directly. They take no locks and never retry.
 - **Updates** never modify a node that is reachable from the root. They build
@@ -13,10 +18,14 @@ read and modify nodes, and the library makes it thread safe:
   transaction (Intel TSX) validates that nothing they read has changed and
   swaps a single child pointer to publish the copies.
 
+Related work includes a performance study of concurrent red-black trees on
+HTM [[3]](#references) and a general technique for non-blocking trees
+[[4]](#references).
+
 The library and its evaluation are described in the thesis
-[SafeTree_Thesis_English.pdf](SafeTree_Thesis_English.pdf). The thesis shows the
-earlier `TM_SAFE_OPERATION_START`/`END` macros; operations are now written with
-`SafeTree::safe_operation`, as shown below.
+[SafeTree_Thesis_English.pdf](SafeTree_Thesis_English.pdf) [[5]](#references).
+The thesis shows the earlier `TM_SAFE_OPERATION_START`/`END` macros; operations
+are now written with `SafeTree::safe_operation`, as shown below.
 
 ## Requirements
 
@@ -93,83 +102,70 @@ int nextChild(KeyType key);               // child to follow when looking for ke
 int nextChild(const Node* target);        // child to follow when looking for target
 ```
 
-### Example: a binary search tree
+### Operations
+
+An operation is a lambda passed to `safe_operation`. A search tree insert finds
+the connection point by key and connects the new node below it (from
+[`BST::insert_impl`](concurrent_maps/BstHTM/include/bst.hpp)):
 
 ```cpp
-#include "include/SafeTree.hpp"
+bool insert(int k, ValueType val) {
+    return safe_operation(30, [&]() -> bool {
+        // find the parent of the position of k
+        auto conn_point_snapshot = find_conn_point<TreeNode>(k, &root);
 
-using namespace SafeTree;
-
-class Node {
-    public:
-        using KeyType = int;
-
-        int key;
-        int value;
-        Node* children[2];
-
-        Node(int key, int value): key(key), value(value), children{nullptr, nullptr} {}
-
-        Node* getChild(int i) { return children[i]; }
-        void setChild(int i, Node* n) { children[i] = n; }
-        Node** getChildPointer(int i) { return &children[i]; }
-        static constexpr int maxChildren() { return 2; }
-
-        bool hasKey(int k) { return key == k; }
-        bool traversalDone(int k) const { return key == k; }
-        int nextChild(int k) const { return k < key ? 0 : 1; }
-        int nextChild(const Node* target) const { return target->key < key ? 0 : 1; }
-};
-
-class Tree {
-        Node* root = nullptr;
-
-    public:
-        bool insert(int key, int value) {
-            return safe_operation(30, [&]() -> bool {
-                // find the parent of the position of key
-                auto data = find_conn_point<Node>(key, &root);
-
-                if (data.found()) {
-                    return false;
-                }
-
-                ConnPoint<Node> conn(data);
-
-                // the new node becomes the root of the tree of copies,
-                // connected below the connection point
-                conn.setRoot(conn.create_safe(new Node(key, value)));
-
-                return true;
-            });
+        if (conn_point_snapshot.found()) {
+            return false;
         }
 
-        bool update(int key, int value) {
-            return safe_operation(30, [&]() -> bool {
-                auto data = find_conn_point<Node>(key, &root);
+        ConnPoint<TreeNode> conn(conn_point_snapshot);
 
-                if (!data.found()) {
-                    return false;
-                }
+        // the new node becomes the root of the tree of copies,
+        // connected below the connection point
+        conn.setRoot(conn.create_safe(ConnPoint<TreeNode>::create_new_node(k, val, nullptr, nullptr)));
 
-                ConnPoint<Node> conn(data);
-
-                // getRoot() is the node with the key, rwRef() gives a
-                // private copy which is safe to modify
-                conn.getRoot()->rwRef()->value = value;
-
-                return true;
-            });
-        }
-
-        bool lookup(int key) {
-            return find<Node>(root, key) != nullptr;
-        }
-};
+        return true;
+    });
+}
 ```
 
-`concurrent_maps/BstHTM` and `concurrent_maps/AVLHTM` are complete versions of
-this, with removal and AVL rebalancing (`pop_path()` and rotations on `SafeNode`s).
+To change a node's contents, modify the private copy returned by `rwRef()`:
+
+```cpp
+ConnPoint<TreeNode> conn(conn_point_snapshot);
+
+// the root of the tree of copies is the node with the key
+conn.getRoot()->rwRef()->setValue(new_value);
+```
+
+Rebalancing walks back up the path with `pop_path()`. Each call makes the
+parent of the current tree of copies its new root, and stops once nothing else
+changes (from [`AVLTree::insert_impl`](concurrent_maps/AVLHTM/include/avl.hpp)):
+
+```cpp
+for (SafeNode<TreeNode>* n = conn.pop_path(); n != nullptr; n = conn.pop_path()) {
+    auto n_values = n->rwRef();
+    int height_old = n_values->height;
+
+    // rotations work on SafeNodes exactly as on plain nodes
+    n = rebalance_ins(n, k, rotation_happened);
+    conn.setRoot(n);
+
+    if (height_old == n_values->height && !rotation_happened) {
+        break;
+    }
+}
+```
+
+The complete implementations are good starting points:
+
+| Structure | Implementation | Shows |
+| --- | --- | --- |
+| Binary search tree | [`bst.hpp`](concurrent_maps/BstHTM/include/bst.hpp) | Insert and remove with `find_conn_point` |
+| AVL tree | [`avl.hpp`](concurrent_maps/AVLHTM/include/avl.hpp) | Rotations and rebalancing with `pop_path()` |
+| AVL tree, general | [`avl.hpp`](concurrent_maps/AVLHTMGeneric/include/avl.hpp) | The same tree with a `PathTracker` |
+| B-Tree | [`btree.hpp`](concurrent_maps/BTreeHTM/include/btree.hpp) | Nodes with many children, splits and merges propagating upwards |
+| Stack, queue | [`stack.hpp`](concurrent_lists/StackHTM/include/stack.hpp), [`queue.hpp`](concurrent_lists/QueueHTM/include/queue.hpp) | Operations which return a value |
 
 ### The main operations
 
@@ -249,3 +245,23 @@ make clean
   pools, so only one tree per node type should be alive at a time.
 - **Intel TSX only.** The library has no software fallback for CPUs without
   RTM.
+
+## References
+
+1. D. Siakavaras et al. "RCU-HTM: Combining RCU
+   with HTM to Implement Highly Efficient Concurrent Binary Search Trees." In
+   *2017 26th International Conference on Parallel Architectures and
+   Compilation Techniques (PACT)*, 2017, pp. 1–13.
+   [doi:10.1109/PACT.2017.17](https://doi.org/10.1109/PACT.2017.17)
+2. M. Desnoyers et al. "User-Level Implementations of Read-Copy Update."
+   *IEEE Transactions on Parallel and Distributed Systems* 23, 2012,
+   pp. 375–382.
+   [doi:10.1109/TPDS.2011.159](https://doi.org/10.1109/TPDS.2011.159)
+3. D. Siakavaras et al. "Performance Analysis of Concurrent Red-Black Trees on
+   HTM Platforms." 2015.
+4. T. Brown, F. Ellen and E. Ruppert. "A General Technique for Non-blocking
+   Trees." 2017. [arXiv:1712.06687](https://arxiv.org/abs/1712.06687)
+5. S. P. Dragonas. *SafeTree – A System for the Automatic Parallelization of
+   Tree Data Structures.* Diploma thesis, National Technical University of
+   Athens, 2020.
+   [SafeTree_Thesis_English.pdf](SafeTree_Thesis_English.pdf)
