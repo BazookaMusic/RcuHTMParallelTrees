@@ -9,13 +9,13 @@
 using namespace SafeTree;
 
 template <class ContentType>
-class QueueItem {
+class QueueItem: public NodeBase {
     private:
         ContentType item;
         QueueItem* next;
     public:
         QueueItem(ContentType item, QueueItem* next): item(item), next(next) {}
-        QueueItem(QueueItem& item): item(item.item), next(item.next){}
+        QueueItem(QueueItem& item): NodeBase(item), item(item.item), next(item.next){}
 
         QueueItem& operator=(QueueItem other) {
             item = other.item;

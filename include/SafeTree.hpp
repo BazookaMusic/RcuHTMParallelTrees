@@ -32,6 +32,22 @@
     #endif
 
 
+    // the tree of copies is validated and connected
+    // inside a hardware transaction (Intel TSX),
+    // with a global lock as fallback
+    #define HTM_COMMIT 0
+    // the tree of copies is validated and connected
+    // lock-free with the LLX/SCX primitives
+    // (see LLXSCX.hpp), no TSX needed
+    #define LLX_SCX_COMMIT 1
+
+    // Set desired commit type,
+    // eg. -DCOMMIT_TYPE=LLX_SCX_COMMIT
+    #ifndef COMMIT_TYPE
+        #define COMMIT_TYPE HTM_COMMIT
+    #endif
+
+
 
     // memory pools for SafeNodes
     #define TSX_MEM_POOL
@@ -74,14 +90,29 @@
 #include <cassert>
 #include <algorithm>
 #include <utility>
+#include <vector>
+#include <type_traits>
 
 
 
 #include "helper_data_structures.hpp"
 #include "TSXGuard.hpp"
 
+#if COMMIT_TYPE == LLX_SCX_COMMIT
+    #include "LLXSCX.hpp"
+#endif
+
 namespace SafeTree {
         static constexpr int MAX_THREADS = RCU_HTM_MAX_THREADS;
+
+    // NodeBase: base class of the user defined nodes.
+    // Empty for HTM commits, holds the data record
+    // fields of LLX/SCX for LLX/SCX commits
+    #if COMMIT_TYPE == LLX_SCX_COMMIT
+        using NodeBase = LLXSCX::DataRecord;
+    #else
+        struct NodeBase {};
+    #endif
 
     /*  SafeTrees require Nodes with the following methods for the general tree version
         1.     A copy constructor, copy assignment and destructor (RULE OF THREE)
@@ -97,6 +128,10 @@ namespace SafeTree {
                 consider other factors like if it is a terminal node
         9.     int nextChild(KeyType target_key): return index of next child when looking for node with target_key
         10.     int nextChild(NodeType* target): return index of next child when looking for target node
+        For LLX/SCX commits the nodes also have to publicly inherit from SafeTree::NodeBase
+        (it is empty for HTM commits, so nodes can always inherit from it) and every node
+        which is removed from the tree has to be copied (getChild, rwRef) or deleted
+        (subtreeDelete, clipTree) through its SafeNode, so that it gets finalized.
     */
 
     // internal use
@@ -218,6 +253,11 @@ namespace SafeTree {
             std::array<bool,NodeType::maxChildren()> modified_;
             std::array<NodeType*, NodeType::maxChildren()> children_pointers_snapshot_;
 
+            #if COMMIT_TYPE == LLX_SCX_COMMIT
+                // info read by the LLX which took the snapshot
+                LLXSCX::SCXRecordBase* llx_info_;
+            #endif
+
             bool deleted_;
 
             SAFENODE_TYPE node_type_;
@@ -324,11 +364,19 @@ namespace SafeTree {
                 conn_point_.add_to_validation_set(this);
 
                 if (node_type_ == ORIG_TREE_NODE) {
-                    for (int i = 0; i < NodeType::maxChildren(); i++) {
+                    #if COMMIT_TYPE == LLX_SCX_COMMIT
                         // keep backup of the original_ child pointers
-                        const auto original_child = original_->getChild(i);
-                        children_pointers_snapshot_[i] = original_child;
-                    }
+                        if (!conn_point_.llx_children(original_, children_pointers_snapshot_, llx_info_)) {
+                            // removed from the tree, the operation has to be retried
+                            conn_point_.validation_abort();
+                        }
+                    #else
+                        for (int i = 0; i < NodeType::maxChildren(); i++) {
+                            // keep backup of the original_ child pointers
+                            const auto original_child = original_->getChild(i);
+                            children_pointers_snapshot_[i] = original_child;
+                        }
+                    #endif
                 }
 
                 children_.fill(nullptr);
@@ -679,6 +727,17 @@ namespace SafeTree {
                 thread_local static memory_pool_tracked<NodeType> user_node_pool_;
             #endif
 
+            #if COMMIT_TYPE == LLX_SCX_COMMIT
+                static_assert(std::is_base_of<NodeBase, NodeType>::value,
+                "LLX/SCX commits require the nodes to inherit from SafeTree::NodeBase");
+
+                thread_local static LLXSCX::SCXArena<NodeType> scx_arena_;
+
+                // V and R of the SCX which connects the copy
+                thread_local static std::vector<LLXSCX::LinkedLLX> scx_v_;
+                thread_local static std::vector<LLXSCX::DataRecord*> scx_r_;
+            #endif
+
             // returns if copy connection was successful
             bool& connect_success_;
 
@@ -718,10 +777,13 @@ namespace SafeTree {
             bool copy_connected_;
 
 
-            // The global lock
-            TSX::SpinLock& _lock;
+            #if COMMIT_TYPE == HTM_COMMIT
+                // The global lock
+                TSX::SpinLock& _lock;
+            #endif
 
-            // tsx stats
+            // tsx stats, for LLX/SCX commits
+            // they count SCX attempts
             TSX::TSXStats &stats_;
 
 
@@ -732,13 +794,15 @@ namespace SafeTree {
             // was done to the tree
             bool tree_was_modified_;
 
-            // won't run the operation 
-            // using tsx if lock is already locked
-            bool already_locked_;
-            
-            // transactional retries before
-            // acquiring fallback lock
-            int& trans_retries_;
+            #if COMMIT_TYPE == HTM_COMMIT
+                // won't run the operation
+                // using tsx if lock is already locked
+                bool already_locked_;
+
+                // transactional retries before
+                // acquiring fallback lock
+                int& trans_retries_;
+            #endif
 
             // set to true if operation
             // throws a validation error
@@ -821,31 +885,198 @@ namespace SafeTree {
 
             bool connect_atomically() noexcept {
 
-                if (validation_aborted_) {
-                    return false;
-                }
-
-                unsigned char err_status = 0;
-                
-                TSX::TSXTransOnlyGuard guard(trans_retries_,_lock,err_status,stats_, already_locked_, TSX::STUBBORN);
-
-                if (err_status != VALIDATION_FAILED) {
-
-                    if (!validate_copy()) {
+                #if COMMIT_TYPE == LLX_SCX_COMMIT
+                    return connect_scx();
+                #else
+                    if (validation_aborted_) {
                         return false;
                     }
 
-                    connect_copy();
-                    return true;
-                }
+                    unsigned char err_status = 0;
 
-                return false;
+                    TSX::TSXTransOnlyGuard guard(trans_retries_,_lock,err_status,stats_, already_locked_, TSX::STUBBORN);
+
+                    if (err_status != VALIDATION_FAILED) {
+
+                        if (!validate_copy()) {
+                            return false;
+                        }
+
+                        connect_copy();
+                        return true;
+                    }
+
+                    return false;
+                #endif
             }
 
             void validation_abort() {
                 validation_aborted_ = true;
-                trans_retries_--;
+                #if COMMIT_TYPE == HTM_COMMIT
+                    trans_retries_--;
+                #endif
             }
+
+            #if COMMIT_TYPE == LLX_SCX_COMMIT
+                // llx_children: LLX on a node of the original tree, its children
+                // are read into children and the info for the SCX into info.
+                // Returns false if the node has been removed from the tree.
+                bool llx_children(NodeType* node, std::array<NodeType*, NodeType::maxChildren()>& children,
+                                  LLXSCX::SCXRecordBase*& info) {
+                    const auto read_children = [&]() {
+                        for (int i = 0; i < NodeType::maxChildren(); i++) {
+                            children[i] = node->getChild(i);
+                        }
+                    };
+
+                    LLXSCX::LLXResult result;
+
+                    // fails while the node is frozen by an SCX
+                    // in progress, which has been helped
+                    while ((result = LLXSCX::llx(node, info, read_children)) == LLXSCX::LLX_FAIL) {}
+
+                    if (result == LLXSCX::LLX_FINALIZED) {
+                        read_children();
+                        return false;
+                    }
+
+                    return true;
+                }
+
+                // llx_root: LLX on the record of the root pointer
+                LLXSCX::DataRecord* llx_root(NodeType*& root_snapshot, LLXSCX::SCXRecordBase*& info) {
+                    LLXSCX::DataRecord* record = LLXSCX::RootRecords<NodeType*>::get(root_);
+
+                    const auto read_root = [&]() {
+                        root_snapshot = *root_;
+                    };
+
+                    // the root record is never finalized
+                    while (LLXSCX::llx(record, info, read_root) != LLXSCX::LLX_SNAPSHOT) {}
+
+                    return record;
+                }
+
+                // connect_scx: validate and connect the copy with an SCX.
+                // V contains the record of the pointer to change and every original
+                // node which was read, R the original nodes which are removed:
+                // the nodes which were copied or deleted
+                bool connect_scx() {
+                    if (validation_aborted_) {
+                        return false;
+                    }
+
+                    // an SCX changing nullptr could be repeated after the pointer
+                    // has become nullptr again (see LLXSCX::scx), connect one level
+                    // higher so that the old value is a node which is replaced
+                    if (!conn_pointer_snapshot_ && head_ && connection_point_) {
+                        #ifdef TM_EARLY_ABORT
+                            // called by the destructor, should not throw
+                            try {
+                                pop_path();
+                            } catch (const ValidationAbortException&) {
+                                return false;
+                            }
+                        #else
+                            pop_path();
+                        #endif
+
+                        if (validation_aborted_) {
+                            return false;
+                        }
+                    }
+
+                    NodeType* copied_tree_head = head_ ? head_->node_to_be_connected() : nullptr;
+
+                    stats_.tx_starts++;
+
+                    scx_v_.clear();
+                    scx_r_.clear();
+
+                    NodeType** fld;
+                    LLXSCX::LinkedLLX conn_llx;
+
+                    if (connection_point_) {
+                        std::array<NodeType*, NodeType::maxChildren()> children;
+
+                        if (!llx_children(connection_point_, children, conn_llx.info) ||
+                            children[child_to_exchange_] != conn_pointer_snapshot_) {
+                            return scx_failed();
+                        }
+
+                        conn_llx.record = connection_point_;
+                        fld = connection_point_->getChildPointer(child_to_exchange_);
+                    } else {
+                        NodeType* root_snapshot;
+                        conn_llx.record = llx_root(root_snapshot, conn_llx.info);
+
+                        if (root_snapshot != conn_pointer_snapshot_) {
+                            return scx_failed();
+                        }
+
+                        fld = root_;
+                    }
+
+                    scx_v_.push_back(conn_llx);
+
+                    for (auto i = 0; i < validation_set_.size(); i++) {
+                        auto safe_node = validation_set_.get(i);
+
+                        // new nodes are not validated
+                        if (safe_node->node_type_ == SafeNode<NodeType>::ORIG_TREE_NODE) {
+                            LLXSCX::LinkedLLX node_llx;
+                            node_llx.record = safe_node->original_;
+                            node_llx.info = safe_node->llx_info_;
+                            scx_v_.push_back(node_llx);
+
+                            if (safe_node->copy_ != safe_node->original_ || safe_node->deleted_) {
+                                scx_r_.push_back(safe_node->original_);
+                            }
+                        }
+                    }
+
+                    // records are frozen in address order, so that one
+                    // of a group of conflicting SCXs always succeeds.
+                    // V is small, insertion sort
+                    for (std::size_t i = 1; i < scx_v_.size(); i++) {
+                        const LLXSCX::LinkedLLX item = scx_v_[i];
+                        std::size_t j = i;
+                        for (; j > 0 && item.record < scx_v_[j - 1].record; j--) {
+                            scx_v_[j] = scx_v_[j - 1];
+                        }
+                        scx_v_[j] = item;
+                    }
+
+                    // a node can be read more than once, it should not have changed in between
+                    std::size_t n_v = 0;
+                    for (std::size_t i = 0; i < scx_v_.size(); i++) {
+                        if (n_v > 0 && scx_v_[n_v - 1].record == scx_v_[i].record) {
+                            if (scx_v_[n_v - 1].info != scx_v_[i].info) {
+                                return scx_failed();
+                            }
+                        } else {
+                            scx_v_[n_v++] = scx_v_[i];
+                        }
+                    }
+
+                    if (!LLXSCX::scx(scx_arena_, scx_v_.data(), static_cast<int>(n_v), scx_r_.data(), static_cast<int>(scx_r_.size()),
+                                     fld, conn_pointer_snapshot_, copied_tree_head)) {
+                        return scx_failed();
+                    }
+
+                    stats_.tx_commits++;
+
+                    // originals can be deleted
+                    copy_connected_ = true;
+                    return true;
+                }
+
+                bool scx_failed() {
+                    stats_.tx_aborts++;
+                    stats_.tx_aborts_per_reason[TSX::TX_ABORT_CONFLICT]++;
+                    return false;
+                }
+            #endif
 
             
             bool copyWasConnected() {
@@ -962,12 +1193,18 @@ namespace SafeTree {
             child_to_exchange_(data.con_ptr.child_index),
             path_to_conn_point_(data.path), 
             copy_connected_(false),
-            _lock(TSX::__internal__trans_pointer->get_lock()),
-            stats_(TSX::__internal__trans_pointer->get_stats()),
+            #if COMMIT_TYPE == HTM_COMMIT
+                _lock(TSX::__internal__trans_pointer->get_lock()),
+                stats_(TSX::__internal__trans_pointer->get_stats()),
+            #else
+                stats_(TSX::__internal__trans_stats),
+            #endif
             head_(nullptr),
             tree_was_modified_(false),
-            already_locked_(TSX::__internal__trans_pointer->has_locked()),
-            trans_retries_(TSX::__internal__trans_pointer->get_retries()),
+            #if COMMIT_TYPE == HTM_COMMIT
+                already_locked_(TSX::__internal__trans_pointer->has_locked()),
+                trans_retries_(TSX::__internal__trans_pointer->get_retries()),
+            #endif
             validation_aborted_(false)
             {
                 #ifdef TSX_MEM_POOL
@@ -1073,6 +1310,12 @@ namespace SafeTree {
 
                 static void reset_node_pool() {
                     user_node_pool_.hard_reset();
+
+                    #if COMMIT_TYPE == LLX_SCX_COMMIT
+                        // the SCX-records the nodes pointed to
+                        LLXSCX::SCXArena<NodeType>::release_all();
+                        LLXSCX::RootRecords<NodeType*>::reset_all();
+                    #endif
                 }
 
             #endif
@@ -1246,6 +1489,14 @@ namespace SafeTree {
                     }
                 #endif
 
+                #if COMMIT_TYPE == LLX_SCX_COMMIT
+                    // the SCX validates the snapshot of the LLX,
+                    // which should agree with the old snapshot
+                    if (newHead->children_pointers_snapshot_[child_to_exchange_] != old_conn_pointer_snapshot_) {
+                        validation_abort();
+                    }
+                #endif
+
                 newHead->children_pointers_snapshot_[child_to_exchange_] = old_conn_pointer_snapshot_;
                 
                 
@@ -1307,8 +1558,14 @@ namespace SafeTree {
         int retries = n_retries;
 
         for (;;) {
-            TSX::Transaction trans(retries);
-            TSX::__internal__trans_pointer = &trans;
+            #if COMMIT_TYPE == HTM_COMMIT
+                TSX::Transaction trans(retries);
+                TSX::__internal__trans_pointer = &trans;
+            #else
+                // LLX/SCX commits are lock-free,
+                // there is no fallback after retries
+                (void)retries;
+            #endif
 
             // reset by a ConnPoint until its copy is connected
             __internal__thread_transaction_success_flag__ = true;
@@ -1345,6 +1602,17 @@ namespace SafeTree {
      #ifdef PREALLOC_VALIDATION_SET
         template <class NodeType>
         thread_local PreAllocVec<SafeNode<NodeType>*,500> ConnPoint<NodeType>::validation_set_;
+    #endif
+
+    #if COMMIT_TYPE == LLX_SCX_COMMIT
+        template <class NodeType>
+        thread_local LLXSCX::SCXArena<NodeType> ConnPoint<NodeType>::scx_arena_;
+
+        template <class NodeType>
+        thread_local std::vector<LLXSCX::LinkedLLX> ConnPoint<NodeType>::scx_v_;
+
+        template <class NodeType>
+        thread_local std::vector<LLXSCX::DataRecord*> ConnPoint<NodeType>::scx_r_;
     #endif
 
     //---------------------//

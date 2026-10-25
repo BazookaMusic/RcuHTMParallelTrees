@@ -25,7 +25,8 @@ using namespace SafeTree;
     reachable from the root are never modified in place. An update traverses
     the tree, builds private copies of the nodes it needs to change and then
     atomically swaps a single child pointer (the connection point) inside a
-    hardware transaction which also validates that nothing it read changed.
+    hardware transaction which also validates that nothing it read changed
+    (or with an LLX/SCX when compiled with COMMIT_TYPE=LLX_SCX_COMMIT).
 
     Updates are bottom-up, so the tree of copies is only as tall as the
     modification needs to be: an insert into a non-full leaf copies just
@@ -44,7 +45,7 @@ class BTree;
 
 
 template <class Key, class ValueType, int MIN_DEGREE = 4>
-class BTreeNode {
+class BTreeNode: public NodeBase {
     static_assert(MIN_DEGREE >= 2, "B-Tree minimum degree should be at least 2");
 
     friend class BTree<Key, ValueType, MIN_DEGREE>;

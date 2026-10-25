@@ -21,7 +21,7 @@ class BST;
     
 
 template <class ValueType>
-class BSTNode {
+class BSTNode: public NodeBase {
     friend class BST<ValueType>;
     private:
         int key;
