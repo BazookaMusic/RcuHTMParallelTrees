@@ -8,6 +8,10 @@
 #include "emmintrin.h"
 #include "iostream"
 
+// if the current thread safe operation succeeded,
+// reset by a ConnPoint until its copy has been connected
+thread_local bool __internal__thread_transaction_success_flag__ = false;
+
 namespace TSX {
     static constexpr int ALIGNMENT = 128;
     static constexpr unsigned char ABORT_VALIDATION_FAILURE = 0xee;
@@ -572,44 +576,5 @@ namespace TSX {
     thread_local Transaction* __internal__trans_pointer = nullptr;
 };
 
-
-// Macros to reduce boilerplate to make a transactional operation
-// Syntax is of the form
-    //
-    //  TM_SAFE_OPERATION_START {
-    //      code...
-    //  } TM_SAFE_OPERATION_END 
-    //
-
-    // if a transaction succeeded or failed
-    thread_local bool __internal__thread_transaction_success_flag__ = false;
-
-    // thread safe operation macro definitions
-    #ifdef TM_EARLY_ABORT
-        #define TM_SAFE_OPERATION_START(n_retries) \
-        __internal__thread_transaction_success_flag__ = false;\
-        int __current__op__retries = n_retries; \
-        while(!__internal__thread_transaction_success_flag__) { \
-            TSX::Transaction __trans_obj__(__current__op__retries);\
-            TSX::__internal__trans_pointer = &__trans_obj__;\
-        try {\
-
-        #define TM_SAFE_OPERATION_END \
-        }catch (const SafeTree::ValidationAbortException&) {\
-            __internal__thread_transaction_success_flag__ = false;\
-        }\
-        }
-
-    #else
-        #define TM_SAFE_OPERATION_START(n_retries) \
-        __internal__thread_transaction_success_flag__ = false;\
-        int __current__op__retries = n_retries; \
-        while(!__internal__thread_transaction_success_flag__) {\
-            TSX::Transaction __trans_obj(__current__op__retries);\
-            TSX::__internal__trans_pointer = &__trans_obj;
-
-
-        #define TM_SAFE_OPERATION_END }
-    #endif
 
 #endif

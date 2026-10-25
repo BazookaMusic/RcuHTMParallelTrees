@@ -64,13 +64,9 @@ class Stack {
         }
 
         const StackItem<ContentType>* pop() {
-            // the popped item can only be returned after the
-            // operation has been committed, returning from inside
-            // the transaction block would skip the retry on a
-            // failed validation
-            const StackItem<ContentType>* old_top = nullptr;
-
-            TM_SAFE_OPERATION_START(30) {
+            // safe_operation only returns the popped item
+            // once the operation has been committed
+            return safe_operation(30, [&]() -> const StackItem<ContentType>* {
                 PathTracker<Item> tracker(&top_item);
 
                 auto conn_point_snapshot = tracker.connectHere();
@@ -78,21 +74,22 @@ class Stack {
                 ConnPoint<Item> conn(conn_point_snapshot);
 
                 auto top = conn.getRoot();
-                old_top = top? top->peekOriginal() : nullptr;
+                auto const old_top = top? top->peekOriginal() : nullptr;
 
-                if (top) {
-                    auto after_top = top->getChild(0);
-
-                    conn.setRoot(after_top);
+                if (!top) {
+                    return nullptr;
                 }
-            } TM_SAFE_OPERATION_END
 
-            return old_top;
+                auto after_top = top->getChild(0);
 
+                conn.setRoot(after_top);
+
+                return old_top;
+            });
         }
 
         void push(ContentType content) {
-            TM_SAFE_OPERATION_START(30) {
+            safe_operation(30, [&]() {
 
                 PathTracker<Item> tracker(&top_item);
 
@@ -111,6 +108,6 @@ class Stack {
                 conn.setRoot(node_to_be_inserted);
 
                 node_to_be_inserted->setChild(0, top);
-            } TM_SAFE_OPERATION_END
+            });
         }
 };

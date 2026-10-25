@@ -348,7 +348,7 @@ class BTree {
         bool insert_impl(const KeyType k, ValueType val, int t_id) {
             (void)t_id;
 
-            TM_SAFE_OPERATION_START(TRANS_RETRIES) {
+            return safe_operation(TRANS_RETRIES, [&]() -> bool {
 
                 /* FIND PHASE */
 
@@ -426,15 +426,14 @@ class BTree {
                         }
                     }
                 }
-            } TM_SAFE_OPERATION_END
-
-            return true;
+                return true;
+            });
         }
 
         bool remove_impl(const KeyType k, int t_id) {
             (void)t_id;
 
-            TM_SAFE_OPERATION_START(TRANS_RETRIES) {
+            return safe_operation(TRANS_RETRIES, [&]() -> bool {
 
                 /* FIND PHASE */
 
@@ -526,9 +525,8 @@ class BTree {
                     conn.setRoot(only_child ? conn.create_safe(only_child) : nullptr);
                 }
 
-            } TM_SAFE_OPERATION_END
-
-            return true;
+                return true;
+            });
         }
 
         // helpers

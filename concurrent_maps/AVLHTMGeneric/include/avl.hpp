@@ -404,7 +404,7 @@ class AVLTree {
         bool insert_impl(const int k, ValueType val, int t_id) {
             (void)t_id;
             
-            TM_SAFE_OPERATION_START(30) {
+            return safe_operation(30, [&]() -> bool {
 
                 /* FIND PHASE */
 
@@ -460,14 +460,8 @@ class AVLTree {
 
                     }
                 }
-            } TM_SAFE_OPERATION_END
-
-            // OPERATION END can be omitted if
-            // not using EARLY ABORT COMPILATION FLAGS
-            
-            
-       
-            return true;
+                return true;
+            });
 
         }
 
@@ -512,7 +506,7 @@ class AVLTree {
         
         (void)t_id;
 
-        TM_SAFE_OPERATION_START(30) {
+        return safe_operation(30, [&]() -> bool {
 
             /* FIND PHASE */
 
@@ -627,9 +621,8 @@ class AVLTree {
                     break;
                 } 
             }
-        } TM_SAFE_OPERATION_END
-
-        return true;
+            return true;
+        });
     }
 
 
