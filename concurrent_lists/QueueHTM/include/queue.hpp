@@ -15,7 +15,9 @@ class QueueItem {
         QueueItem* next;
     public:
         QueueItem(ContentType item, QueueItem* next): item(item), next(next) {}
-        QueueItem(QueueItem& item): item(item.item), next(item.next){}
+        // copies are made from items of the list, whose next
+        // pointer can be swapped concurrently
+        QueueItem(QueueItem& item): item(item.item), next(read_pointer(&item.next)){}
 
         QueueItem& operator=(QueueItem other) {
             item = other.item;

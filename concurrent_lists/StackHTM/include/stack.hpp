@@ -15,7 +15,9 @@ class StackItem {
         StackItem* next;
     public:
         StackItem(ContentType item, StackItem* next): item(item), next(next) {}
-        StackItem(StackItem& item): item(item.item), next(item.next){}
+        // copies are made from items of the list, whose next
+        // pointer can be swapped concurrently
+        StackItem(StackItem& item): item(item.item), next(read_pointer(&item.next)){}
 
         StackItem& operator=(StackItem other) {
             item = other.item;
