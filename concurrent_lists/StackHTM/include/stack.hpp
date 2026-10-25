@@ -89,7 +89,7 @@ class Stack {
         }
 
         void push(ContentType content) {
-            TM_SAFE_OPERATION_START(30) {
+            safe_operation(30, [&]() {
 
                 PathTracker<Item> tracker(&top_item);
 
@@ -108,6 +108,6 @@ class Stack {
                 conn.setRoot(node_to_be_inserted);
 
                 node_to_be_inserted->setChild(0, top);
-            } TM_SAFE_OPERATION_END
+            });
         }
 };

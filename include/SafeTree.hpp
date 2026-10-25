@@ -1291,7 +1291,7 @@ namespace SafeTree {
 
     // safe_operation: run op as a thread safe operation, retrying it
     // until its ConnPoint has been connected, and return op's result.
-    // Unlike the TM_SAFE_OPERATION macros, op can return at any point:
+    // op can return at any point:
     //
     //      return safe_operation(30, [&]() -> bool {
     //          ...
@@ -1317,14 +1317,13 @@ namespace SafeTree {
             try {
             #endif
                 internal::OperationResult<decltype(op())> result(op);
-                trans.body_done();
 
                 if (__internal__thread_transaction_success_flag__) {
                     return result.get();
                 }
             #ifdef TM_EARLY_ABORT
             } catch (const ValidationAbortException&) {
-                trans.body_done();
+                // retry
             }
             #endif
         }

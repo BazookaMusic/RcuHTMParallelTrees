@@ -108,7 +108,7 @@ class Queue {
         }
 
         void enqueue(ContentType content) {
-            TM_SAFE_OPERATION_START(30) {
+            safe_operation(30, [&]() {
 
                 // last elem is connection point
                 auto conn_point_snapshot = last_elem();
@@ -127,6 +127,6 @@ class Queue {
                 conn.setRoot(node_to_be_inserted);
 
                 node_to_be_inserted->setChild(0, top);
-            } TM_SAFE_OPERATION_END
+            });
         }
 };

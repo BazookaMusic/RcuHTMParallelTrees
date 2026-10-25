@@ -241,7 +241,7 @@ class BST {
         bool insert_impl(const int k, ValueType val, int t_id) {
             (void)t_id;
             
-            TM_SAFE_OPERATION_START(30) {
+            return safe_operation(30, [&]() -> bool {
                 /* FIND PHASE */
 
                 
@@ -270,12 +270,8 @@ class BST {
                 // insert it
                 conn.setRoot(node_to_be_inserted);
                 
-            } TM_SAFE_OPERATION_END
-
-            // OPERATION END can be omitted if
-            // not using EARLY ABORT COMPILATION FLAGS
-            
-            return true;
+                return true;
+            });
 
         }
 
@@ -285,7 +281,7 @@ class BST {
     bool remove_impl(const int k, const int t_id) {
         (void)t_id;
 
-        TM_SAFE_OPERATION_START(30) {
+        return safe_operation(30, [&]() -> bool {
             /* FIND PHASE */
 
                 
@@ -355,9 +351,8 @@ class BST {
                     node_to_be_deleted->setChild(1,right_child);
                 }
             }
-        } TM_SAFE_OPERATION_END
-
-        return true;
+            return true;
+        });
     }
 
 

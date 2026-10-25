@@ -7,10 +7,8 @@
 #include "rtm.h"
 #include "emmintrin.h"
 #include "iostream"
-#include <cstdlib>
-#include <exception>
 
-// if the operation of the current transaction block succeeded,
+// if the current thread safe operation succeeded,
 // reset by a ConnPoint until its copy has been connected
 thread_local bool __internal__thread_transaction_success_flag__ = false;
 
@@ -533,23 +531,13 @@ namespace TSX {
             TSX::SpinLock &lock_;
             TSX::TSXStats &stats_;
             bool has_locked_;
-            bool body_done_;
-
-            static bool unwinding() {
-                #if __cplusplus >= 201703L
-                    return std::uncaught_exceptions() > 0;
-                #else
-                    return std::uncaught_exception();
-                #endif
-            }
 
         public:
             Transaction(int &retries): 
             retries_(retries), 
             lock_(__internal__global_lock), 
             stats_(__internal__trans_stats),
-            has_locked_(false),
-            body_done_(false) {
+            has_locked_(false) {
                 if (retries == 0) {
                     lock_.lock();
                     has_locked_ = true;
@@ -578,24 +566,7 @@ namespace TSX {
                 return retries_;
             }
 
-            // body_done: the operation's code ran to its end,
-            // so a failed commit will be retried
-            void body_done() {
-                body_done_ = true;
-            }
-
             ~Transaction() {
-                #ifndef NDEBUG
-                    // leaving the operation early (a return statement inside
-                    // a TM_SAFE_OPERATION block) after a failed commit would
-                    // skip the retry and report an operation that never happened
-                    if (!body_done_ && !__internal__thread_transaction_success_flag__ && !unwinding()) {
-                        std::cerr << "SafeTree: returned from a TM_SAFE_OPERATION block before its operation "
-                                     "committed, use SafeTree::safe_operation to return values" << std::endl;
-                        std::abort();
-                    }
-                #endif
-
                 if (has_locked_) {
                     lock_.unlock();
                 }
@@ -605,49 +576,5 @@ namespace TSX {
     thread_local Transaction* __internal__trans_pointer = nullptr;
 };
 
-
-// Macros to reduce boilerplate to make a transactional operation
-// Syntax is of the form
-    //
-    //  TM_SAFE_OPERATION_START {
-    //      code...
-    //  } TM_SAFE_OPERATION_END 
-    //
-    // Returning from inside the block is only safe before a ConnPoint
-    // has been created (e.g. when the find phase decides there is nothing
-    // to do). Operations which return a value after modifying the tree
-    // should use SafeTree::safe_operation, which only returns once the
-    // operation has been committed.
-
-    // thread safe operation macro definitions
-    #ifdef TM_EARLY_ABORT
-        #define TM_SAFE_OPERATION_START(n_retries) \
-        __internal__thread_transaction_success_flag__ = false;\
-        int __current__op__retries = n_retries; \
-        while(!__internal__thread_transaction_success_flag__) { \
-            TSX::Transaction __trans_obj__(__current__op__retries);\
-            TSX::__internal__trans_pointer = &__trans_obj__;\
-            __internal__thread_transaction_success_flag__ = true;\
-        try {\
-
-        #define TM_SAFE_OPERATION_END \
-        }catch (const SafeTree::ValidationAbortException&) {\
-            __internal__thread_transaction_success_flag__ = false;\
-        }\
-            __trans_obj__.body_done();\
-        }
-
-    #else
-        #define TM_SAFE_OPERATION_START(n_retries) \
-        __internal__thread_transaction_success_flag__ = false;\
-        int __current__op__retries = n_retries; \
-        while(!__internal__thread_transaction_success_flag__) {\
-            TSX::Transaction __trans_obj(__current__op__retries);\
-            TSX::__internal__trans_pointer = &__trans_obj;\
-            __internal__thread_transaction_success_flag__ = true;
-
-
-        #define TM_SAFE_OPERATION_END __trans_obj.body_done(); }
-    #endif
 
 #endif
