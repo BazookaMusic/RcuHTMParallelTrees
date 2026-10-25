@@ -89,6 +89,7 @@
 #include <new>
 #include <cassert>
 #include <algorithm>
+#include <atomic>
 #include <utility>
 #include <vector>
 #include <type_traits>
@@ -604,8 +605,9 @@ namespace SafeTree {
 
             static_assert(sizeof(buffer_type) >= sizeof(Object), "wrong size");
 
-            explicit memory_pool(std::size_t limit)
-                    : objects_(new buffer_type[limit]),limit_(limit), used_(0) {
+            // the buffer is allocated later if allocate is false
+            explicit memory_pool(std::size_t limit, bool allocate = true)
+                    : objects_(allocate ? new buffer_type[limit] : nullptr),limit_(limit), used_(0) {
             }
 
             memory_pool(const memory_pool&) = delete;
@@ -639,53 +641,49 @@ namespace SafeTree {
         
         };
 
+        // memory_pool_tracked: the pool of user nodes of a thread.
+        // Its buffer is allocated when the thread first creates a node,
+        // so threads only get pools for the node types they use (some
+        // compilers construct all thread_local objects of a translation
+        // unit together). hard_reset frees the buffers of all threads,
+        // a pool notices it through the generation and allocates a new one.
         template<class Object>
         struct memory_pool_tracked: public memory_pool<Object> {
 
             using buffer_type = typename std::aligned_storage<sizeof(Object), alignof(Object)>::type;
 
             
-            explicit memory_pool_tracked(std::size_t limit): memory_pool<Object>(limit) {
-                pool_lock_.lock();
-                register_buffer();
-                ++index_;
-                thread_buffers_[index_] = memory_pool<Object>::objects_;
-                pool_lock_.unlock();
+            explicit memory_pool_tracked(std::size_t limit): memory_pool<Object>(limit, false), checkpoint_(0), generation_(0) {}
+
+            template<class...Args>
+            Object* create(Args &&...args) {
+                ensure_buffer();
+                return memory_pool<Object>::create(std::forward<Args>(args)...);
             }
 
             void fill_pool() {
-                memory_pool<Object>::objects_ = new buffer_type[memory_pool<Object>::limit_];
-                memory_pool<Object>::used_ = 0;
-                pool_lock_.lock();
-                register_buffer();
-                ++index_;
-                thread_buffers_[index_] = memory_pool<Object>::objects_;
-                pool_lock_.unlock();
+                ensure_buffer();
             }
 
-            
+            // hard_reset: free the buffers of all threads,
+            // only when no operations are running
             void hard_reset() {
+                pool_lock_.lock();
                 for (auto i = 0; i <= index_; i++) {
                     delete [] thread_buffers_[i];
                     thread_buffers_[i] = nullptr;
                 }
 
+                index_ = -1;
+                ++global_generation_;
+                pool_lock_.unlock();
+
                 memory_pool<Object>::used_ = 0;
                 memory_pool<Object>::objects_ = nullptr;
-
-                index_ = -1;
-
-            }
-
-            // caller holds pool_lock_
-            static void register_buffer() {
-                if (index_ + 1 >= MAX_THREADS) {
-                    std::cerr << "Too many node pools, increase RCU_HTM_MAX_THREADS" << std::endl;
-                    exit(-1);
-                }
             }
 
             void set_checkpoint() {
+                ensure_buffer();
                 checkpoint_ = memory_pool<Object>::used_;
             }
 
@@ -698,6 +696,35 @@ namespace SafeTree {
             static TSX::SpinLock pool_lock_;
             static typename memory_pool_tracked<Object>::buffer_type** thread_buffers_;
             static int index_;
+            static std::atomic<unsigned> global_generation_;
+
+        private:
+            // generation of global_generation_ the buffer belongs to
+            unsigned generation_;
+
+            // allocate a buffer if the thread has none
+            // or it has been freed by hard_reset
+            void ensure_buffer() {
+                const unsigned generation = global_generation_.load(std::memory_order_acquire);
+
+                if (memory_pool<Object>::objects_ && generation_ == generation) {
+                    return;
+                }
+
+                memory_pool<Object>::objects_ = new buffer_type[memory_pool<Object>::limit_];
+                memory_pool<Object>::used_ = 0;
+                checkpoint_ = 0;
+                generation_ = generation;
+
+                pool_lock_.lock();
+                if (index_ + 1 >= MAX_THREADS) {
+                    std::cerr << "Too many node pools, increase RCU_HTM_MAX_THREADS" << std::endl;
+                    exit(-1);
+                }
+                ++index_;
+                thread_buffers_[index_] = memory_pool<Object>::objects_;
+                pool_lock_.unlock();
+            }
 
         };
 
@@ -709,6 +736,9 @@ namespace SafeTree {
 
         template<class Object>
         int memory_pool_tracked<Object>::index_ = -1;
+
+        template<class Object>
+        std::atomic<unsigned> memory_pool_tracked<Object>::global_generation_(0);
     #endif
 
 
