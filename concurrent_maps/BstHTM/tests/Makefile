@@ -14,10 +14,17 @@ bst_test: bst_test.cpp $(INCLUDE)/* obj/catch_test_main.o $(URCU_REQS) Makefile
 tests: bst_test
 	./bst_test --benchmark-samples 5
 
+# the same tests, with the copies connected using LLX/SCX instead of TSX
+bst_llx_test: bst_test.cpp $(INCLUDE)/* obj/catch_test_main.o $(URCU_REQS) Makefile
+	$(CC) $(CFLAGS) -DCOMMIT_TYPE=LLX_SCX_COMMIT bst_test.cpp obj/catch_test_main.o $(URCU_REQS) -o bst_llx_test
+
+tests-llx: bst_llx_test
+	./bst_llx_test --benchmark-samples 5
+
 run-tests:
 	make clean && make tests
 
 	
 
 clean:
-	rm -rf bst_test
+	rm -rf bst_test bst_llx_test

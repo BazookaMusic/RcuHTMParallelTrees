@@ -23,7 +23,7 @@ class AVLTree;
     
 
 template <class ValueType>
-class alignas(32) AVLNode {
+class alignas(32) AVLNode: public NodeBase {
     friend class AVLTree<ValueType>;
     private:
         int key;

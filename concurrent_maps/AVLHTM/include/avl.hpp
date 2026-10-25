@@ -20,7 +20,7 @@ class AVLTree;
     
 
 template <class ValueType>
-class AVLNode {
+class AVLNode: public NodeBase {
     friend class AVLTree<ValueType>;
     private:
         int key;

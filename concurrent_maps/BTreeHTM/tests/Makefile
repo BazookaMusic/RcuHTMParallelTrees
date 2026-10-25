@@ -16,6 +16,13 @@ btree_test: btree_test.cpp ../include/btree.hpp $(INCLUDE)/* obj/catch_test_main
 tests: btree_test
 	./btree_test
 
+# the same tests, with the copies connected using LLX/SCX instead of TSX
+btree_llx_test: btree_test.cpp ../include/btree.hpp $(INCLUDE)/* obj/catch_test_main.o Makefile
+	$(CC) $(CFLAGS) -DCOMMIT_TYPE=LLX_SCX_COMMIT btree_test.cpp obj/catch_test_main.o -o btree_llx_test
+
+tests-llx: btree_llx_test
+	./btree_llx_test
+
 throughput: btree_test
 	./btree_test "[tp]"
 
@@ -23,4 +30,4 @@ run-tests:
 	make clean && make tests
 
 clean:
-	rm -rf btree_test obj
+	rm -rf btree_test obj btree_llx_test
