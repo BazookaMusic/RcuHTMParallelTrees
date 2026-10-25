@@ -21,7 +21,7 @@ class BST;
     
 
 template <class ValueType>
-class BSTNode {
+class BSTNode: public NodeBase {
     friend class BST<ValueType>;
     private:
         int key;
@@ -41,7 +41,7 @@ class BSTNode {
 
         // copies are made from nodes of the tree, whose child
         // pointers can be swapped concurrently
-        BSTNode(const BSTNode& other): key(other.key), value(other.value) {
+        BSTNode(const BSTNode& other): NodeBase(other), key(other.key), value(other.value) {
             children[0] = read_pointer(&other.children[0]);
             children[1] = read_pointer(&other.children[1]);
         }

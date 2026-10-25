@@ -9,7 +9,7 @@
 using namespace SafeTree;
 
 template <class ContentType>
-class QueueItem {
+class QueueItem: public NodeBase {
     private:
         ContentType item;
         QueueItem* next;
@@ -17,7 +17,7 @@ class QueueItem {
         QueueItem(ContentType item, QueueItem* next): item(item), next(next) {}
         // copies are made from items of the list, whose next
         // pointer can be swapped concurrently
-        QueueItem(QueueItem& item): item(item.item), next(read_pointer(&item.next)){}
+        QueueItem(QueueItem& item): NodeBase(item), item(item.item), next(read_pointer(&item.next)){}
 
         QueueItem& operator=(QueueItem other) {
             item = other.item;

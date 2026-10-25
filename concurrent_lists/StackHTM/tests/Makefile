@@ -15,8 +15,15 @@ stack_test: stack_test.cpp ../include/stack.hpp $(INCLUDE)/* obj/catch_test_main
 tests: stack_test
 	./stack_test
 
+# the same tests, with the copies connected using LLX/SCX instead of TSX
+stack_llx_test: stack_test.cpp ../include/stack.hpp $(INCLUDE)/* obj/catch_test_main.o Makefile
+	$(CC) $(CFLAGS) -DCOMMIT_TYPE=LLX_SCX_COMMIT stack_test.cpp obj/catch_test_main.o -o stack_llx_test
+
+tests-llx: stack_llx_test
+	./stack_llx_test
+
 run-tests:
 	make clean && make tests
 
 clean:
-	rm -rf stack_test obj
+	rm -rf stack_test obj stack_llx_test

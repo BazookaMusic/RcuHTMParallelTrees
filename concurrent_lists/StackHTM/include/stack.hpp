@@ -9,7 +9,7 @@
 using namespace SafeTree;
 
 template <class ContentType>
-class StackItem {
+class StackItem: public NodeBase {
     private:
         ContentType item;
         StackItem* next;
@@ -17,7 +17,7 @@ class StackItem {
         StackItem(ContentType item, StackItem* next): item(item), next(next) {}
         // copies are made from items of the list, whose next
         // pointer can be swapped concurrently
-        StackItem(StackItem& item): item(item.item), next(read_pointer(&item.next)){}
+        StackItem(StackItem& item): NodeBase(item), item(item.item), next(read_pointer(&item.next)){}
 
         StackItem& operator=(StackItem other) {
             item = other.item;

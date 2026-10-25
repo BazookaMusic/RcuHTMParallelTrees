@@ -23,7 +23,7 @@ class AVLTree;
     
 
 template <class ValueType>
-class alignas(32) AVLNode {
+class alignas(32) AVLNode: public NodeBase {
     friend class AVLTree<ValueType>;
     private:
         int key;
@@ -133,7 +133,7 @@ class alignas(32) AVLNode {
 
         // copies are made from nodes of the tree, whose child
         // pointers can be swapped concurrently
-        AVLNode(const AVLNode& other): key(other.key), value(other.value), height(other.height) {
+        AVLNode(const AVLNode& other): NodeBase(other), key(other.key), value(other.value), height(other.height) {
             children[0] = read_pointer(&other.children[0]);
             children[1] = read_pointer(&other.children[1]);
         }
