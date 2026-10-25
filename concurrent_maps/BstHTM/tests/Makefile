@@ -16,6 +16,13 @@ bst_test: bst_test.cpp ../include/bst.hpp $(INCLUDE)/* obj/catch_test_main.o Mak
 tests: bst_test
 	./bst_test "~[tp]"
 
+# the same tests, with the copies connected using LLX/SCX instead of TSX
+bst_llx_test: bst_test.cpp ../include/bst.hpp $(INCLUDE)/* obj/catch_test_main.o Makefile
+	$(CC) $(CFLAGS) -DCOMMIT_TYPE=LLX_SCX_COMMIT bst_test.cpp obj/catch_test_main.o -o bst_llx_test
+
+tests-llx: bst_llx_test
+	./bst_llx_test "~[tp]"
+
 throughput: bst_test
 	./bst_test "[tp]"
 
@@ -23,4 +30,4 @@ run-tests:
 	make clean && make tests
 
 clean:
-	rm -rf bst_test obj
+	rm -rf bst_test obj bst_llx_test

@@ -15,8 +15,15 @@ queue_test: queue_test.cpp ../include/queue.hpp $(INCLUDE)/* obj/catch_test_main
 tests: queue_test
 	./queue_test
 
+# the same tests, with the copies connected using LLX/SCX instead of TSX
+queue_llx_test: queue_test.cpp ../include/queue.hpp $(INCLUDE)/* obj/catch_test_main.o Makefile
+	$(CC) $(CFLAGS) -DCOMMIT_TYPE=LLX_SCX_COMMIT queue_test.cpp obj/catch_test_main.o -o queue_llx_test
+
+tests-llx: queue_llx_test
+	./queue_llx_test
+
 run-tests:
 	make clean && make tests
 
 clean:
-	rm -rf queue_test obj
+	rm -rf queue_test obj queue_llx_test

@@ -16,7 +16,9 @@ makes it thread safe:
 - **Updates** never modify a node that is reachable from the root. They build
   private copies of the nodes they change, then a short hardware
   transaction (Intel TSX) validates that nothing they read has changed and
-  swaps a single child pointer to publish the copies.
+  swaps a single child pointer to publish the copies. Without TSX, the same
+  commit can be done lock-free with LLX/SCX [[6]](#references), see
+  [Committing without TSX](#committing-without-tsx-llxscx).
 
 Related work includes a performance study of concurrent red-black trees on
 HTM [[3]](#references) and a general technique for non-blocking trees
@@ -29,9 +31,10 @@ are now written with `SafeTree::safe_operation`, as shown below.
 
 ## Requirements
 
-- An x86-64 Intel CPU with RTM (TSX-NI) enabled. Check with
-  `grep -w rtm /proc/cpuinfo`. Many CPUs ship with TSX disabled by microcode.
-  Without RTM, the first transaction crashes with an illegal instruction.
+- An x86-64 CPU. The default TSX commits need an Intel CPU with RTM (TSX-NI)
+  enabled: check with `grep -w rtm /proc/cpuinfo`. Many CPUs ship with TSX
+  disabled by microcode, and without RTM the first transaction crashes with an
+  illegal instruction. LLX/SCX commits work on any x86-64 CPU.
 - A C++11 compiler. The Makefiles use `clang++`.
 - Linux. The benchmarks pin threads to cores with `pthread_setaffinity_np`.
 
@@ -43,6 +46,7 @@ The library is header only: include `include/SafeTree.hpp`.
 | --- | --- |
 | `include/SafeTree.hpp` | The library: `SafeNode`, `ConnPoint`, `PathTracker`, `safe_operation`, search helpers |
 | `include/TSXGuard.hpp`, `include/rtm.h` | HTM transactions, the fallback lock and transaction statistics |
+| `include/LLXSCX.hpp` | The LLX/SCX primitives used for commits without TSX |
 | `include/test_bench.hpp` | Throughput benchmark used by the map tests |
 | `include/catch2/` | Bundled Catch2 test framework |
 | `concurrent_maps/BstHTM` | Unbalanced binary search tree (search tree) |
@@ -69,7 +73,8 @@ Each structure has its implementation in `include/` and Catch2 tests in `tests/`
    a `SafeNode` has had its children changed. If both hold, it swaps the
    connection point's child pointer to the root of your copies. If validation
    fails, the operation runs again. After a number of failed transactions
-   (`retries`), it runs under a global fallback lock.
+   (`retries`), it runs under a global fallback lock. With LLX/SCX commits,
+   this check and swap is a single SCX instead.
 
 `SafeTree::safe_operation(retries, op)` runs the operation `op` (a lambda) through
 this loop. It returns `op`'s result only after the commit has succeeded, so `op`
@@ -89,7 +94,8 @@ static constexpr int maxChildren();      // maximum number of children
 ```
 
 It also needs a copy constructor, because the library copies nodes before
-modifying them.
+modifying them, and it has to inherit publicly from `SafeTree::NodeBase`. That
+class is empty for TSX commits and holds the LLX/SCX fields otherwise.
 
 Search trees (`TREE_TYPE SEARCH_TREE`, the default) also need the following,
 which lets the library find nodes and validate the connection point by key:
@@ -211,6 +217,7 @@ These are set with `#define`s before including `SafeTree.hpp` (or with `-D`):
 | Macro | Default | Effect |
 | --- | --- | --- |
 | `TREE_TYPE` | `SEARCH_TREE` | `SEARCH_TREE` or `GENERAL_TREE`, see above |
+| `COMMIT_TYPE` | `HTM_COMMIT` | `HTM_COMMIT` (TSX) or `LLX_SCX_COMMIT`, see below |
 | `RCU_HTM_MAX_THREADS` | `100` | Maximum number of node pools (one per thread and tree) |
 | `TM_EARLY_ABORT` | off | Retry before the transaction when `pop_path()` sees a conflict |
 | `TM_EARLY_ABORT_ON_COPY` | off | Also retry early when a copied node has changed |
@@ -229,12 +236,32 @@ Each structure has a Makefile in its `tests` directory:
 ```sh
 cd concurrent_maps/BTreeHTM/tests
 make tests        # build and run the correctness tests
+make tests-llx    # the same tests with LLX/SCX commits
 make throughput   # benchmarks: 5 seconds per thread count, workload and tree size
 make clean
 ```
 
 `make throughput` is available for the map structures. The benchmarks use up to
 28 threads and skip thread counts above the machine's hardware threads.
+
+## Committing without TSX: LLX/SCX
+
+By default an operation validates its tree of copies and connects it inside a
+hardware transaction (Intel TSX), falling back to a global lock. Compiling with
+
+    -DCOMMIT_TYPE=LLX_SCX_COMMIT
+
+commits with the lock-free LLX/SCX primitives of Brown, Ellen and Ruppert
+[[6]](#references) instead (`include/LLXSCX.hpp`), so no TSX support is needed:
+
+- the nodes the operation reads are snapshotted with LLX,
+- the commit is one SCX which changes the pointer at the connection point only
+  if none of those nodes changed, and finalizes the nodes that were replaced by
+  copies, so operations that still use them fail and retry.
+
+Every node which is removed from the tree has to be copied (`getChild`,
+`rwRef`) or deleted (`subtreeDelete`, `clipTree`) through its `SafeNode`, so
+that it gets finalized.
 
 ## Limitations
 
@@ -243,8 +270,8 @@ make clean
 - **Shared node pools.** Copies are allocated from per-thread pools that are
   shared by all trees with the same node type. Destroying a tree resets these
   pools, so only one tree per node type should be alive at a time.
-- **Intel TSX only.** The library has no software fallback for CPUs without
-  RTM.
+- **x86-64 only.** LLX/SCX commits remove the need for TSX, but the library
+  still includes x86 intrinsics.
 
 ## References
 
@@ -265,3 +292,6 @@ make clean
    Tree Data Structures.* Diploma thesis, National Technical University of
    Athens, 2020.
    [SafeTree_Thesis_English.pdf](SafeTree_Thesis_English.pdf)
+6. T. Brown, F. Ellen and E. Ruppert. "Pragmatic Primitives for Non-blocking
+   Data Structures." In *Proceedings of the 2013 ACM Symposium on Principles
+   of Distributed Computing (PODC)*, 2013.

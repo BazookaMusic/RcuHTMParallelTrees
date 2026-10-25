@@ -16,6 +16,13 @@ avl_test: avl_test.cpp ../include/avl.hpp $(INCLUDE)/* obj/catch_test_main.o Mak
 tests: avl_test
 	./avl_test "~[tp]"
 
+# the same tests, with the copies connected using LLX/SCX instead of TSX
+avl_llx_test: avl_test.cpp ../include/avl.hpp $(INCLUDE)/* obj/catch_test_main.o Makefile
+	$(CC) $(CFLAGS) -DCOMMIT_TYPE=LLX_SCX_COMMIT avl_test.cpp obj/catch_test_main.o -o avl_llx_test
+
+tests-llx: avl_llx_test
+	./avl_llx_test "~[tp]"
+
 throughput: avl_test
 	./avl_test "[tp]"
 
@@ -23,4 +30,4 @@ run-tests:
 	make clean && make tests
 
 clean:
-	rm -rf avl_test obj
+	rm -rf avl_test obj avl_llx_test
