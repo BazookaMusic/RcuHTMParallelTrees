@@ -97,6 +97,32 @@ It also needs a copy constructor, because the library copies nodes before
 modifying them, and it has to inherit publicly from `SafeTree::NodeBase`. That
 class is empty for TSX commits and holds the LLX/SCX fields otherwise.
 
+### Reading child pointers
+
+Once a node is reachable from the root, the only field that changes is a child
+pointer, when an update swaps it to connect its copies. The library publishes
+that pointer with a release store. Code which reads child or root pointers
+while updates may be running has to use an acquire load, so that it also sees
+the contents of the nodes they point to:
+
+```cpp
+Node* curr = read_pointer(&root);   // the root pointer
+curr = read_child(curr, i);         // child i of a node in the tree
+```
+
+This applies to your lookups and traversals, and to the copy constructor,
+which copies nodes that are in the tree:
+
+```cpp
+Node(const Node& other): key(other.key), value(other.value) {
+    children[0] = read_pointer(&other.children[0]);
+    children[1] = read_pointer(&other.children[1]);
+}
+```
+
+On x86 these are ordinary loads and stores. On ARM they add the ordering that
+x86 gives for free.
+
 Search trees (`TREE_TYPE SEARCH_TREE`, the default) also need the following,
 which lets the library find nodes and validate the connection point by key:
 

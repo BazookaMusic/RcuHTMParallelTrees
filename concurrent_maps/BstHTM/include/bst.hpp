@@ -39,6 +39,13 @@ class BSTNode: public NodeBase {
             children[1] = right_child;
         }
 
+        // copies are made from nodes of the tree, whose child
+        // pointers can be swapped concurrently
+        BSTNode(const BSTNode& other): NodeBase(other), key(other.key), value(other.value) {
+            children[0] = read_pointer(&other.children[0]);
+            children[1] = read_pointer(&other.children[1]);
+        }
+
         bool hasKey(int key_requested) {
             return key == key_requested;
         }
@@ -410,7 +417,7 @@ class BST {
 
 
     Result<ValueType> lookup(int desired_key) {
-        auto node = find<TreeNode>(root,desired_key);
+        auto node = find<TreeNode>(read_pointer(&root),desired_key);
         
         const auto found = node != nullptr;
     

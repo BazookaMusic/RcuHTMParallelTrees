@@ -41,8 +41,12 @@ class AVLNode: public NodeBase {
             int r_height,l_height;
 
 
-            r_height = node->getChild(1) ? node->getChild(1)->height : 0;
-            l_height = node->getChild(0)  ? node->getChild(0)->height : 0;
+            // node can be part of the original tree
+            AVLNode* r_child = read_child(node, 1);
+            AVLNode* l_child = read_child(node, 0);
+
+            r_height = r_child ? r_child->height : 0;
+            l_height = l_child ? l_child->height : 0;
 
             return l_height - r_height;
         }
@@ -131,6 +135,13 @@ class AVLNode: public NodeBase {
         AVLNode(int key, ValueType val, AVLNode* left_child, AVLNode* right_child): key(key), value(val), height(1) {
             children[0] = left_child;
             children[1] = right_child;
+        }
+
+        // copies are made from nodes of the tree, whose child
+        // pointers can be swapped concurrently
+        AVLNode(const AVLNode& other): NodeBase(other), key(other.key), value(other.value), height(other.height) {
+            children[0] = read_pointer(&other.children[0]);
+            children[1] = read_pointer(&other.children[1]);
         }
 
         // to satisfy search tree interface
@@ -662,7 +673,7 @@ class AVLTree {
     }
 
     Result<ValueType> lookup(int desired_key) {
-        auto node = find<TreeNode>(root,desired_key);
+        auto node = find<TreeNode>(read_pointer(&root),desired_key);
         
         auto found = node != nullptr;
 
