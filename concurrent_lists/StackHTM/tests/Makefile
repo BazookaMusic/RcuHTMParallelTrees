@@ -1,29 +1,29 @@
 CC=clang++
-CFLAGS=-std=c++0x -static -pthread -Og -g -Wall -Werror -Wextra -DCATCH_CONFIG_ENABLE_BENCHMARKING -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
-CFLAGSSIMPLE=-std=c++0x -static -pthread -O3 -Wall -Werror -Wextra -DCATCH_CONFIG_ENABLE_BENCHMARKING
+# CATCH_CONFIG_NO_POSIX_SIGNALS: the bundled Catch v2.9.1 does not compile with glibc >= 2.34 otherwise
+CFLAGS=-std=c++0x -static -pthread -O3 -g -Wall -Werror -Wextra -DCATCH_CONFIG_ENABLE_BENCHMARKING -DCATCH_CONFIG_NO_POSIX_SIGNALS -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
+CFLAGSSIMPLE=-std=c++0x -static -pthread -O3 -Wall -Werror -Wextra -DCATCH_CONFIG_ENABLE_BENCHMARKING -DCATCH_CONFIG_NO_POSIX_SIGNALS
 
 INCLUDE=../../../include
 
 obj/catch_test_main.o: catch_test_main.cpp
+	mkdir -p obj
 	$(CC) $(CFLAGSSIMPLE) -c $<  -o $@
 
-stack_test: ../include/stack.hpp stack_test.cpp $(INCLUDE)/* obj/catch_test_main.o  Makefile
+stack_test: stack_test.cpp ../include/stack.hpp $(INCLUDE)/* obj/catch_test_main.o Makefile
 	$(CC) $(CFLAGS) stack_test.cpp obj/catch_test_main.o -o stack_test
 
 tests: stack_test
-	./stack_test --benchmark-samples 5
+	./stack_test
 
 # the same tests, with the copies connected using LLX/SCX instead of TSX
-stack_llx_test: ../include/stack.hpp stack_test.cpp $(INCLUDE)/* obj/catch_test_main.o  Makefile
+stack_llx_test: stack_test.cpp ../include/stack.hpp $(INCLUDE)/* obj/catch_test_main.o Makefile
 	$(CC) $(CFLAGS) -DCOMMIT_TYPE=LLX_SCX_COMMIT stack_test.cpp obj/catch_test_main.o -o stack_llx_test
 
 tests-llx: stack_llx_test
-	./stack_llx_test --benchmark-samples 5
+	./stack_llx_test
 
 run-tests:
 	make clean && make tests
 
-	
-
 clean:
-	rm -rf stack_test stack_llx_test
+	rm -rf stack_test obj stack_llx_test

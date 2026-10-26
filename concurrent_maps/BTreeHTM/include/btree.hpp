@@ -140,6 +140,19 @@ class BTreeNode: public NodeBase {
             }
         }
 
+        // copies are made from nodes of the tree, whose child
+        // pointers can be swapped concurrently
+        BTreeNode(const BTreeNode& other): NodeBase(other), count(other.count) {
+            for (int i = 0; i < other.count; i++) {
+                keys[i] = other.keys[i];
+                values[i] = other.values[i];
+            }
+
+            for (int i = 0; i < maxChildren(); i++) {
+                children[i] = read_pointer(&other.children[i]);
+            }
+        }
+
         BTreeNode(KeyType key, ValueType val): count(1) {
             keys[0] = key;
             values[0] = val;
@@ -154,7 +167,8 @@ class BTreeNode: public NodeBase {
         }
 
         bool isLeaf() const {
-            return children[0] == nullptr;
+            // also used on nodes of the tree while traversing
+            return read_pointer(&children[0]) == nullptr;
         }
 
         KeyType getKey(int i) const {
@@ -721,7 +735,7 @@ class BTree {
         }
 
         BTreeResult<ValueType> lookup(const KeyType desired_key) {
-            TreeNode* curr = root;
+            TreeNode* curr = read_pointer(&root);
 
             while (curr) {
                 const int i = curr->findIndex(desired_key);
@@ -730,7 +744,7 @@ class BTree {
                     return {true, curr->values[i]};
                 }
 
-                curr = curr->children[i];
+                curr = read_child(curr, i);
             }
 
             return {false, ValueType()};

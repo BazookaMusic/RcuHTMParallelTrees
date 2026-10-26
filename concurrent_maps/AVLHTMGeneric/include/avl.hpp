@@ -44,8 +44,12 @@ class alignas(32) AVLNode: public NodeBase {
             int r_height,l_height;
 
 
-            r_height = node->getChild(1) ? node->getChild(1)->height : 0;
-            l_height = node->getChild(0)  ? node->getChild(0)->height : 0;
+            // node can be part of the original tree
+            AVLNode* r_child = read_child(node, 1);
+            AVLNode* l_child = read_child(node, 0);
+
+            r_height = r_child ? r_child->height : 0;
+            l_height = l_child ? l_child->height : 0;
 
             return l_height - r_height;
         }
@@ -125,6 +129,13 @@ class alignas(32) AVLNode: public NodeBase {
         AVLNode(int key, ValueType val, AVLNode* left_child, AVLNode* right_child): key(key), value(val), height(1) {
             children[0] = left_child;
             children[1] = right_child;
+        }
+
+        // copies are made from nodes of the tree, whose child
+        // pointers can be swapped concurrently
+        AVLNode(const AVLNode& other): NodeBase(other), key(other.key), value(other.value), height(other.height) {
+            children[0] = read_pointer(&other.children[0]);
+            children[1] = read_pointer(&other.children[1]);
         }
 
         bool hasKey(int key_requested) {
@@ -690,9 +701,9 @@ class AVLTree {
 
     Result<ValueType> lookup(int desired_key) {
         TreeNode* curr;
-        for (curr = root; 
+        for (curr = read_pointer(&root); 
                 curr && curr->key != desired_key; 
-                    curr = desired_key < curr->key ? curr->getL(): curr->getR());
+                    curr = read_child(curr, desired_key < curr->key ? 0 : 1));
 
         auto found = curr != nullptr;
         return {found, found ? curr->getValue(): ValueType() };

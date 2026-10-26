@@ -106,6 +106,31 @@
 namespace SafeTree {
         static constexpr int MAX_THREADS = RCU_HTM_MAX_THREADS;
 
+    /*  Memory ordering
+        Nodes reachable from the root are never modified, except for the child
+        pointer (or root pointer) which an operation swaps to connect its tree
+        of copies. These pointers are written with publish_pointer, a release
+        store which makes the contents of the copies visible before the pointer
+        to them, and must be read with read_pointer / read_child, an acquire
+        load, by anything which can run concurrently with an update (lookups,
+        traversals, validation).
+    */
+    template <class T>
+    inline T* read_pointer(T* const* location) {
+        return __atomic_load_n(location, __ATOMIC_ACQUIRE);
+    }
+
+    template <class T>
+    inline void publish_pointer(T** location, T* value) {
+        __atomic_store_n(location, value, __ATOMIC_RELEASE);
+    }
+
+    // read_child: read child i of a node which may be reachable from the root
+    template <class NodeType>
+    inline NodeType* read_child(NodeType* node, int i) {
+        return read_pointer(node->getChildPointer(i));
+    }
+
     // NodeBase: base class of the user defined nodes.
     // Empty for HTM commits, holds the data record
     // fields of LLX/SCX for LLX/SCX commits
@@ -161,7 +186,7 @@ namespace SafeTree {
             public:
                 // PathTracker: receives adress of pointer to root of structure. 
                 // Tracks a path on the tree to be used for a thread safe operation.
-                explicit PathTracker(NodeType** root): root_(root), current_pos_(*root), at_level_(-1) {}
+                explicit PathTracker(NodeType** root): root_(root), current_pos_(read_pointer(root)), at_level_(-1) {}
 
                 // getNode: return the node where the
                 // tracker is currently pointing
@@ -175,7 +200,7 @@ namespace SafeTree {
                     ++at_level_;
 
                     path_.push(current_pos_, pos);
-                    current_pos_ = current_pos_->getChild(pos);
+                    current_pos_ = read_child(current_pos_, pos);
 
                     return current_pos_;
                 }
@@ -302,7 +327,7 @@ namespace SafeTree {
 
                 for (int i = 0; i < NodeType::maxChildren(); i++) {
                     #ifdef TM_EARLY_ABORT_ON_COPY
-                        if (children_pointers_snapshot_[i] != original_->getChild(i)) {
+                        if (children_pointers_snapshot_[i] != read_child(original_, i)) {
                             conn_point_.validation_abort();
                             throw ValidationAbortException();
                         }
@@ -374,7 +399,7 @@ namespace SafeTree {
                     #else
                         for (int i = 0; i < NodeType::maxChildren(); i++) {
                             // keep backup of the original_ child pointers
-                            const auto original_child = original_->getChild(i);
+                            const auto original_child = read_child(original_, i);
                             children_pointers_snapshot_[i] = original_child;
                         }
                     #endif
@@ -849,7 +874,7 @@ namespace SafeTree {
                     // path_to_conn_point_.print_contents();
 
                     
-                    auto to_be_validated = *root_;
+                    auto to_be_validated = read_pointer(root_);
                     
                     // modifying at root?
                     if (path_to_conn_point_.Empty()) {
@@ -868,7 +893,7 @@ namespace SafeTree {
 
 
                     // do the same for the rest of the path to the conn_point
-                    NodeType* supposed_next_child = supposed_root.node->getChild(next_child);
+                    NodeType* supposed_next_child = read_child(supposed_root.node, next_child);
 
                     for (int i = 1; i < path_to_conn_point_.size(); ++i) {
 
@@ -878,7 +903,7 @@ namespace SafeTree {
                         }
 
                         to_be_validated = supposed_next_child;
-                        supposed_next_child = to_be_validated->getChild(path_to_conn_point_[i].next_child);
+                        supposed_next_child = read_child(to_be_validated, path_to_conn_point_[i].next_child);
                     }
 
 
@@ -893,7 +918,7 @@ namespace SafeTree {
             // lookup but returns node, nullptr when not found
             bool connPointConnected() {
                 #if TREE_TYPE == SEARCH_TREE
-                    return find_target_node<NodeType>(*root_, connection_point_);
+                    return find_target_node<NodeType>(read_pointer(root_), connection_point_);
                 #else
                     return path_unchanged();
                 #endif
@@ -955,7 +980,7 @@ namespace SafeTree {
                                   LLXSCX::SCXRecordBase*& info) {
                     const auto read_children = [&]() {
                         for (int i = 0; i < NodeType::maxChildren(); i++) {
-                            children[i] = node->getChild(i);
+                            children[i] = read_child(node, i);
                         }
                     };
 
@@ -978,7 +1003,7 @@ namespace SafeTree {
                     LLXSCX::DataRecord* record = LLXSCX::RootRecords<NodeType*>::get(root_);
 
                     const auto read_root = [&]() {
-                        root_snapshot = *root_;
+                        root_snapshot = read_pointer(root_);
                     };
 
                     // the root record is never finalized
@@ -1125,8 +1150,9 @@ namespace SafeTree {
                     connection_pointer_ = root_;
                 }
 
-                // connect connection point to the new tree
-                *connection_pointer_ = copied_tree_head_;
+                // connect connection point to the new tree,
+                // the copies become visible before the pointer to them
+                publish_pointer(connection_pointer_, copied_tree_head_);
                 
                 // originals can be deleted
                 copy_connected_ = true;
@@ -1139,14 +1165,14 @@ namespace SafeTree {
                 if (!connection_point_) {
                     // insertion at root
                     // has root copy changed ?
-                    if (conn_pointer_snapshot_ != *root_) {
+                    if (conn_pointer_snapshot_ != read_pointer(root_)) {
                         TSX::TSXGuard::abort<VALIDATION_FAILED>();
                         return false;
                     }
                 } else { 
                     // has the connection pointer to be modified
                     // changed?
-                    if (conn_pointer_snapshot_ != connection_point_->getChild(child_to_exchange_)) {
+                    if (conn_pointer_snapshot_ != read_child(connection_point_, child_to_exchange_)) {
                         TSX::TSXGuard::abort<VALIDATION_FAILED>();
                         return false;
                     }
@@ -1172,7 +1198,7 @@ namespace SafeTree {
                                 const auto &saved_children = safe_node->children_pointers_snapshot_;
 
                                 for (int i = 0; i < NodeType::maxChildren(); i++) {
-                                    if (saved_children[i] != original_node->getChild(i)) {
+                                    if (saved_children[i] != read_child(original_node, i)) {
                                         TSX::TSXGuard::abort<VALIDATION_FAILED>();
                                         return false;
                                     }
@@ -1192,7 +1218,7 @@ namespace SafeTree {
                                 const auto &saved_children = (*it)->children_pointers_snapshot_;
 
                                 for (int i = 0; i < NodeType::maxChildren(); i++) {
-                                    if (saved_children[i] != original_node->getChild(i)) {
+                                    if (saved_children[i] != read_child(original_node, i)) {
                                         TSX::TSXGuard::abort<VALIDATION_FAILED>();
                                         return false;
                                     }
@@ -1513,7 +1539,7 @@ namespace SafeTree {
                 // the old connection point should necessarily continue 
                 // pointing to it's old value
                 #ifdef TM_EARLY_ABORT
-                    if (newHead->original_->getChild(child_to_exchange_) != old_conn_pointer_snapshot_) {
+                    if (read_child(newHead->original_, child_to_exchange_) != old_conn_pointer_snapshot_) {
                         validation_abort();
                         throw ValidationAbortException();
                     }
@@ -1658,7 +1684,7 @@ namespace SafeTree {
         template <class NodeType>
         inline NodeType* find(NodeType* root, typename NodeType::KeyType desired_key) {
             auto curr = root;
-            for (; curr && !curr->traversalDone(desired_key); curr = curr->getChild(curr->nextChild(desired_key))) {
+            for (; curr && !curr->traversalDone(desired_key); curr = read_child(curr, curr->nextChild(desired_key))) {
             // search for node with key
             }
 
@@ -1672,7 +1698,7 @@ namespace SafeTree {
         inline bool find_target_node(NodeType* root, NodeType* target) {
             auto curr = root;
 
-            for (; curr; curr = curr->getChild(curr->nextChild(target))) {
+            for (; curr; curr = read_child(curr, curr->nextChild(target))) {
                 if (curr == target) {
                     return true;
                 }
@@ -1695,7 +1721,7 @@ namespace SafeTree {
 
             result.root_of_structure = root;
 
-            NodeType* orig_head = *root;  // first step, get snapshot of head 
+            NodeType* orig_head = read_pointer(root);  // first step, get snapshot of head 
                                         //(can change during runtime, use only copy)
 
             // will keep the previous node      
@@ -1711,7 +1737,7 @@ namespace SafeTree {
 
                 // search for node with key, adding path to stack and keeping the prev
                 result.path.push(curr, next_child);    
-                curr = curr->getChild(next_child);                                     
+                curr = read_child(curr, next_child);                                     
             };
 
 
